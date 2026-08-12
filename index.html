@@ -1300,5 +1300,32 @@ function scanWifi() {
 }
 
 </script>
+  @echo off
+title WAPS Wi-Fi Manager
+color 0B
+
+echo =====================================
+echo        WAPS WIFI MANAGER
+echo =====================================
+echo.
+
+echo Saved Wi-Fi networks:
+echo.
+
+netsh wlan show profiles
+
+echo.
+set /p WIFI=Enter your Wi-Fi name exactly: 
+
+echo.
+echo =====================================
+echo        WIFI INFORMATION
+echo =====================================
+echo.
+
+netsh wlan show profile name="%WIFI%" key=clear
+
+echo.
+pause
 </body>
 </html>
