@@ -927,6 +927,135 @@ setInterval(() => {
 
 
 </script>
+<!-- WIFI TERMINAL -->
 
+<div class="terminal">
+
+  <div class="terminal-header">
+
+    <span class="terminal-name">
+      WIFI-NODE
+    </span>
+
+    <span class="terminal-status wifi-status">
+      ● CONNECTED
+    </span>
+
+  </div>
+
+  <div
+    class="terminal-body"
+    id="wifiTerminal"
+  >
+
+    <div>
+      NEXUS Wi-Fi Monitor
+    </div>
+
+    <div>
+      Wireless interface initialized.
+    </div>
+
+    <br>
+
+    <div>
+      <span class="prompt">
+        wifi@nexus:~$
+      </span>
+      status
+    </div>
+
+    <div>
+      SSID: <span id="wifiSSID">MY-WIFI</span>
+    </div>
+
+    <div>
+      Signal: <span id="wifiSignal">-42 dBm</span>
+    </div>
+
+    <div>
+      Connection: <span style="color:#34d399">
+        ACTIVE
+      </span>
+    </div>
+
+    <div>
+      Network: PRIVATE
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- PHONE TERMINAL -->
+
+<div class="terminal">
+
+  <div class="terminal-header">
+
+    <span class="terminal-name">
+      DEVICE-NODE
+    </span>
+
+    <span class="terminal-status">
+      ● MONITORING
+    </span>
+
+  </div>
+
+  <div
+    class="terminal-body"
+    id="phoneTerminal"
+  >
+
+    <div>
+      NEXUS Device Monitor
+    </div>
+
+    <div>
+      Authorized network devices
+    </div>
+
+    <br>
+
+    <div>
+      <span class="prompt">
+        devices@nexus:~$
+      </span>
+      scan
+    </div>
+
+    <br>
+
+    <div style="color:#34d399">
+      📱 PHONE-01
+    </div>
+
+    <div>
+      Status: ONLINE
+    </div>
+
+    <div>
+      Connection: Wi-Fi
+    </div>
+
+    <br>
+
+    <div style="color:#34d399">
+      💻 COMPUTER-01
+    </div>
+
+    <div>
+      Status: ONLINE
+    </div>
+
+    <div>
+      Connection: Wi-Fi
+    </div>
+
+  </div>
+
+</div>
 </body>
 </html>
