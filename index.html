@@ -1,320 +1,535 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WAPS // Future System</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WAPS Learn | Future Learning</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<style>
+* {
+  box-sizing: border-box;
+}
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #030712;
-      color: white;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #030712;
+  color: white;
+  min-height: 100vh;
+}
 
-    /* FUTURISTIC BACKGROUND */
+body::before {
+  content: "";
+  position: fixed;
+  width: 500px;
+  height: 500px;
+  background: #00e5ff;
+  filter: blur(180px);
+  opacity: .12;
+  top: -200px;
+  left: -150px;
+  z-index: -2;
+}
 
-    body::before {
-      content: "";
-      position: fixed;
-      width: 500px;
-      height: 500px;
-      background: #00e5ff;
-      filter: blur(180px);
-      opacity: .12;
-      top: -200px;
-      left: -150px;
-      z-index: -2;
-    }
+body::after {
+  content: "";
+  position: fixed;
+  width: 500px;
+  height: 500px;
+  background: #8b5cf6;
+  filter: blur(180px);
+  opacity: .14;
+  bottom: -200px;
+  right: -150px;
+  z-index: -2;
+}
 
-    body::after {
-      content: "";
-      position: fixed;
-      width: 500px;
-      height: 500px;
-      background: #8b5cf6;
-      filter: blur(180px);
-      opacity: .13;
-      bottom: -200px;
-      right: -150px;
-      z-index: -2;
-    }
+.grid {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgba(0,229,255,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,.035) 1px, transparent 1px);
+  background-size: 45px 45px;
+}
 
-    .grid {
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      background-image:
-        linear-gradient(rgba(0,229,255,.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,229,255,.035) 1px, transparent 1px);
-      background-size: 45px 45px;
-    }
+/* LOGIN */
 
-    /* LOGIN */
+#loginPage {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-    .login-container {
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+.login-card {
+  width: 390px;
+  max-width: 92%;
+  padding: 35px;
+  background: rgba(10,15,30,.85);
+  border: 1px solid rgba(0,229,255,.3);
+  border-radius: 25px;
+  box-shadow: 0 0 50px rgba(0,229,255,.12);
+  backdrop-filter: blur(20px);
+}
 
-    .login-card {
-      width: 380px;
-      max-width: 92%;
-      padding: 35px;
-      background: rgba(10,15,30,.82);
-      border: 1px solid rgba(0,229,255,.35);
-      border-radius: 25px;
-      box-shadow: 0 0 50px rgba(0,229,255,.1);
-      backdrop-filter: blur(20px);
-    }
+.logo {
+  text-align: center;
+  font-size: 42px;
+  font-weight: bold;
+  letter-spacing: 9px;
+  color: #00e5ff;
+  text-shadow: 0 0 25px #00e5ff;
+}
 
-    .logo {
-      text-align: center;
-      font-size: 42px;
-      font-weight: bold;
-      letter-spacing: 9px;
-      color: #00e5ff;
-      text-shadow: 0 0 25px #00e5ff;
-    }
+.login-title {
+  text-align: center;
+  color: #94a3b8;
+  margin-bottom: 25px;
+}
 
-    .subtitle {
-      text-align: center;
-      color: #64748b;
-      margin-bottom: 30px;
-      letter-spacing: 2px;
-    }
+input {
+  width: 100%;
+  padding: 14px;
+  margin: 7px 0;
+  background: rgba(255,255,255,.04);
+  color: white;
+  border: 1px solid #263244;
+  border-radius: 10px;
+  outline: none;
+}
 
-    input {
-      width: 100%;
-      padding: 14px;
-      margin: 8px 0;
-      background: rgba(255,255,255,.04);
-      color: white;
-      border: 1px solid #263244;
-      border-radius: 10px;
-      outline: none;
-    }
+input:focus {
+  border-color: #00e5ff;
+  box-shadow: 0 0 15px rgba(0,229,255,.2);
+}
 
-    input:focus {
-      border-color: #00e5ff;
-      box-shadow: 0 0 15px rgba(0,229,255,.2);
-    }
+button {
+  border: none;
+  border-radius: 10px;
+  padding: 13px 18px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: .2s;
+}
 
-    button {
-      width: 100%;
-      padding: 14px;
-      margin-top: 10px;
-      border: 0;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 15px;
-      transition: .2s;
-    }
+button:hover {
+  transform: translateY(-2px);
+}
 
-    button:hover {
-      transform: translateY(-2px);
-    }
+.full-btn {
+  width: 100%;
+  margin-top: 10px;
+}
 
-    .login-btn {
-      background: #00e5ff;
-      color: #001018;
-    }
+.login-btn {
+  background: #00e5ff;
+  color: #001018;
+}
 
-    .signup-btn {
-      background: transparent;
-      color: #00e5ff;
-      border: 1px solid #00e5ff;
-    }
+.signup-btn {
+  background: transparent;
+  color: #00e5ff;
+  border: 1px solid #00e5ff;
+}
 
-    .google-btn {
-      background: white;
-      color: #111;
-    }
+.google-btn {
+  background: white;
+  color: #111827;
+}
 
-    #message {
-      text-align: center;
-      min-height: 20px;
-      font-size: 13px;
-      margin-top: 15px;
-    }
+#loginMessage {
+  text-align: center;
+  min-height: 20px;
+  font-size: 13px;
+}
 
-    /* DASHBOARD */
+/* APP */
 
-    #dashboard {
-      display: none;
-    }
+#app {
+  display: none;
+}
 
-    .navbar {
-      height: 70px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 35px;
-      border-bottom: 1px solid rgba(0,229,255,.15);
-      background: rgba(3,7,18,.8);
-      backdrop-filter: blur(15px);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
+.navbar {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 25px;
+  background: rgba(3,7,18,.85);
+  border-bottom: 1px solid rgba(0,229,255,.15);
+  backdrop-filter: blur(15px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
 
-    .nav-logo {
-      color: #00e5ff;
-      font-size: 23px;
-      font-weight: bold;
-      letter-spacing: 5px;
-      text-shadow: 0 0 15px #00e5ff;
-    }
+.nav-logo {
+  color: #00e5ff;
+  font-size: 23px;
+  font-weight: bold;
+  letter-spacing: 5px;
+  text-shadow: 0 0 15px #00e5ff;
+}
 
-    .nav-status {
-      color: #34d399;
-      font-size: 12px;
-    }
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
 
-    .main {
-      max-width: 1200px;
-      margin: auto;
-      padding: 40px 25px;
-    }
+.status {
+  color: #34d399;
+  font-size: 12px;
+}
 
-    .welcome {
-      margin-bottom: 35px;
-    }
+.logout {
+  background: #ef4444;
+  color: white;
+  padding: 9px 15px;
+}
 
-    .welcome h1 {
-      font-size: 42px;
-      margin-bottom: 8px;
-    }
+/* LAYOUT */
 
-    .welcome span {
-      color: #00e5ff;
-      text-shadow: 0 0 15px #00e5ff;
-    }
+.layout {
+  max-width: 1300px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  min-height: calc(100vh - 70px);
+}
 
-    .welcome p {
-      color: #64748b;
-    }
+/* SIDEBAR */
 
-    /* CARDS */
+.sidebar {
+  padding: 25px 15px;
+  border-right: 1px solid rgba(0,229,255,.1);
+}
 
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-    }
+.sidebar-title {
+  color: #64748b;
+  font-size: 11px;
+  letter-spacing: 2px;
+  margin: 10px;
+}
 
-    .card {
-      padding: 25px;
-      background: rgba(15,23,42,.65);
-      border: 1px solid rgba(0,229,255,.15);
-      border-radius: 18px;
-      backdrop-filter: blur(12px);
-      transition: .3s;
-    }
+.nav-item {
+  padding: 13px;
+  margin: 5px 0;
+  border-radius: 10px;
+  color: #94a3b8;
+  cursor: pointer;
+}
 
-    .card:hover {
-      transform: translateY(-5px);
-      border-color: #00e5ff;
-      box-shadow: 0 0 25px rgba(0,229,255,.12);
-    }
+.nav-item:hover,
+.nav-item.active {
+  color: #00e5ff;
+  background: rgba(0,229,255,.08);
+}
 
-    .card-icon {
-      font-size: 30px;
-      margin-bottom: 15px;
-    }
+/* CONTENT */
 
-    .card h3 {
-      margin: 0 0 10px;
-    }
+.content {
+  padding: 35px;
+}
 
-    .card p {
-      color: #64748b;
-      font-size: 14px;
-    }
+.page {
+  display: none;
+}
 
-    .online {
-      color: #34d399;
-    }
+.page.active {
+  display: block;
+}
 
-    /* LARGE PANEL */
+.welcome h1 {
+  font-size: 38px;
+  margin: 0;
+}
 
-    .system-panel {
-      margin-top: 25px;
-      padding: 30px;
-      border-radius: 20px;
-      background: rgba(15,23,42,.65);
-      border: 1px solid rgba(139,92,246,.25);
-    }
+.welcome span {
+  color: #00e5ff;
+  text-shadow: 0 0 15px #00e5ff;
+}
 
-    .system-panel h2 {
-      color: #a78bfa;
-    }
+.welcome p {
+  color: #64748b;
+}
 
-    .bar {
-      height: 8px;
-      background: #111827;
-      border-radius: 10px;
-      overflow: hidden;
-      margin-top: 15px;
-    }
+/* SEARCH */
 
-    .bar-inner {
-      height: 100%;
-      width: 87%;
-      background: #00e5ff;
-      box-shadow: 0 0 15px #00e5ff;
-    }
+.search-box {
+  margin: 25px 0;
+  position: relative;
+}
 
-    .logout {
-      width: auto;
-      padding: 10px 18px;
-      background: #ef4444;
-      color: white;
-    }
+.search-box input {
+  padding-left: 45px;
+  margin: 0;
+}
 
-    /* RESPONSIVE */
+.search-icon {
+  position: absolute;
+  left: 15px;
+  top: 14px;
+  color: #00e5ff;
+}
 
-    @media(max-width: 800px) {
-      .cards {
-        grid-template-columns: 1fr;
-      }
+/* STAT CARDS */
 
-      .welcome h1 {
-        font-size: 30px;
-      }
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin: 25px 0;
+}
 
-      .navbar {
-        padding: 0 18px;
-      }
-    }
-  </style>
+.stat {
+  padding: 20px;
+  background: rgba(15,23,42,.65);
+  border: 1px solid rgba(0,229,255,.12);
+  border-radius: 16px;
+}
+
+.stat-number {
+  font-size: 28px;
+  color: #00e5ff;
+  font-weight: bold;
+}
+
+.stat-label {
+  color: #64748b;
+  font-size: 12px;
+}
+
+/* COURSES */
+
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.course {
+  padding: 22px;
+  background: rgba(15,23,42,.7);
+  border: 1px solid rgba(0,229,255,.13);
+  border-radius: 18px;
+  transition: .3s;
+}
+
+.course:hover {
+  transform: translateY(-5px);
+  border-color: #00e5ff;
+  box-shadow: 0 0 25px rgba(0,229,255,.12);
+}
+
+.course-icon {
+  font-size: 35px;
+}
+
+.course h3 {
+  margin-bottom: 8px;
+}
+
+.course p {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.progress {
+  height: 7px;
+  background: #111827;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 15px 0 7px;
+}
+
+.progress-bar {
+  height: 100%;
+  background: #00e5ff;
+  box-shadow: 0 0 12px #00e5ff;
+}
+
+.course button {
+  width: 100%;
+  background: #00e5ff;
+  color: #001018;
+  margin-top: 10px;
+}
+
+/* PANEL */
+
+.panel {
+  padding: 25px;
+  background: rgba(15,23,42,.65);
+  border: 1px solid rgba(0,229,255,.12);
+  border-radius: 18px;
+  margin-top: 20px;
+}
+
+.panel h2 {
+  margin-top: 0;
+}
+
+/* LESSON */
+
+.lesson-box {
+  padding: 30px;
+  background: rgba(15,23,42,.7);
+  border-radius: 18px;
+  border: 1px solid rgba(0,229,255,.15);
+}
+
+.lesson-box h2 {
+  color: #00e5ff;
+}
+
+.lesson-box p {
+  color: #cbd5e1;
+  line-height: 1.8;
+}
+
+.complete-btn {
+  background: #00e5ff;
+  color: #001018;
+  margin-top: 15px;
+}
+
+/* QUIZ */
+
+.quiz-question {
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+
+.quiz-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  margin: 8px 0;
+  background: #111827;
+  color: white;
+  border: 1px solid #263244;
+}
+
+.quiz-option:hover {
+  border-color: #00e5ff;
+}
+
+#quizResult {
+  margin-top: 20px;
+  color: #34d399;
+}
+
+/* ACHIEVEMENTS */
+
+.achievements {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.badge {
+  padding: 25px;
+  text-align: center;
+  background: rgba(15,23,42,.65);
+  border-radius: 18px;
+  border: 1px solid rgba(139,92,246,.25);
+}
+
+.badge-icon {
+  font-size: 45px;
+}
+
+/* PROFILE */
+
+.profile-card {
+  max-width: 600px;
+  padding: 30px;
+  background: rgba(15,23,42,.7);
+  border-radius: 20px;
+}
+
+.avatar {
+  width: 85px;
+  height: 85px;
+  border-radius: 50%;
+  background: #00e5ff;
+  color: #001018;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 35px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+/* MOBILE */
+
+@media(max-width:900px) {
+
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .content {
+    padding: 20px;
+  }
+
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .course-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .achievements {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media(max-width:500px) {
+
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .welcome h1 {
+    font-size: 28px;
+  }
+
+  .navbar {
+    padding: 0 12px;
+  }
+
+  .status {
+    display: none;
+  }
+
+}
+</style>
 </head>
 
 <body>
 
 <div class="grid"></div>
 
+<!-- LOGIN -->
 
-<!-- ================= LOGIN ================= -->
-
-<div class="login-container" id="loginPage">
+<div id="loginPage">
 
   <div class="login-card">
 
     <div class="logo">WAPS</div>
 
-    <div class="subtitle">
-      FUTURE ACCESS SYSTEM
+    <div class="login-title">
+      FUTURE LEARNING PLATFORM
     </div>
 
     <input
@@ -329,361 +544,1036 @@
       placeholder="Password"
     >
 
-    <button class="login-btn" id="loginBtn">
-      ACCESS SYSTEM
+    <button
+      class="full-btn login-btn"
+      id="loginBtn">
+      LOGIN
     </button>
 
-    <button class="signup-btn" id="signupBtn">
+    <button
+      class="full-btn signup-btn"
+      id="signupBtn">
       CREATE ACCOUNT
     </button>
 
-    <button class="google-btn" id="googleBtn">
+    <button
+      class="full-btn google-btn"
+      id="googleBtn">
       Continue with Google
     </button>
 
-    <p id="message"></p>
+    <p id="loginMessage"></p>
 
   </div>
 
 </div>
 
 
-<!-- ================= DASHBOARD ================= -->
+<!-- APP -->
 
-<div id="dashboard">
+<div id="app">
 
   <nav class="navbar">
 
     <div class="nav-logo">
-      WAPS
+      WAPS LEARN
     </div>
 
-    <div class="nav-status">
-      ● SYSTEM ONLINE
-    </div>
+    <div class="nav-user">
 
-    <button class="logout" id="logoutBtn">
-      LOGOUT
-    </button>
+      <span class="status">
+        ● ONLINE
+      </span>
+
+      <span id="navUsername">
+        Student
+      </span>
+
+      <button
+        class="logout"
+        id="logoutBtn">
+        Logout
+      </button>
+
+    </div>
 
   </nav>
 
 
-  <main class="main">
+  <div class="layout">
 
-    <section class="welcome">
+    <!-- SIDEBAR -->
 
-      <h1>
-        Welcome, <span id="username">User</span>
-      </h1>
+    <aside class="sidebar">
 
-      <p>
-        Your futuristic control center is ready.
-      </p>
+      <div class="sidebar-title">
+        LEARNING
+      </div>
 
-    </section>
+      <div
+        class="nav-item active"
+        data-page="home">
+        🏠 Dashboard
+      </div>
+
+      <div
+        class="nav-item"
+        data-page="courses">
+        📚 Courses
+      </div>
+
+      <div
+        class="nav-item"
+        data-page="lesson">
+        📖 Lessons
+      </div>
+
+      <div
+        class="nav-item"
+        data-page="quiz">
+        🧠 Quiz Center
+      </div>
+
+      <div
+        class="nav-item"
+        data-page="progress">
+        📊 Progress
+      </div>
+
+      <div
+        class="nav-item"
+        data-page="achievements">
+        🏆 Achievements
+      </div>
+
+      <div class="sidebar-title">
+        ACCOUNT
+      </div>
+
+      <div
+        class="nav-item"
+        data-page="profile">
+        👤 Profile
+      </div>
+
+    </aside>
 
 
-    <section class="cards">
+    <!-- CONTENT -->
 
-      <div class="card">
+    <main class="content">
 
-        <div class="card-icon">👤</div>
 
-        <h3>Profile</h3>
+      <!-- HOME -->
 
-        <p id="userEmail">
-          Loading account...
+      <section
+        class="page active"
+        id="home">
+
+        <div class="welcome">
+
+          <h1>
+            Welcome,
+            <span id="welcomeName">
+              Student
+            </span>
+          </h1>
+
+          <p>
+            Continue your journey toward the future.
+          </p>
+
+        </div>
+
+
+        <div class="search-box">
+
+          <span class="search-icon">
+            🔍
+          </span>
+
+          <input
+            id="courseSearch"
+            type="text"
+            placeholder="Search courses and subjects..."
+          >
+
+        </div>
+
+
+        <div class="stats">
+
+          <div class="stat">
+
+            <div
+              class="stat-number"
+              id="xp">
+              0
+            </div>
+
+            <div class="stat-label">
+              XP POINTS
+            </div>
+
+          </div>
+
+
+          <div class="stat">
+
+            <div
+              class="stat-number"
+              id="completed">
+              0
+            </div>
+
+            <div class="stat-label">
+              LESSONS COMPLETED
+            </div>
+
+          </div>
+
+
+          <div class="stat">
+
+            <div
+              class="stat-number">
+              0
+            </div>
+
+            <div class="stat-label">
+              QUIZZES TAKEN
+            </div>
+
+          </div>
+
+
+          <div class="stat">
+
+            <div
+              class="stat-number">
+              1
+            </div>
+
+            <div class="stat-label">
+              CURRENT LEVEL
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="panel">
+
+          <h2>
+            🚀 Continue Learning
+          </h2>
+
+          <p style="color:#64748b;">
+            Choose a course below to start learning.
+          </p>
+
+          <div
+            class="course-grid"
+            id="homeCourses">
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- COURSES -->
+
+      <section
+        class="page"
+        id="courses">
+
+        <h1>📚 Course Library</h1>
+
+        <p style="color:#64748b;">
+          Explore your available subjects.
         </p>
 
-      </div>
+        <div
+          class="course-grid"
+          id="courseLibrary">
+        </div>
+
+      </section>
 
 
-      <div class="card">
+      <!-- LESSON -->
 
-        <div class="card-icon">🔐</div>
+      <section
+        class="page"
+        id="lesson">
 
-        <h3>Security</h3>
+        <h1>📖 Learning Center</h1>
 
-        <p class="online">
-          Authentication secured
-        </p>
+        <div class="lesson-box">
 
-      </div>
+          <h2>
+            Introduction to Computer Technology
+          </h2>
 
+          <p>
+            Computer technology is the study and use
+            of computers, digital systems, software,
+            networks, and information technologies.
+            It is used in education, business,
+            communication, science, entertainment,
+            and many other areas of modern life.
+          </p>
 
-      <div class="card">
+          <p>
+            A computer system generally consists of
+            hardware and software. Hardware includes
+            physical components such as the processor,
+            memory, storage, keyboard, mouse, and display.
+            Software provides the instructions that allow
+            the hardware to perform useful tasks.
+          </p>
 
-        <div class="card-icon">🌐</div>
+          <h3>
+            Learning Objective
+          </h3>
 
-        <h3>Network</h3>
+          <p>
+            After completing this lesson, students
+            should be able to explain the basic
+            components of a computer system and
+            describe the difference between hardware
+            and software.
+          </p>
 
-        <p class="online">
-          Connection stable
-        </p>
+          <button
+            class="complete-btn"
+            id="completeLesson">
+            ✓ Mark Lesson Complete
+          </button>
 
-      </div>
+        </div>
 
-    </section>
-
-
-    <section class="system-panel">
-
-      <h2>⚡ SYSTEM STATUS</h2>
-
-      <p>
-        Core system performance
-      </p>
-
-      <div class="bar">
-        <div class="bar-inner"></div>
-      </div>
-
-      <p class="online">
-        87% Operational
-      </p>
-
-    </section>
-
-
-    <section class="cards" style="margin-top:25px;">
-
-      <div class="card">
-
-        <div class="card-icon">🚀</div>
-
-        <h3>Future Mode</h3>
-
-        <p>
-          Advanced interface enabled.
-        </p>
-
-      </div>
+      </section>
 
 
-      <div class="card">
+      <!-- QUIZ -->
 
-        <div class="card-icon">🛰️</div>
+      <section
+        class="page"
+        id="quiz">
 
-        <h3>System Link</h3>
+        <h1>🧠 Quiz Center</h1>
 
-        <p>
-          Firebase authentication connected.
-        </p>
+        <div class="panel">
 
-      </div>
+          <div class="quiz-question">
+            What is the physical part of a computer
+            called?
+          </div>
+
+          <button
+            class="quiz-option"
+            data-answer="wrong">
+            A. Software
+          </button>
+
+          <button
+            class="quiz-option"
+            data-answer="correct">
+            B. Hardware
+          </button>
+
+          <button
+            class="quiz-option"
+            data-answer="wrong">
+            C. Internet
+          </button>
+
+          <button
+            class="quiz-option"
+            data-answer="wrong">
+            D. Application
+          </button>
+
+          <div id="quizResult"></div>
+
+        </div>
+
+      </section>
 
 
-      <div class="card">
+      <!-- PROGRESS -->
 
-        <div class="card-icon">✨</div>
+      <section
+        class="page"
+        id="progress">
 
-        <h3>Experience</h3>
+        <h1>📊 Your Progress</h1>
 
-        <p>
-          Welcome to the next generation.
-        </p>
+        <div class="panel">
 
-      </div>
+          <h3>
+            Overall Learning Progress
+          </h3>
 
-    </section>
+          <div class="progress">
 
-  </main>
+            <div
+              class="progress-bar"
+              id="overallProgress"
+              style="width:0%">
+            </div>
+
+          </div>
+
+          <p id="progressText">
+            0% completed
+          </p>
+
+        </div>
+
+        <div class="panel">
+
+          <h3>
+            Computer Technology
+          </h3>
+
+          <div class="progress">
+
+            <div
+              class="progress-bar"
+              style="width:25%">
+            </div>
+
+          </div>
+
+          <p style="color:#64748b;">
+            25% completed
+          </p>
+
+        </div>
+
+      </section>
+
+
+      <!-- ACHIEVEMENTS -->
+
+      <section
+        class="page"
+        id="achievements">
+
+        <h1>🏆 Achievements</h1>
+
+        <div class="achievements">
+
+          <div class="badge">
+
+            <div class="badge-icon">
+              🚀
+            </div>
+
+            <h3>
+              First Step
+            </h3>
+
+            <p style="color:#64748b;">
+              Joined WAPS Learn
+            </p>
+
+          </div>
+
+
+          <div class="badge">
+
+            <div class="badge-icon">
+              🧠
+            </div>
+
+            <h3>
+              Quiz Starter
+            </h3>
+
+            <p style="color:#64748b;">
+              Complete your first quiz
+            </p>
+
+          </div>
+
+
+          <div class="badge">
+
+            <div class="badge-icon">
+              📚
+            </div>
+
+            <h3>
+              Scholar
+            </h3>
+
+            <p style="color:#64748b;">
+              Complete your first lesson
+            </p>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- PROFILE -->
+
+      <section
+        class="page"
+        id="profile">
+
+        <h1>👤 Profile</h1>
+
+        <div class="profile-card">
+
+          <div
+            class="avatar"
+            id="avatar">
+            U
+          </div>
+
+          <h2 id="profileName">
+            Student
+          </h2>
+
+          <p
+            id="profileEmail"
+            style="color:#64748b;">
+            Loading...
+          </p>
+
+          <hr
+            style="border-color:#1e293b;">
+
+          <p>
+            <strong>XP:</strong>
+            <span id="profileXP">
+              0
+            </span>
+          </p>
+
+          <p>
+            <strong>Level:</strong>
+            1
+          </p>
+
+          <p>
+            <strong>Platform:</strong>
+            WAPS Learn
+          </p>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
 
 </div>
 
 
-<!-- ================= FIREBASE ================= -->
-
 <script type="module">
 
-  import { initializeApp }
-  from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import {
+  initializeApp
+} from
+"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 
-  import {
-    getAuth,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    GoogleAuthProvider,
-    signInWithPopup,
-    signOut,
-    onAuthStateChanged
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged
+} from
+"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+
+const firebaseConfig = {
+
+  apiKey:
+  "AIzaSyCB9sWO3rQCaEVc4B86nkGx6U5iWa7ha9o",
+
+  authDomain:
+  "waps-c870d.firebaseapp.com",
+
+  projectId:
+  "waps-c870d",
+
+  storageBucket:
+  "waps-c870d.firebasestorage.app",
+
+  messagingSenderId:
+  "412405951662",
+
+  appId:
+  "1:412405951662:web:2b18a7b9c4dad02c71513f",
+
+  measurementId:
+  "G-MXE1VWC16P"
+};
+
+
+const app =
+  initializeApp(firebaseConfig);
+
+const auth =
+  getAuth(app);
+
+const provider =
+  new GoogleAuthProvider();
+
+
+const loginPage =
+  document.getElementById("loginPage");
+
+const appPage =
+  document.getElementById("app");
+
+const email =
+  document.getElementById("email");
+
+const password =
+  document.getElementById("password");
+
+const loginMessage =
+  document.getElementById("loginMessage");
+
+
+/* CREATE ACCOUNT */
+
+document
+.getElementById("signupBtn")
+.onclick = async () => {
+
+  try {
+
+    await createUserWithEmailAndPassword(
+      auth,
+      email.value,
+      password.value
+    );
+
+    loginMessage.style.color =
+      "#34d399";
+
+    loginMessage.innerText =
+      "Account created successfully!";
+
   }
-  from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
+  catch(error) {
 
-  const firebaseConfig = {
+    loginMessage.style.color =
+      "#f87171";
 
-    apiKey: "AIzaSyCB9sWO3rQCaEVc4B86nkGx6U5iWa7ha9o",
+    loginMessage.innerText =
+      error.message;
 
-    authDomain: "waps-c870d.firebaseapp.com",
+  }
 
-    projectId: "waps-c870d",
+};
 
-    storageBucket: "waps-c870d.firebasestorage.app",
 
-    messagingSenderId: "412405951662",
+/* LOGIN */
 
-    appId: "1:412405951662:web:2b18a7b9c4dad02c71513f",
+document
+.getElementById("loginBtn")
+.onclick = async () => {
 
-    measurementId: "G-MXE1VWC16P"
+  try {
 
-  };
+    await signInWithEmailAndPassword(
+      auth,
+      email.value,
+      password.value
+    );
 
+  }
 
-  const app = initializeApp(firebaseConfig);
+  catch(error) {
 
-  const auth = getAuth(app);
+    loginMessage.style.color =
+      "#f87171";
 
-  const googleProvider =
-    new GoogleAuthProvider();
+    loginMessage.innerText =
+      error.message;
 
+  }
 
-  const loginPage =
-    document.getElementById("loginPage");
+};
 
-  const dashboard =
-    document.getElementById("dashboard");
 
-  const message =
-    document.getElementById("message");
+/* GOOGLE */
 
-  const email =
-    document.getElementById("email");
+document
+.getElementById("googleBtn")
+.onclick = async () => {
 
-  const password =
-    document.getElementById("password");
+  try {
 
-  const userEmail =
-    document.getElementById("userEmail");
+    await signInWithPopup(
+      auth,
+      provider
+    );
 
-  const username =
-    document.getElementById("username");
+  }
 
+  catch(error) {
 
-  /* CREATE ACCOUNT */
+    loginMessage.style.color =
+      "#f87171";
 
-  document
-    .getElementById("signupBtn")
-    .addEventListener("click", async () => {
+    loginMessage.innerText =
+      error.message;
 
-      try {
+  }
 
-        await createUserWithEmailAndPassword(
-          auth,
-          email.value,
-          password.value
-        );
+};
 
-        message.style.color = "#34d399";
-        message.innerText =
-          "Account created successfully!";
 
-      } catch (error) {
+/* LOGOUT */
 
-        message.style.color = "#f87171";
-        message.innerText =
-          error.message;
+document
+.getElementById("logoutBtn")
+.onclick = async () => {
 
-      }
+  await signOut(auth);
 
-    });
+};
 
 
-  /* LOGIN */
+/* NAVIGATION */
 
-  document
-    .getElementById("loginBtn")
-    .addEventListener("click", async () => {
+document
+.querySelectorAll(".nav-item")
+.forEach(item => {
 
-      try {
+  item.addEventListener("click", () => {
 
-        await signInWithEmailAndPassword(
-          auth,
-          email.value,
-          password.value
-        );
+    document
+    .querySelectorAll(".nav-item")
+    .forEach(x =>
+      x.classList.remove("active")
+    );
 
-      } catch (error) {
+    item.classList.add("active");
 
-        message.style.color = "#f87171";
-        message.innerText =
-          error.message;
+    document
+    .querySelectorAll(".page")
+    .forEach(page =>
+      page.classList.remove("active")
+    );
 
-      }
+    document
+    .getElementById(item.dataset.page)
+    .classList.add("active");
 
-    });
+  });
 
+});
 
-  /* GOOGLE */
 
-  document
-    .getElementById("googleBtn")
-    .addEventListener("click", async () => {
+/* COURSES */
 
-      try {
+const courses = [
 
-        await signInWithPopup(
-          auth,
-          googleProvider
-        );
+  {
+    name: "Mathematics",
+    icon: "📐",
+    description:
+      "Explore numbers, algebra, geometry and problem solving.",
+    progress: 15
+  },
 
-      } catch (error) {
+  {
+    name: "Science",
+    icon: "🔬",
+    description:
+      "Discover biology, chemistry, physics and the natural world.",
+    progress: 30
+  },
 
-        message.style.color = "#f87171";
-        message.innerText =
-          error.message;
+  {
+    name: "English",
+    icon: "📖",
+    description:
+      "Improve grammar, vocabulary, reading and communication.",
+    progress: 20
+  },
 
-      }
+  {
+    name: "Computer Technology",
+    icon: "💻",
+    description:
+      "Learn computers, programming, hardware and software.",
+    progress: 25
+  },
 
-    });
+  {
+    name: "Research",
+    icon: "🔎",
+    description:
+      "Learn research methods, data collection and analysis.",
+    progress: 10
+  },
 
+  {
+    name: "Digital Skills",
+    icon: "🌐",
+    description:
+      "Develop useful technology and online skills.",
+    progress: 5
+  }
 
-  /* LOGOUT */
+];
 
-  document
-    .getElementById("logoutBtn")
-    .addEventListener("click", async () => {
 
-      await signOut(auth);
+function createCourses(container) {
 
-    });
+  container.innerHTML = "";
 
+  courses.forEach(course => {
 
-  /* AUTH STATE */
+    const div =
+      document.createElement("div");
 
-  onAuthStateChanged(auth, (user) => {
+    div.className = "course";
 
-    if (user) {
+    div.innerHTML = `
 
-      loginPage.style.display = "none";
+      <div class="course-icon">
+        ${course.icon}
+      </div>
 
-      dashboard.style.display = "block";
+      <h3>
+        ${course.name}
+      </h3>
 
-      userEmail.innerText =
-        user.email || "Google account";
+      <p>
+        ${course.description}
+      </p>
 
-      if (user.displayName) {
+      <div class="progress">
 
-        username.innerText =
-          user.displayName;
+        <div
+          class="progress-bar"
+          style="width:${course.progress}%">
+        </div>
 
-      } else {
+      </div>
 
-        username.innerText =
-          user.email.split("@")[0];
+      <small>
+        ${course.progress}% completed
+      </small>
 
-      }
+      <button>
+        Start Learning
+      </button>
 
-    } else {
+    `;
 
-      loginPage.style.display = "flex";
+    container.appendChild(div);
 
-      dashboard.style.display = "none";
+  });
+
+}
+
+
+createCourses(
+  document.getElementById("homeCourses")
+);
+
+createCourses(
+  document.getElementById("courseLibrary")
+);
+
+
+/* COURSE SEARCH */
+
+document
+.getElementById("courseSearch")
+.addEventListener("input", function() {
+
+  const search =
+    this.value.toLowerCase();
+
+  const cards =
+    document.querySelectorAll(
+      "#homeCourses .course"
+    );
+
+  cards.forEach(card => {
+
+    card.style.display =
+      card.innerText
+      .toLowerCase()
+      .includes(search)
+      ? "block"
+      : "none";
+
+  });
+
+});
+
+
+/* QUIZ */
+
+document
+.querySelectorAll(".quiz-option")
+.forEach(button => {
+
+  button.onclick = () => {
+
+    const result =
+      document.getElementById(
+        "quizResult"
+      );
+
+    if(
+      button.dataset.answer ===
+      "correct"
+    ) {
+
+      result.innerText =
+        "✓ Correct! +10 XP";
+
+      result.style.color =
+        "#34d399";
+
+      const xp =
+        document.getElementById("xp");
+
+      const profileXP =
+        document.getElementById("profileXP");
+
+      xp.innerText = "10";
+
+      profileXP.innerText = "10";
 
     }
 
-  });
+    else {
+
+      result.innerText =
+        "✗ Not quite. Try again.";
+
+      result.style.color =
+        "#f87171";
+
+    }
+
+  };
+
+});
+
+
+/* COMPLETE LESSON */
+
+document
+.getElementById("completeLesson")
+.onclick = () => {
+
+  document.getElementById(
+    "completed"
+  ).innerText = "1";
+
+  document.getElementById(
+    "xp"
+  ).innerText = "20";
+
+  document.getElementById(
+    "profileXP"
+  ).innerText = "20";
+
+  document.getElementById(
+    "overallProgress"
+  ).style.width = "20%";
+
+  document.getElementById(
+    "progressText"
+  ).innerText =
+    "20% completed";
+
+  document.getElementById(
+    "completeLesson"
+  ).innerText =
+    "✓ Lesson Completed";
+
+};
+
+
+/* AUTH STATE */
+
+onAuthStateChanged(
+  auth,
+  user => {
+
+    if(user) {
+
+      loginPage.style.display =
+        "none";
+
+      appPage.style.display =
+        "block";
+
+
+      const name =
+        user.displayName ||
+        user.email.split("@")[0];
+
+
+      document.getElementById(
+        "welcomeName"
+      ).innerText = name;
+
+
+      document.getElementById(
+        "navUsername"
+      ).innerText = name;
+
+
+      document.getElementById(
+        "profileName"
+      ).innerText = name;
+
+
+      document.getElementById(
+        "profileEmail"
+      ).innerText =
+        user.email;
+
+
+      document.getElementById(
+        "avatar"
+      ).innerText =
+        name.charAt(0).toUpperCase();
+
+    }
+
+    else {
+
+      loginPage.style.display =
+        "flex";
+
+      appPage.style.display =
+        "none";
+
+    }
+
+  }
+
+);
 
 </script>
 
