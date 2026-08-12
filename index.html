@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WAPS Learn | Future Learning</title>
+<title>WAPS Learn</title>
 
 <style>
 * {
@@ -14,8 +14,7 @@ body {
   margin: 0;
   font-family: Arial, sans-serif;
   background: #030712;
-  color: white;
-  min-height: 100vh;
+  color: #fff;
 }
 
 body::before {
@@ -38,7 +37,7 @@ body::after {
   height: 500px;
   background: #8b5cf6;
   filter: blur(180px);
-  opacity: .14;
+  opacity: .13;
   bottom: -200px;
   right: -150px;
   z-index: -2;
@@ -59,16 +58,16 @@ body::after {
 #loginPage {
   min-height: 100vh;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
 }
 
 .login-card {
   width: 390px;
   max-width: 92%;
   padding: 35px;
-  background: rgba(10,15,30,.85);
-  border: 1px solid rgba(0,229,255,.3);
+  background: rgba(10,15,30,.88);
+  border: 1px solid rgba(0,229,255,.35);
   border-radius: 25px;
   box-shadow: 0 0 50px rgba(0,229,255,.12);
   backdrop-filter: blur(20px);
@@ -83,30 +82,36 @@ body::after {
   text-shadow: 0 0 25px #00e5ff;
 }
 
-.login-title {
+.subtitle {
   text-align: center;
-  color: #94a3b8;
-  margin-bottom: 25px;
+  color: #64748b;
+  margin: 10px 0 30px;
 }
 
-input {
+input,
+select {
   width: 100%;
-  padding: 14px;
+  padding: 13px;
   margin: 7px 0;
+  border-radius: 10px;
+  border: 1px solid #263244;
   background: rgba(255,255,255,.04);
   color: white;
-  border: 1px solid #263244;
-  border-radius: 10px;
   outline: none;
 }
 
-input:focus {
+select option {
+  background: #0f172a;
+}
+
+input:focus,
+select:focus {
   border-color: #00e5ff;
   box-shadow: 0 0 15px rgba(0,229,255,.2);
 }
 
 button {
-  border: none;
+  border: 0;
   border-radius: 10px;
   padding: 13px 18px;
   cursor: pointer;
@@ -118,7 +123,7 @@ button:hover {
   transform: translateY(-2px);
 }
 
-.full-btn {
+.full {
   width: 100%;
   margin-top: 10px;
 }
@@ -136,7 +141,7 @@ button:hover {
 
 .google-btn {
   background: white;
-  color: #111827;
+  color: #111;
 }
 
 #loginMessage {
@@ -154,15 +159,15 @@ button:hover {
 .navbar {
   height: 70px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   padding: 0 25px;
-  background: rgba(3,7,18,.85);
+  background: rgba(3,7,18,.9);
   border-bottom: 1px solid rgba(0,229,255,.15);
   backdrop-filter: blur(15px);
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 20;
 }
 
 .nav-logo {
@@ -173,13 +178,13 @@ button:hover {
   text-shadow: 0 0 15px #00e5ff;
 }
 
-.nav-user {
+.nav-right {
   display: flex;
   align-items: center;
   gap: 15px;
 }
 
-.status {
+.online {
   color: #34d399;
   font-size: 12px;
 }
@@ -187,31 +192,28 @@ button:hover {
 .logout {
   background: #ef4444;
   color: white;
-  padding: 9px 15px;
 }
 
 /* LAYOUT */
 
 .layout {
-  max-width: 1300px;
+  max-width: 1400px;
   margin: auto;
   display: grid;
   grid-template-columns: 230px 1fr;
   min-height: calc(100vh - 70px);
 }
 
-/* SIDEBAR */
-
 .sidebar {
-  padding: 25px 15px;
   border-right: 1px solid rgba(0,229,255,.1);
+  padding: 25px 15px;
 }
 
 .sidebar-title {
-  color: #64748b;
+  color: #475569;
   font-size: 11px;
   letter-spacing: 2px;
-  margin: 10px;
+  margin: 12px 10px;
 }
 
 .nav-item {
@@ -228,8 +230,6 @@ button:hover {
   background: rgba(0,229,255,.08);
 }
 
-/* CONTENT */
-
 .content {
   padding: 35px;
 }
@@ -242,8 +242,10 @@ button:hover {
   display: block;
 }
 
+/* DASHBOARD */
+
 .welcome h1 {
-  font-size: 38px;
+  font-size: 40px;
   margin: 0;
 }
 
@@ -256,39 +258,43 @@ button:hover {
   color: #64748b;
 }
 
-/* SEARCH */
-
-.search-box {
-  margin: 25px 0;
+.search {
   position: relative;
-}
-
-.search-box input {
-  padding-left: 45px;
-  margin: 0;
+  margin: 25px 0;
 }
 
 .search-icon {
   position: absolute;
   left: 15px;
   top: 14px;
-  color: #00e5ff;
 }
 
-/* STAT CARDS */
+.search input {
+  padding-left: 45px;
+  margin: 0;
+}
 
 .stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4,1fr);
   gap: 15px;
-  margin: 25px 0;
+  margin-bottom: 25px;
+}
+
+.stat,
+.panel,
+.course,
+.lesson,
+.badge,
+.profile {
+  background: rgba(15,23,42,.68);
+  border: 1px solid rgba(0,229,255,.13);
+  border-radius: 18px;
+  backdrop-filter: blur(12px);
 }
 
 .stat {
   padding: 20px;
-  background: rgba(15,23,42,.65);
-  border: 1px solid rgba(0,229,255,.12);
-  border-radius: 16px;
 }
 
 .stat-number {
@@ -300,21 +306,30 @@ button:hover {
 .stat-label {
   color: #64748b;
   font-size: 12px;
+  margin-top: 5px;
+}
+
+/* PANELS */
+
+.panel {
+  padding: 25px;
+  margin-top: 20px;
+}
+
+.panel h2 {
+  margin-top: 0;
 }
 
 /* COURSES */
 
 .course-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3,1fr);
   gap: 18px;
 }
 
 .course {
   padding: 22px;
-  background: rgba(15,23,42,.7);
-  border: 1px solid rgba(0,229,255,.13);
-  border-radius: 18px;
   transition: .3s;
 }
 
@@ -325,7 +340,7 @@ button:hover {
 }
 
 .course-icon {
-  font-size: 35px;
+  font-size: 38px;
 }
 
 .course h3 {
@@ -335,10 +350,11 @@ button:hover {
 .course p {
   color: #64748b;
   font-size: 13px;
+  line-height: 1.5;
 }
 
 .progress {
-  height: 7px;
+  height: 8px;
   background: #111827;
   border-radius: 10px;
   overflow: hidden;
@@ -355,119 +371,120 @@ button:hover {
   width: 100%;
   background: #00e5ff;
   color: #001018;
-  margin-top: 10px;
-}
-
-/* PANEL */
-
-.panel {
-  padding: 25px;
-  background: rgba(15,23,42,.65);
-  border: 1px solid rgba(0,229,255,.12);
-  border-radius: 18px;
-  margin-top: 20px;
-}
-
-.panel h2 {
-  margin-top: 0;
+  margin-top: 12px;
 }
 
 /* LESSON */
 
-.lesson-box {
+.lesson {
   padding: 30px;
-  background: rgba(15,23,42,.7);
-  border-radius: 18px;
-  border: 1px solid rgba(0,229,255,.15);
 }
 
-.lesson-box h2 {
+.lesson h2 {
   color: #00e5ff;
 }
 
-.lesson-box p {
+.lesson p {
   color: #cbd5e1;
   line-height: 1.8;
 }
 
-.complete-btn {
+.complete {
   background: #00e5ff;
   color: #001018;
-  margin-top: 15px;
 }
 
 /* QUIZ */
 
-.quiz-question {
-  font-size: 20px;
+.question {
+  font-size: 21px;
   margin-bottom: 20px;
 }
 
-.quiz-option {
-  display: block;
+.option {
   width: 100%;
   text-align: left;
-  margin: 8px 0;
+  margin: 7px 0;
   background: #111827;
   color: white;
   border: 1px solid #263244;
 }
 
-.quiz-option:hover {
+.option:hover {
   border-color: #00e5ff;
 }
 
 #quizResult {
   margin-top: 20px;
-  color: #34d399;
+  font-weight: bold;
 }
 
 /* ACHIEVEMENTS */
 
-.achievements {
+.badges {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
+  grid-template-columns: repeat(3,1fr);
+  gap: 18px;
 }
 
 .badge {
-  padding: 25px;
   text-align: center;
-  background: rgba(15,23,42,.65);
-  border-radius: 18px;
-  border: 1px solid rgba(139,92,246,.25);
+  padding: 25px;
 }
 
 .badge-icon {
   font-size: 45px;
 }
 
+/* NOTIFICATIONS */
+
+.notification {
+  padding: 17px;
+  margin: 10px 0;
+  background: rgba(0,229,255,.05);
+  border-left: 3px solid #00e5ff;
+  border-radius: 8px;
+}
+
+.notification small {
+  color: #64748b;
+}
+
 /* PROFILE */
 
-.profile-card {
+.profile {
   max-width: 600px;
   padding: 30px;
-  background: rgba(15,23,42,.7);
-  border-radius: 20px;
 }
 
 .avatar {
-  width: 85px;
-  height: 85px;
-  border-radius: 50%;
-  background: #00e5ff;
-  color: #001018;
+  width: 90px;
+  height: 90px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 35px;
+  border-radius: 50%;
+  background: #00e5ff;
+  color: #001018;
+  font-size: 38px;
   font-weight: bold;
-  margin-bottom: 20px;
 }
 
-/* MOBILE */
+/* SETTINGS */
 
-@media(max-width:900px) {
+.setting {
+  padding: 18px 0;
+  border-bottom: 1px solid #1e293b;
+}
+
+.setting label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:950px) {
 
   .layout {
     grid-template-columns: 1fr;
@@ -477,38 +494,36 @@ button:hover {
     display: none;
   }
 
+  .stats {
+    grid-template-columns: repeat(2,1fr);
+  }
+
+  .course-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .badges {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media(max-width:600px) {
+
   .content {
     padding: 20px;
   }
 
-  .stats {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .course-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .achievements {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media(max-width:500px) {
-
-  .stats {
+  .stats,
+  .course-grid,
+  .badges {
     grid-template-columns: 1fr;
   }
 
   .welcome h1 {
-    font-size: 28px;
+    font-size: 30px;
   }
 
-  .navbar {
-    padding: 0 12px;
-  }
-
-  .status {
+  .online {
     display: none;
   }
 
@@ -528,36 +543,34 @@ button:hover {
 
     <div class="logo">WAPS</div>
 
-    <div class="login-title">
+    <div class="subtitle">
       FUTURE LEARNING PLATFORM
     </div>
 
     <input
       id="email"
       type="email"
-      placeholder="Email"
-    >
+      placeholder="Email">
 
     <input
       id="password"
       type="password"
-      placeholder="Password"
-    >
+      placeholder="Password">
 
     <button
-      class="full-btn login-btn"
+      class="full login-btn"
       id="loginBtn">
       LOGIN
     </button>
 
     <button
-      class="full-btn signup-btn"
+      class="full signup-btn"
       id="signupBtn">
       CREATE ACCOUNT
     </button>
 
     <button
-      class="full-btn google-btn"
+      class="full google-btn"
       id="googleBtn">
       Continue with Google
     </button>
@@ -569,7 +582,7 @@ button:hover {
 </div>
 
 
-<!-- APP -->
+<!-- APPLICATION -->
 
 <div id="app">
 
@@ -579,20 +592,20 @@ button:hover {
       WAPS LEARN
     </div>
 
-    <div class="nav-user">
+    <div class="nav-right">
 
-      <span class="status">
+      <span class="online">
         ● ONLINE
       </span>
 
-      <span id="navUsername">
+      <span id="navName">
         Student
       </span>
 
       <button
         class="logout"
         id="logoutBtn">
-        Logout
+        LOGOUT
       </button>
 
     </div>
@@ -610,50 +623,44 @@ button:hover {
         LEARNING
       </div>
 
-      <div
-        class="nav-item active"
-        data-page="home">
+      <div class="nav-item active" data-page="dashboard">
         🏠 Dashboard
       </div>
 
-      <div
-        class="nav-item"
-        data-page="courses">
+      <div class="nav-item" data-page="courses">
         📚 Courses
       </div>
 
-      <div
-        class="nav-item"
-        data-page="lesson">
+      <div class="nav-item" data-page="lessons">
         📖 Lessons
       </div>
 
-      <div
-        class="nav-item"
-        data-page="quiz">
+      <div class="nav-item" data-page="quizzes">
         🧠 Quiz Center
       </div>
 
-      <div
-        class="nav-item"
-        data-page="progress">
+      <div class="nav-item" data-page="progress">
         📊 Progress
       </div>
 
-      <div
-        class="nav-item"
-        data-page="achievements">
+      <div class="nav-item" data-page="achievements">
         🏆 Achievements
+      </div>
+
+      <div class="nav-item" data-page="notifications">
+        🔔 Notifications
       </div>
 
       <div class="sidebar-title">
         ACCOUNT
       </div>
 
-      <div
-        class="nav-item"
-        data-page="profile">
+      <div class="nav-item" data-page="profile">
         👤 Profile
+      </div>
+
+      <div class="nav-item" data-page="settings">
+        ⚙️ Settings
       </div>
 
     </aside>
@@ -664,11 +671,11 @@ button:hover {
     <main class="content">
 
 
-      <!-- HOME -->
+      <!-- DASHBOARD -->
 
       <section
         class="page active"
-        id="home">
+        id="dashboard">
 
         <div class="welcome">
 
@@ -680,23 +687,22 @@ button:hover {
           </h1>
 
           <p>
-            Continue your journey toward the future.
+            Your personal futuristic learning center.
           </p>
 
         </div>
 
 
-        <div class="search-box">
+        <div class="search">
 
           <span class="search-icon">
             🔍
           </span>
 
           <input
-            id="courseSearch"
+            id="globalSearch"
             type="text"
-            placeholder="Search courses and subjects..."
-          >
+            placeholder="Search courses, lessons, quizzes...">
 
         </div>
 
@@ -717,12 +723,11 @@ button:hover {
 
           </div>
 
-
           <div class="stat">
 
             <div
               class="stat-number"
-              id="completed">
+              id="lessonCount">
               0
             </div>
 
@@ -732,30 +737,30 @@ button:hover {
 
           </div>
 
-
           <div class="stat">
 
             <div
-              class="stat-number">
+              class="stat-number"
+              id="quizCount">
               0
             </div>
 
             <div class="stat-label">
-              QUIZZES TAKEN
+              QUIZZES COMPLETED
             </div>
 
           </div>
 
-
           <div class="stat">
 
             <div
-              class="stat-number">
+              class="stat-number"
+              id="level">
               1
             </div>
 
             <div class="stat-label">
-              CURRENT LEVEL
+              LEVEL
             </div>
 
           </div>
@@ -766,16 +771,35 @@ button:hover {
         <div class="panel">
 
           <h2>
-            🚀 Continue Learning
+            🚀 Recommended Courses
           </h2>
-
-          <p style="color:#64748b;">
-            Choose a course below to start learning.
-          </p>
 
           <div
             class="course-grid"
-            id="homeCourses">
+            id="recommendedCourses">
+          </div>
+
+        </div>
+
+
+        <div class="panel">
+
+          <h2>
+            📈 Learning Progress
+          </h2>
+
+          <p id="progressText">
+            0% completed
+          </p>
+
+          <div class="progress">
+
+            <div
+              class="progress-bar"
+              id="mainProgress"
+              style="width:0%">
+            </div>
+
           </div>
 
         </div>
@@ -791,8 +815,8 @@ button:hover {
 
         <h1>📚 Course Library</h1>
 
-        <p style="color:#64748b;">
-          Explore your available subjects.
+        <p style="color:#64748b">
+          Explore available subjects and learning programs.
         </p>
 
         <div
@@ -803,36 +827,42 @@ button:hover {
       </section>
 
 
-      <!-- LESSON -->
+      <!-- LESSONS -->
 
       <section
         class="page"
-        id="lesson">
+        id="lessons">
 
         <h1>📖 Learning Center</h1>
 
-        <div class="lesson-box">
+        <div class="lesson">
 
           <h2>
-            Introduction to Computer Technology
+            Computer Technology — Module 1
           </h2>
 
+          <h3>
+            Introduction to Computer Systems
+          </h3>
+
           <p>
-            Computer technology is the study and use
-            of computers, digital systems, software,
-            networks, and information technologies.
-            It is used in education, business,
-            communication, science, entertainment,
-            and many other areas of modern life.
+            A computer system is an electronic system
+            that receives data, processes information,
+            stores information, and produces useful
+            results.
           </p>
 
           <p>
-            A computer system generally consists of
-            hardware and software. Hardware includes
-            physical components such as the processor,
-            memory, storage, keyboard, mouse, and display.
-            Software provides the instructions that allow
-            the hardware to perform useful tasks.
+            Computer systems are made of hardware and
+            software. Hardware refers to physical
+            components such as the processor, memory,
+            storage, keyboard, mouse, and monitor.
+          </p>
+
+          <p>
+            Software consists of instructions and
+            programs that tell computer hardware what
+            to do.
           </p>
 
           <h3>
@@ -840,17 +870,16 @@ button:hover {
           </h3>
 
           <p>
-            After completing this lesson, students
-            should be able to explain the basic
-            components of a computer system and
-            describe the difference between hardware
-            and software.
+            After this lesson, you should be able to
+            explain the difference between hardware
+            and software and identify common computer
+            components.
           </p>
 
           <button
-            class="complete-btn"
+            class="complete"
             id="completeLesson">
-            ✓ Mark Lesson Complete
+            ✓ MARK LESSON COMPLETE
           </button>
 
         </div>
@@ -858,43 +887,42 @@ button:hover {
       </section>
 
 
-      <!-- QUIZ -->
+      <!-- QUIZZES -->
 
       <section
         class="page"
-        id="quiz">
+        id="quizzes">
 
         <h1>🧠 Quiz Center</h1>
 
         <div class="panel">
 
-          <div class="quiz-question">
-            What is the physical part of a computer
-            called?
+          <div class="question">
+            Which of the following is hardware?
           </div>
 
           <button
-            class="quiz-option"
+            class="option"
             data-answer="wrong">
-            A. Software
+            A. Microsoft Word
           </button>
 
           <button
-            class="quiz-option"
+            class="option"
             data-answer="correct">
-            B. Hardware
+            B. Keyboard
           </button>
 
           <button
-            class="quiz-option"
+            class="option"
             data-answer="wrong">
-            C. Internet
+            C. Operating System
           </button>
 
           <button
-            class="quiz-option"
+            class="option"
             data-answer="wrong">
-            D. Application
+            D. Web Browser
           </button>
 
           <div id="quizResult"></div>
@@ -910,48 +938,39 @@ button:hover {
         class="page"
         id="progress">
 
-        <h1>📊 Your Progress</h1>
+        <h1>📊 Academic Progress</h1>
 
         <div class="panel">
 
-          <h3>
-            Overall Learning Progress
-          </h3>
+          <h2>
+            Overall Progress
+          </h2>
 
           <div class="progress">
 
             <div
               class="progress-bar"
-              id="overallProgress"
+              id="progressLarge"
               style="width:0%">
             </div>
 
           </div>
 
-          <p id="progressText">
+          <p id="largeProgressText">
             0% completed
           </p>
 
         </div>
 
+
         <div class="panel">
 
-          <h3>
-            Computer Technology
-          </h3>
+          <h2>
+            📚 Course Progress
+          </h2>
 
-          <div class="progress">
-
-            <div
-              class="progress-bar"
-              style="width:25%">
-            </div>
-
+          <div id="courseProgress">
           </div>
-
-          <p style="color:#64748b;">
-            25% completed
-          </p>
 
         </div>
 
@@ -966,7 +985,7 @@ button:hover {
 
         <h1>🏆 Achievements</h1>
 
-        <div class="achievements">
+        <div class="badges">
 
           <div class="badge">
 
@@ -978,12 +997,27 @@ button:hover {
               First Step
             </h3>
 
-            <p style="color:#64748b;">
-              Joined WAPS Learn
+            <p>
+              Create your WAPS Learn account.
             </p>
 
           </div>
 
+          <div class="badge">
+
+            <div class="badge-icon">
+              📖
+            </div>
+
+            <h3>
+              First Lesson
+            </h3>
+
+            <p>
+              Complete your first lesson.
+            </p>
+
+          </div>
 
           <div class="badge">
 
@@ -995,26 +1029,114 @@ button:hover {
               Quiz Starter
             </h3>
 
-            <p style="color:#64748b;">
-              Complete your first quiz
+            <p>
+              Complete your first quiz.
             </p>
 
           </div>
 
+          <div class="badge">
+
+            <div class="badge-icon">
+              ⭐
+            </div>
+
+            <h3>
+              Rising Scholar
+            </h3>
+
+            <p>
+              Earn 100 XP.
+            </p>
+
+          </div>
 
           <div class="badge">
 
             <div class="badge-icon">
-              📚
+              🏆
             </div>
 
             <h3>
-              Scholar
+              Knowledge Master
             </h3>
 
-            <p style="color:#64748b;">
-              Complete your first lesson
+            <p>
+              Complete 10 lessons.
             </p>
+
+          </div>
+
+          <div class="badge">
+
+            <div class="badge-icon">
+              🔥
+            </div>
+
+            <h3>
+              Study Streak
+            </h3>
+
+            <p>
+              Keep learning consistently.
+            </p>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- NOTIFICATIONS -->
+
+      <section
+        class="page"
+        id="notifications">
+
+        <h1>🔔 Notifications</h1>
+
+        <div class="panel">
+
+          <div class="notification">
+
+            <strong>
+              🎓 Welcome to WAPS Learn!
+            </strong>
+
+            <br>
+
+            <small>
+              Start your first course today.
+            </small>
+
+          </div>
+
+          <div class="notification">
+
+            <strong>
+              📚 New Computer Technology lesson
+            </strong>
+
+            <br>
+
+            <small>
+              Module 1 is ready for you.
+            </small>
+
+          </div>
+
+          <div class="notification">
+
+            <strong>
+              🧠 Quiz available
+            </strong>
+
+            <br>
+
+            <small>
+              Test your knowledge and earn XP.
+            </small>
 
           </div>
 
@@ -1029,9 +1151,9 @@ button:hover {
         class="page"
         id="profile">
 
-        <h1>👤 Profile</h1>
+        <h1>👤 Student Profile</h1>
 
-        <div class="profile-card">
+        <div class="profile">
 
           <div
             class="avatar"
@@ -1043,14 +1165,11 @@ button:hover {
             Student
           </h2>
 
-          <p
-            id="profileEmail"
-            style="color:#64748b;">
+          <p id="profileEmail">
             Loading...
           </p>
 
-          <hr
-            style="border-color:#1e293b;">
+          <hr style="border-color:#1e293b">
 
           <p>
             <strong>XP:</strong>
@@ -1061,13 +1180,115 @@ button:hover {
 
           <p>
             <strong>Level:</strong>
-            1
+            <span id="profileLevel">
+              1
+            </span>
           </p>
 
           <p>
-            <strong>Platform:</strong>
-            WAPS Learn
+            <strong>Lessons:</strong>
+            <span id="profileLessons">
+              0
+            </span>
           </p>
+
+          <p>
+            <strong>Quizzes:</strong>
+            <span id="profileQuizzes">
+              0
+            </span>
+          </p>
+
+        </div>
+
+      </section>
+
+
+      <!-- SETTINGS -->
+
+      <section
+        class="page"
+        id="settings">
+
+        <h1>⚙️ Settings</h1>
+
+        <div class="panel">
+
+          <div class="setting">
+
+            <label>
+              Learning Goal
+            </label>
+
+            <select id="goal">
+
+              <option>
+                15 minutes per day
+              </option>
+
+              <option>
+                30 minutes per day
+              </option>
+
+              <option>
+                1 hour per day
+              </option>
+
+              <option>
+                2 hours per day
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="setting">
+
+            <label>
+              Preferred Subject
+            </label>
+
+            <select>
+
+              <option>
+                Mathematics
+              </option>
+
+              <option>
+                Science
+              </option>
+
+              <option>
+                English
+              </option>
+
+              <option>
+                Computer Technology
+              </option>
+
+              <option>
+                Research
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="setting">
+
+            <label>
+              Notifications
+            </label>
+
+            <button
+              id="notificationBtn"
+              style="background:#00e5ff;color:#001018">
+              Notifications Enabled
+            </button>
+
+          </div>
 
         </div>
 
@@ -1099,6 +1320,8 @@ import {
 "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 
+/* FIREBASE CONFIG */
+
 const firebaseConfig = {
 
   apiKey:
@@ -1121,6 +1344,7 @@ const firebaseConfig = {
 
   measurementId:
   "G-MXE1VWC16P"
+
 };
 
 
@@ -1130,15 +1354,11 @@ const app =
 const auth =
   getAuth(app);
 
-const provider =
+const googleProvider =
   new GoogleAuthProvider();
 
 
-const loginPage =
-  document.getElementById("loginPage");
-
-const appPage =
-  document.getElementById("app");
+/* LOGIN */
 
 const email =
   document.getElementById("email");
@@ -1149,8 +1369,6 @@ const password =
 const loginMessage =
   document.getElementById("loginMessage");
 
-
-/* CREATE ACCOUNT */
 
 document
 .getElementById("signupBtn")
@@ -1185,8 +1403,6 @@ document
 };
 
 
-/* LOGIN */
-
 document
 .getElementById("loginBtn")
 .onclick = async () => {
@@ -1214,8 +1430,6 @@ document
 };
 
 
-/* GOOGLE */
-
 document
 .getElementById("googleBtn")
 .onclick = async () => {
@@ -1224,7 +1438,7 @@ document
 
     await signInWithPopup(
       auth,
-      provider
+      googleProvider
     );
 
   }
@@ -1253,104 +1467,82 @@ document
 };
 
 
-/* NAVIGATION */
-
-document
-.querySelectorAll(".nav-item")
-.forEach(item => {
-
-  item.addEventListener("click", () => {
-
-    document
-    .querySelectorAll(".nav-item")
-    .forEach(x =>
-      x.classList.remove("active")
-    );
-
-    item.classList.add("active");
-
-    document
-    .querySelectorAll(".page")
-    .forEach(page =>
-      page.classList.remove("active")
-    );
-
-    document
-    .getElementById(item.dataset.page)
-    .classList.add("active");
-
-  });
-
-});
-
-
 /* COURSES */
 
 const courses = [
 
   {
-    name: "Mathematics",
-    icon: "📐",
+    name:"Mathematics",
+    icon:"📐",
     description:
-      "Explore numbers, algebra, geometry and problem solving.",
-    progress: 15
+    "Numbers, algebra, geometry and problem solving.",
+    progress:15
   },
 
   {
-    name: "Science",
-    icon: "🔬",
+    name:"Science",
+    icon:"🔬",
     description:
-      "Discover biology, chemistry, physics and the natural world.",
-    progress: 30
+    "Biology, chemistry, physics and the natural world.",
+    progress:30
   },
 
   {
-    name: "English",
-    icon: "📖",
+    name:"English",
+    icon:"📖",
     description:
-      "Improve grammar, vocabulary, reading and communication.",
-    progress: 20
+    "Grammar, reading, writing and communication.",
+    progress:20
   },
 
   {
-    name: "Computer Technology",
-    icon: "💻",
+    name:"Computer Technology",
+    icon:"💻",
     description:
-      "Learn computers, programming, hardware and software.",
-    progress: 25
+    "Computers, programming, hardware and software.",
+    progress:25
   },
 
   {
-    name: "Research",
-    icon: "🔎",
+    name:"Research",
+    icon:"🔎",
     description:
-      "Learn research methods, data collection and analysis.",
-    progress: 10
+    "Research methods, data collection and analysis.",
+    progress:10
   },
 
   {
-    name: "Digital Skills",
-    icon: "🌐",
+    name:"Digital Skills",
+    icon:"🌐",
     description:
-      "Develop useful technology and online skills.",
-    progress: 5
+    "Useful technology and online skills.",
+    progress:5
   }
 
 ];
 
 
-function createCourses(container) {
+function renderCourses(
+  container,
+  search=""
+) {
 
   container.innerHTML = "";
 
-  courses.forEach(course => {
+  courses
+  .filter(course =>
+    course.name
+    .toLowerCase()
+    .includes(search.toLowerCase())
+  )
+  .forEach(course => {
 
-    const div =
+    const card =
       document.createElement("div");
 
-    div.className = "course";
+    card.className = "course";
 
-    div.innerHTML = `
+    card.innerHTML = `
 
       <div class="course-icon">
         ${course.icon}
@@ -1378,59 +1570,180 @@ function createCourses(container) {
       </small>
 
       <button>
-        Start Learning
+        START LEARNING
       </button>
 
     `;
 
-    container.appendChild(div);
+    container.appendChild(card);
 
   });
 
 }
 
 
-createCourses(
-  document.getElementById("homeCourses")
+renderCourses(
+  document.getElementById(
+    "recommendedCourses"
+  )
 );
 
-createCourses(
-  document.getElementById("courseLibrary")
+renderCourses(
+  document.getElementById(
+    "courseLibrary"
+  )
 );
 
 
-/* COURSE SEARCH */
+/* GLOBAL SEARCH */
 
 document
-.getElementById("courseSearch")
-.addEventListener("input", function() {
+.getElementById("globalSearch")
+.addEventListener(
+  "input",
+  event => {
 
-  const search =
-    this.value.toLowerCase();
+    const value =
+      event.target.value;
 
-  const cards =
-    document.querySelectorAll(
-      "#homeCourses .course"
+    renderCourses(
+      document.getElementById(
+        "recommendedCourses"
+      ),
+      value
     );
 
-  cards.forEach(card => {
+  }
+);
 
-    card.style.display =
-      card.innerText
-      .toLowerCase()
-      .includes(search)
-      ? "block"
-      : "none";
 
-  });
+/* NAVIGATION */
+
+document
+.querySelectorAll(".nav-item")
+.forEach(item => {
+
+  item.onclick = () => {
+
+    document
+    .querySelectorAll(".nav-item")
+    .forEach(x =>
+      x.classList.remove("active")
+    );
+
+    item.classList.add("active");
+
+    document
+    .querySelectorAll(".page")
+    .forEach(page =>
+      page.classList.remove("active")
+    );
+
+    document
+    .getElementById(
+      item.dataset.page
+    )
+    .classList.add("active");
+
+  };
 
 });
+
+
+/* USER DATA */
+
+let xp = 0;
+let lessons = 0;
+let quizzes = 0;
+
+
+function updateStats() {
+
+  const level =
+    Math.floor(xp / 100) + 1;
+
+  const progress =
+    Math.min(
+      100,
+      lessons * 20
+    );
+
+
+  document.getElementById(
+    "xp"
+  ).innerText = xp;
+
+  document.getElementById(
+    "lessonCount"
+  ).innerText = lessons;
+
+  document.getElementById(
+    "quizCount"
+  ).innerText = quizzes;
+
+  document.getElementById(
+    "level"
+  ).innerText = level;
+
+
+  document.getElementById(
+    "profileXP"
+  ).innerText = xp;
+
+  document.getElementById(
+    "profileLevel"
+  ).innerText = level;
+
+  document.getElementById(
+    "profileLessons"
+  ).innerText = lessons;
+
+  document.getElementById(
+    "profileQuizzes"
+  ).innerText = quizzes;
+
+
+  document.getElementById(
+    "mainProgress"
+  ).style.width =
+    progress + "%";
+
+  document.getElementById(
+    "progressText"
+  ).innerText =
+    progress + "% completed";
+
+}
+
+
+/* COMPLETE LESSON */
+
+document
+.getElementById("completeLesson")
+.onclick = () => {
+
+  if(lessons === 0) {
+
+    lessons = 1;
+
+    xp += 20;
+
+    document.getElementById(
+      "completeLesson"
+    ).innerText =
+      "✓ LESSON COMPLETED";
+
+    updateStats();
+
+  }
+
+};
 
 
 /* QUIZ */
 
 document
-.querySelectorAll(".quiz-option")
+.querySelectorAll(".option")
 .forEach(button => {
 
   button.onclick = () => {
@@ -1440,36 +1753,37 @@ document
         "quizResult"
       );
 
+
     if(
       button.dataset.answer ===
       "correct"
     ) {
 
-      result.innerText =
-        "✓ Correct! +10 XP";
-
       result.style.color =
         "#34d399";
 
-      const xp =
-        document.getElementById("xp");
+      result.innerText =
+        "✓ Correct! You earned 10 XP.";
 
-      const profileXP =
-        document.getElementById("profileXP");
+      if(quizzes === 0) {
 
-      xp.innerText = "10";
+        quizzes = 1;
 
-      profileXP.innerText = "10";
+        xp += 10;
+
+        updateStats();
+
+      }
 
     }
 
     else {
 
-      result.innerText =
-        "✗ Not quite. Try again.";
-
       result.style.color =
         "#f87171";
+
+      result.innerText =
+        "✗ Incorrect. Try again.";
 
     }
 
@@ -1478,37 +1792,46 @@ document
 });
 
 
-/* COMPLETE LESSON */
+/* NOTIFICATIONS */
 
 document
-.getElementById("completeLesson")
+.getElementById("notificationBtn")
 .onclick = () => {
 
-  document.getElementById(
-    "completed"
-  ).innerText = "1";
+  const button =
+    document.getElementById(
+      "notificationBtn"
+    );
 
-  document.getElementById(
-    "xp"
-  ).innerText = "20";
+  if(
+    button.innerText.includes(
+      "Enabled"
+    )
+  ) {
 
-  document.getElementById(
-    "profileXP"
-  ).innerText = "20";
+    button.innerText =
+      "Notifications Disabled";
 
-  document.getElementById(
-    "overallProgress"
-  ).style.width = "20%";
+    button.style.background =
+      "#334155";
 
-  document.getElementById(
-    "progressText"
-  ).innerText =
-    "20% completed";
+    button.style.color =
+      "white";
 
-  document.getElementById(
-    "completeLesson"
-  ).innerText =
-    "✓ Lesson Completed";
+  }
+
+  else {
+
+    button.innerText =
+      "Notifications Enabled";
+
+    button.style.background =
+      "#00e5ff";
+
+    button.style.color =
+      "#001018";
+
+  }
 
 };
 
@@ -1519,12 +1842,23 @@ onAuthStateChanged(
   auth,
   user => {
 
+    const login =
+      document.getElementById(
+        "loginPage"
+      );
+
+    const application =
+      document.getElementById(
+        "app"
+      );
+
+
     if(user) {
 
-      loginPage.style.display =
+      login.style.display =
         "none";
 
-      appPage.style.display =
+      application.style.display =
         "block";
 
 
@@ -1537,36 +1871,35 @@ onAuthStateChanged(
         "welcomeName"
       ).innerText = name;
 
-
       document.getElementById(
-        "navUsername"
+        "navName"
       ).innerText = name;
-
 
       document.getElementById(
         "profileName"
       ).innerText = name;
-
 
       document.getElementById(
         "profileEmail"
       ).innerText =
         user.email;
 
-
       document.getElementById(
         "avatar"
       ).innerText =
         name.charAt(0).toUpperCase();
 
+
+      updateStats();
+
     }
 
     else {
 
-      loginPage.style.display =
+      login.style.display =
         "flex";
 
-      appPage.style.display =
+      application.style.display =
         "none";
 
     }
