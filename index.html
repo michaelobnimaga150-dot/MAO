@@ -1066,5 +1066,239 @@ IP: 192.168.1.105
 MAC: XX:XX:XX:XX:XX:XX
 Connection: Wi-Fi
 Status: ● ONLINE
+<!-- DEVICE IDENTIFIER -->
+
+<div class="terminal">
+
+  <div class="terminal-header">
+    <span class="terminal-name">PLDT-NETWORK</span>
+    <span class="terminal-status">● LOCAL</span>
+  </div>
+
+  <div class="terminal-body" id="deviceList">
+
+    <div>
+      <span class="prompt">network@nexus:~$</span>
+      monitor
+    </div>
+
+    <div style="color:#34d399">
+      Network monitor initialized.
+    </div>
+
+    <br>
+
+    <div id="browserDevice">
+      📱 This Device
+      <br>
+      Browser: Detecting...
+      <br>
+      Platform: Detecting...
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+function identifyBrowser() {
+
+  const ua = navigator.userAgent;
+
+  let device = "Unknown Device";
+  let browser = "Unknown Browser";
+
+  /* DEVICE */
+
+  if (/Android/i.test(ua)) {
+
+    device = "Android Phone";
+
+  } else if (
+    /iPhone|iPad|iPod/i.test(ua)
+  ) {
+
+    device = "Apple Device";
+
+  } else if (/Windows/i.test(ua)) {
+
+    device = "Windows Computer";
+
+  } else if (/Macintosh/i.test(ua)) {
+
+    device = "Mac Computer";
+
+  } else if (/Linux/i.test(ua)) {
+
+    device = "Linux Device";
+
+  }
+
+
+  /* BROWSER */
+
+  if (/Edg/i.test(ua)) {
+
+    browser = "Microsoft Edge";
+
+  } else if (/Chrome/i.test(ua)) {
+
+    browser = "Google Chrome";
+
+  } else if (/Firefox/i.test(ua)) {
+
+    browser = "Mozilla Firefox";
+
+  } else if (/Safari/i.test(ua)) {
+
+    browser = "Safari";
+
+  }
+
+
+  document.getElementById(
+    "browserDevice"
+  ).innerHTML = `
+
+    <div style="
+      color:#00e5ff;
+      font-weight:bold;
+      margin-bottom:10px;
+    ">
+      📱 DEVICE IDENTIFIED
+    </div>
+
+    <div>
+      Type:
+      <span style="color:#34d399">
+        ${device}
+      </span>
+    </div>
+
+    <div>
+      Browser:
+      ${browser}
+    </div>
+
+    <div>
+      Platform:
+      ${navigator.platform}
+    </div>
+
+    <div>
+      Online:
+      <span style="color:#34d399">
+        ● YES
+      </span>
+    </div>
+
+    <br>
+
+    <div style="color:#64748b">
+      Note: Browser identification only.
+      Router device scanning requires
+      authorized router/API access.
+    </div>
+
+  `;
+
+}
+
+identifyBrowser();
+
+</script>
+<!-- WIFI SCANNER -->
+
+<div class="terminal">
+
+  <div class="terminal-header">
+    <span class="terminal-name">WIFI-SCANNER</span>
+    <span class="terminal-status">● READY</span>
+  </div>
+
+  <div class="terminal-body">
+
+    <div>
+      <span class="prompt">wifi@nexus:~$</span>
+      scan
+    </div>
+
+    <div id="wifiResults">
+      Initializing Wi-Fi scanner...
+    </div>
+
+    <button onclick="scanWifi()" style="
+      margin-top:15px;
+      padding:10px 16px;
+      background:#00e5ff;
+      border:0;
+      border-radius:7px;
+      font-weight:bold;
+      cursor:pointer;
+    ">
+      SCAN NEARBY WIFI
+    </button>
+
+  </div>
+
+</div>
+
+<script>
+
+function scanWifi() {
+
+  const results =
+    document.getElementById(
+      "wifiResults"
+    );
+
+  results.innerHTML =
+    "Scanning authorized environment...<br><br>";
+
+  setTimeout(() => {
+
+    results.innerHTML += `
+
+      <div style="color:#22c55e">
+        ● HOME_NETWORK
+        <span style="color:#94a3b8">
+          WPA2 • Strong
+        </span>
+      </div>
+
+      <div style="color:#f59e0b">
+        ● PLDT_HOME
+        <span style="color:#94a3b8">
+          WPA2 • Medium
+        </span>
+      </div>
+
+      <div style="color:#22c55e">
+        ● MY_WIFI_5G
+        <span style="color:#94a3b8">
+          WPA3 • Strong
+        </span>
+      </div>
+
+      <div style="color:#94a3b8">
+        ● NEARBY_NETWORK
+        WPA2 • Weak
+      </div>
+
+      <br>
+
+      <span style="color:#64748b">
+        Demo results.
+        Browser Wi-Fi scanning is restricted.
+      </span>
+
+    `;
+
+  }, 1000);
+
+}
+
+</script>
 </body>
 </html>
