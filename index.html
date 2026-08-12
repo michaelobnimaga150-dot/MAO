@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WAPS Learn</title>
+
+<title>WAPS // Wi-Fi Radar</title>
 
 <style>
 * {
@@ -12,21 +13,24 @@
 
 body {
   margin: 0;
+  background: #020617;
+  color: #e2e8f0;
   font-family: Arial, sans-serif;
-  background: #030712;
-  color: #fff;
+  overflow-x: hidden;
 }
+
+/* BACKGROUND */
 
 body::before {
   content: "";
   position: fixed;
   width: 500px;
   height: 500px;
+  left: -200px;
+  top: -200px;
   background: #00e5ff;
   filter: blur(180px);
   opacity: .12;
-  top: -200px;
-  left: -150px;
   z-index: -2;
 }
 
@@ -35,496 +39,431 @@ body::after {
   position: fixed;
   width: 500px;
   height: 500px;
-  background: #8b5cf6;
-  filter: blur(180px);
-  opacity: .13;
+  right: -200px;
   bottom: -200px;
-  right: -150px;
+  background: #7c3aed;
+  filter: blur(180px);
+  opacity: .12;
   z-index: -2;
 }
 
-.grid {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background-image:
-    linear-gradient(rgba(0,229,255,.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,229,255,.035) 1px, transparent 1px);
-  background-size: 45px 45px;
-}
+/* HEADER */
 
-/* LOGIN */
+header {
+  height: 70px;
+  padding: 0 30px;
 
-#loginPage {
-  min-height: 100vh;
   display: flex;
   align-items: center;
-  justify-content: center;
-}
+  justify-content: space-between;
 
-.login-card {
-  width: 390px;
-  max-width: 92%;
-  padding: 35px;
-  background: rgba(10,15,30,.88);
-  border: 1px solid rgba(0,229,255,.35);
-  border-radius: 25px;
-  box-shadow: 0 0 50px rgba(0,229,255,.12);
+  border-bottom: 1px solid rgba(0,229,255,.2);
+
+  background: rgba(2,6,23,.85);
+
   backdrop-filter: blur(20px);
 }
 
 .logo {
-  text-align: center;
-  font-size: 42px;
-  font-weight: bold;
-  letter-spacing: 9px;
   color: #00e5ff;
-  text-shadow: 0 0 25px #00e5ff;
+  font-size: 22px;
+  font-weight: bold;
+  letter-spacing: 5px;
+
+  text-shadow:
+    0 0 15px #00e5ff;
 }
 
-.subtitle {
-  text-align: center;
+.status {
+  color: #34d399;
+  font-size: 12px;
+}
+
+/* MAIN */
+
+.container {
+  max-width: 1250px;
+  margin: auto;
+  padding: 30px;
+}
+
+.title h1 {
+  margin-bottom: 5px;
+  font-size: 38px;
+}
+
+.title span {
+  color: #00e5ff;
+  text-shadow: 0 0 15px #00e5ff;
+}
+
+.title p {
   color: #64748b;
-  margin: 10px 0 30px;
 }
 
-input,
-select {
+/* GRID */
+
+.dashboard {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 25px;
+}
+
+/* RADAR */
+
+.panel {
+  background: rgba(15,23,42,.7);
+  border: 1px solid rgba(0,229,255,.18);
+  border-radius: 20px;
+  padding: 22px;
+
+  backdrop-filter: blur(15px);
+
+  box-shadow:
+    0 0 30px rgba(0,229,255,.05);
+}
+
+.panel-title {
+  color: #00e5ff;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+/* RADAR CIRCLE */
+
+.radar-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  min-height: 500px;
+}
+
+.radar {
+  position: relative;
+
+  width: 430px;
+  height: 430px;
+
+  max-width: 90vw;
+  max-height: 90vw;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(0,229,255,.08),
+      rgba(0,0,0,.2)
+    );
+
+  border: 2px solid #00e5ff;
+
+  box-shadow:
+    0 0 20px rgba(0,229,255,.25),
+    inset 0 0 40px rgba(0,229,255,.08);
+
+  overflow: hidden;
+}
+
+/* RADAR RINGS */
+
+.radar::before,
+.radar::after {
+  content: "";
+  position: absolute;
+
+  border: 1px solid rgba(0,229,255,.35);
+
+  border-radius: 50%;
+
+  left: 50%;
+  top: 50%;
+
+  transform: translate(-50%, -50%);
+}
+
+.radar::before {
+  width: 66%;
+  height: 66%;
+}
+
+.radar::after {
+  width: 33%;
+  height: 33%;
+}
+
+/* CROSSHAIR */
+
+.cross-x,
+.cross-y {
+  position: absolute;
+  background: rgba(0,229,255,.25);
+}
+
+.cross-x {
   width: 100%;
-  padding: 13px;
-  margin: 7px 0;
+  height: 1px;
+  top: 50%;
+}
+
+.cross-y {
+  height: 100%;
+  width: 1px;
+  left: 50%;
+}
+
+/* SWEEP */
+
+.sweep {
+  position: absolute;
+
+  width: 50%;
+  height: 2px;
+
+  left: 50%;
+  top: 50%;
+
+  transform-origin: left center;
+
+  background: linear-gradient(
+    90deg,
+    #00e5ff,
+    transparent
+  );
+
+  box-shadow: 0 0 15px #00e5ff;
+
+  animation: sweep 3s linear infinite;
+}
+
+@keyframes sweep {
+
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+
+}
+
+/* CENTER */
+
+.center-point {
+  position: absolute;
+
+  width: 10px;
+  height: 10px;
+
+  border-radius: 50%;
+
+  background: #00e5ff;
+
+  box-shadow:
+    0 0 15px #00e5ff;
+
+  left: 50%;
+  top: 50%;
+
+  transform: translate(-50%, -50%);
+}
+
+/* TARGETS */
+
+.target {
+  position: absolute;
+
+  width: 14px;
+  height: 14px;
+
+  border-radius: 50%;
+
+  background: #ef4444;
+
+  box-shadow:
+    0 0 15px #ef4444;
+
+  animation: targetPulse 1.5s infinite;
+}
+
+@keyframes targetPulse {
+
+  0%,100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.5);
+    opacity: .5;
+  }
+
+}
+
+.target1 {
+  left: 70%;
+  top: 30%;
+}
+
+.target2 {
+  left: 28%;
+  top: 65%;
+  background: #f59e0b;
+  box-shadow: 0 0 15px #f59e0b;
+}
+
+.target3 {
+  left: 55%;
+  top: 78%;
+  background: #34d399;
+  box-shadow: 0 0 15px #34d399;
+}
+
+/* INFORMATION */
+
+.info-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, 1fr);
+
+  gap: 15px;
+}
+
+.stat {
+  padding: 18px;
+
+  background: rgba(2,6,23,.65);
+
+  border: 1px solid #1e293b;
+
+  border-radius: 14px;
+}
+
+.stat-title {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.stat-value {
+  margin-top: 8px;
+
+  color: #00e5ff;
+
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* SIGNAL GRAPH */
+
+.graph {
+  height: 150px;
+
+  display: flex;
+  align-items: end;
+
+  gap: 4px;
+
+  margin-top: 15px;
+
+  padding: 10px;
+
   border-radius: 10px;
-  border: 1px solid #263244;
-  background: rgba(255,255,255,.04);
-  color: white;
-  outline: none;
+
+  background: #020617;
 }
 
-select option {
-  background: #0f172a;
+.bar {
+  flex: 1;
+
+  min-height: 5px;
+
+  background: #00e5ff;
+
+  box-shadow:
+    0 0 8px #00e5ff;
+
+  border-radius: 3px 3px 0 0;
 }
 
-input:focus,
-select:focus {
-  border-color: #00e5ff;
-  box-shadow: 0 0 15px rgba(0,229,255,.2);
+/* ROOM LIST */
+
+.room {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  padding: 13px 0;
+
+  border-bottom: 1px solid #1e293b;
 }
+
+.room-name {
+  color: #cbd5e1;
+}
+
+.room-status {
+  color: #34d399;
+  font-size: 12px;
+}
+
+/* BUTTON */
 
 button {
-  border: 0;
-  border-radius: 10px;
-  padding: 13px 18px;
-  cursor: pointer;
+  border: none;
+
+  padding: 12px 18px;
+
+  border-radius: 9px;
+
+  background: #00e5ff;
+
+  color: #001018;
+
   font-weight: bold;
+
+  cursor: pointer;
+
   transition: .2s;
 }
 
 button:hover {
   transform: translateY(-2px);
+
+  box-shadow:
+    0 0 20px rgba(0,229,255,.4);
 }
 
-.full {
-  width: 100%;
-  margin-top: 10px;
-}
-
-.login-btn {
-  background: #00e5ff;
-  color: #001018;
-}
-
-.signup-btn {
-  background: transparent;
-  color: #00e5ff;
-  border: 1px solid #00e5ff;
-}
-
-.google-btn {
-  background: white;
-  color: #111;
-}
-
-#loginMessage {
-  text-align: center;
-  min-height: 20px;
-  font-size: 13px;
-}
-
-/* APP */
-
-#app {
-  display: none;
-}
-
-.navbar {
-  height: 70px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 25px;
-  background: rgba(3,7,18,.9);
-  border-bottom: 1px solid rgba(0,229,255,.15);
-  backdrop-filter: blur(15px);
-  position: sticky;
-  top: 0;
-  z-index: 20;
-}
-
-.nav-logo {
-  color: #00e5ff;
-  font-size: 23px;
-  font-weight: bold;
-  letter-spacing: 5px;
-  text-shadow: 0 0 15px #00e5ff;
-}
-
-.nav-right {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.online {
-  color: #34d399;
-  font-size: 12px;
-}
-
-.logout {
+.danger {
   background: #ef4444;
   color: white;
 }
 
-/* LAYOUT */
-
-.layout {
-  max-width: 1400px;
-  margin: auto;
-  display: grid;
-  grid-template-columns: 230px 1fr;
-  min-height: calc(100vh - 70px);
-}
-
-.sidebar {
-  border-right: 1px solid rgba(0,229,255,.1);
-  padding: 25px 15px;
-}
-
-.sidebar-title {
-  color: #475569;
-  font-size: 11px;
-  letter-spacing: 2px;
-  margin: 12px 10px;
-}
-
-.nav-item {
-  padding: 13px;
-  margin: 5px 0;
-  border-radius: 10px;
-  color: #94a3b8;
-  cursor: pointer;
-}
-
-.nav-item:hover,
-.nav-item.active {
-  color: #00e5ff;
-  background: rgba(0,229,255,.08);
-}
-
-.content {
-  padding: 35px;
-}
-
-.page {
-  display: none;
-}
-
-.page.active {
-  display: block;
-}
-
-/* DASHBOARD */
-
-.welcome h1 {
-  font-size: 40px;
-  margin: 0;
-}
-
-.welcome span {
-  color: #00e5ff;
-  text-shadow: 0 0 15px #00e5ff;
-}
-
-.welcome p {
-  color: #64748b;
-}
-
-.search {
-  position: relative;
-  margin: 25px 0;
-}
-
-.search-icon {
-  position: absolute;
-  left: 15px;
-  top: 14px;
-}
-
-.search input {
-  padding-left: 45px;
-  margin: 0;
-}
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(4,1fr);
-  gap: 15px;
-  margin-bottom: 25px;
-}
-
-.stat,
-.panel,
-.course,
-.lesson,
-.badge,
-.profile {
-  background: rgba(15,23,42,.68);
-  border: 1px solid rgba(0,229,255,.13);
-  border-radius: 18px;
-  backdrop-filter: blur(12px);
-}
-
-.stat {
-  padding: 20px;
-}
-
-.stat-number {
-  font-size: 28px;
-  color: #00e5ff;
-  font-weight: bold;
-}
-
-.stat-label {
-  color: #64748b;
-  font-size: 12px;
-  margin-top: 5px;
-}
-
-/* PANELS */
-
-.panel {
-  padding: 25px;
-  margin-top: 20px;
-}
-
-.panel h2 {
-  margin-top: 0;
-}
-
-/* COURSES */
-
-.course-grid {
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 18px;
-}
-
-.course {
-  padding: 22px;
-  transition: .3s;
-}
-
-.course:hover {
-  transform: translateY(-5px);
-  border-color: #00e5ff;
-  box-shadow: 0 0 25px rgba(0,229,255,.12);
-}
-
-.course-icon {
-  font-size: 38px;
-}
-
-.course h3 {
-  margin-bottom: 8px;
-}
-
-.course p {
-  color: #64748b;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.progress {
-  height: 8px;
-  background: #111827;
-  border-radius: 10px;
-  overflow: hidden;
-  margin: 15px 0 7px;
-}
-
-.progress-bar {
-  height: 100%;
-  background: #00e5ff;
-  box-shadow: 0 0 12px #00e5ff;
-}
-
-.course button {
-  width: 100%;
-  background: #00e5ff;
-  color: #001018;
-  margin-top: 12px;
-}
-
-/* LESSON */
-
-.lesson {
-  padding: 30px;
-}
-
-.lesson h2 {
-  color: #00e5ff;
-}
-
-.lesson p {
-  color: #cbd5e1;
-  line-height: 1.8;
-}
-
-.complete {
-  background: #00e5ff;
-  color: #001018;
-}
-
-/* QUIZ */
-
-.question {
-  font-size: 21px;
-  margin-bottom: 20px;
-}
-
-.option {
-  width: 100%;
-  text-align: left;
-  margin: 7px 0;
-  background: #111827;
-  color: white;
-  border: 1px solid #263244;
-}
-
-.option:hover {
-  border-color: #00e5ff;
-}
-
-#quizResult {
-  margin-top: 20px;
-  font-weight: bold;
-}
-
-/* ACHIEVEMENTS */
-
-.badges {
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 18px;
-}
-
-.badge {
-  text-align: center;
-  padding: 25px;
-}
-
-.badge-icon {
-  font-size: 45px;
-}
-
-/* NOTIFICATIONS */
-
-.notification {
-  padding: 17px;
-  margin: 10px 0;
-  background: rgba(0,229,255,.05);
-  border-left: 3px solid #00e5ff;
-  border-radius: 8px;
-}
-
-.notification small {
-  color: #64748b;
-}
-
-/* PROFILE */
-
-.profile {
-  max-width: 600px;
-  padding: 30px;
-}
-
-.avatar {
-  width: 90px;
-  height: 90px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 50%;
-  background: #00e5ff;
-  color: #001018;
-  font-size: 38px;
-  font-weight: bold;
-}
-
-/* SETTINGS */
-
-.setting {
-  padding: 18px 0;
-  border-bottom: 1px solid #1e293b;
-}
-
-.setting label {
-  display: block;
-  margin-bottom: 8px;
-}
-
 /* RESPONSIVE */
 
-@media(max-width:950px) {
+@media(max-width: 900px) {
 
-  .layout {
+  .dashboard {
     grid-template-columns: 1fr;
   }
 
-  .sidebar {
-    display: none;
-  }
-
-  .stats {
-    grid-template-columns: repeat(2,1fr);
-  }
-
-  .course-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .badges {
-    grid-template-columns: 1fr 1fr;
-  }
 }
 
-@media(max-width:600px) {
+@media(max-width: 600px) {
 
-  .content {
-    padding: 20px;
+  header {
+    padding: 0 15px;
   }
 
-  .stats,
-  .course-grid,
-  .badges {
-    grid-template-columns: 1fr;
+  .container {
+    padding: 18px;
   }
 
-  .welcome h1 {
-    font-size: 30px;
-  }
-
-  .online {
-    display: none;
+  .title h1 {
+    font-size: 28px;
   }
 
 }
@@ -533,1886 +472,442 @@ button:hover {
 
 <body>
 
-<div class="grid"></div>
+<header>
 
-<!-- LOGIN -->
-
-<div id="loginPage">
-
-  <div class="login-card">
-
-    <div class="logo">WAPS</div>
-
-    <div class="subtitle">
-      FUTURE LEARNING PLATFORM
-    </div>
-
-    <input
-      id="email"
-      type="email"
-      placeholder="Email">
-
-    <input
-      id="password"
-      type="password"
-      placeholder="Password">
-
-    <button
-      class="full login-btn"
-      id="loginBtn">
-      LOGIN
-    </button>
-
-    <button
-      class="full signup-btn"
-      id="signupBtn">
-      CREATE ACCOUNT
-    </button>
-
-    <button
-      class="full google-btn"
-      id="googleBtn">
-      Continue with Google
-    </button>
-
-    <p id="loginMessage"></p>
-
+  <div class="logo">
+    WAPS RADAR
   </div>
 
-</div>
+  <div class="status">
+    ● SENSOR ONLINE
+  </div>
+
+</header>
 
 
-<!-- APPLICATION -->
+<div class="container">
 
-<div id="app">
+  <section class="title">
 
-  <nav class="navbar">
+    <h1>
+      Wi-Fi <span>Presence Radar</span>
+    </h1>
 
-    <div class="nav-logo">
-      WAPS LEARN
-    </div>
+    <p>
+      Wireless environmental monitoring dashboard
+    </p>
 
-    <div class="nav-right">
-
-      <span class="online">
-        ● ONLINE
-      </span>
-
-      <span id="navName">
-        Student
-      </span>
-
-      <button
-        class="logout"
-        id="logoutBtn">
-        LOGOUT
-      </button>
-
-    </div>
-
-  </nav>
+  </section>
 
 
-  <div class="layout">
+  <div class="dashboard">
 
-    <!-- SIDEBAR -->
+    <!-- RADAR -->
 
-    <aside class="sidebar">
+    <section class="panel">
 
-      <div class="sidebar-title">
-        LEARNING
+      <div class="panel-title">
+        📡 LIVE SIGNAL FIELD
       </div>
 
-      <div class="nav-item active" data-page="dashboard">
-        🏠 Dashboard
-      </div>
+      <div class="radar-container">
 
-      <div class="nav-item" data-page="courses">
-        📚 Courses
-      </div>
+        <div class="radar">
 
-      <div class="nav-item" data-page="lessons">
-        📖 Lessons
-      </div>
+          <div class="cross-x"></div>
+          <div class="cross-y"></div>
 
-      <div class="nav-item" data-page="quizzes">
-        🧠 Quiz Center
-      </div>
+          <div class="sweep"></div>
 
-      <div class="nav-item" data-page="progress">
-        📊 Progress
-      </div>
+          <div class="center-point"></div>
 
-      <div class="nav-item" data-page="achievements">
-        🏆 Achievements
-      </div>
+          <div class="target target1"></div>
 
-      <div class="nav-item" data-page="notifications">
-        🔔 Notifications
-      </div>
+          <div class="target target2"></div>
 
-      <div class="sidebar-title">
-        ACCOUNT
-      </div>
-
-      <div class="nav-item" data-page="profile">
-        👤 Profile
-      </div>
-
-      <div class="nav-item" data-page="settings">
-        ⚙️ Settings
-      </div>
-
-    </aside>
-
-
-    <!-- CONTENT -->
-
-    <main class="content">
-
-
-      <!-- DASHBOARD -->
-
-      <section
-        class="page active"
-        id="dashboard">
-
-        <div class="welcome">
-
-          <h1>
-            Welcome,
-            <span id="welcomeName">
-              Student
-            </span>
-          </h1>
-
-          <p>
-            Your personal futuristic learning center.
-          </p>
+          <div class="target target3"></div>
 
         </div>
 
+      </div>
 
-        <div class="search">
+    </section>
 
-          <span class="search-icon">
-            🔍
+
+    <!-- RIGHT SIDE -->
+
+    <section>
+
+      <div class="panel">
+
+        <div class="panel-title">
+          SYSTEM STATUS
+        </div>
+
+        <div class="info-grid">
+
+          <div class="stat">
+
+            <div class="stat-title">
+              SIGNAL
+            </div>
+
+            <div
+              class="stat-value"
+              id="signal"
+            >
+              -42 dBm
+            </div>
+
+          </div>
+
+
+          <div class="stat">
+
+            <div class="stat-title">
+              DEVICES
+            </div>
+
+            <div
+              class="stat-value"
+              id="devices"
+            >
+              4
+            </div>
+
+          </div>
+
+
+          <div class="stat">
+
+            <div class="stat-title">
+              ACTIVITY
+            </div>
+
+            <div
+              class="stat-value"
+              id="activity"
+            >
+              LOW
+            </div>
+
+          </div>
+
+
+          <div class="stat">
+
+            <div class="stat-title">
+              MODE
+            </div>
+
+            <div class="stat-value">
+              DEMO
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- SIGNAL GRAPH -->
+
+      <div class="panel" style="margin-top:20px;">
+
+        <div class="panel-title">
+          📈 SIGNAL ACTIVITY
+        </div>
+
+        <div
+          class="graph"
+          id="graph"
+        ></div>
+
+      </div>
+
+
+      <!-- ROOMS -->
+
+      <div class="panel" style="margin-top:20px;">
+
+        <div class="panel-title">
+          🏠 HOME MONITOR
+        </div>
+
+
+        <div class="room">
+
+          <span class="room-name">
+            Living Room
           </span>
 
-          <input
-            id="globalSearch"
-            type="text"
-            placeholder="Search courses, lessons, quizzes...">
+          <span
+            class="room-status"
+            id="living"
+          >
+            ● Stable
+          </span>
 
         </div>
 
 
-        <div class="stats">
+        <div class="room">
 
-          <div class="stat">
+          <span class="room-name">
+            Bedroom
+          </span>
 
-            <div
-              class="stat-number"
-              id="xp">
-              0
-            </div>
-
-            <div class="stat-label">
-              XP POINTS
-            </div>
-
-          </div>
-
-          <div class="stat">
-
-            <div
-              class="stat-number"
-              id="lessonCount">
-              0
-            </div>
-
-            <div class="stat-label">
-              LESSONS COMPLETED
-            </div>
-
-          </div>
-
-          <div class="stat">
-
-            <div
-              class="stat-number"
-              id="quizCount">
-              0
-            </div>
-
-            <div class="stat-label">
-              QUIZZES COMPLETED
-            </div>
-
-          </div>
-
-          <div class="stat">
-
-            <div
-              class="stat-number"
-              id="level">
-              1
-            </div>
-
-            <div class="stat-label">
-              LEVEL
-            </div>
-
-          </div>
+          <span
+            class="room-status"
+            id="bedroom"
+          >
+            ● Stable
+          </span>
 
         </div>
 
 
-        <div class="panel">
+        <div class="room">
 
-          <h2>
-            🚀 Recommended Courses
-          </h2>
+          <span class="room-name">
+            Kitchen
+          </span>
 
-          <div
-            class="course-grid"
-            id="recommendedCourses">
-          </div>
-
-        </div>
-
-
-        <div class="panel">
-
-          <h2>
-            📈 Learning Progress
-          </h2>
-
-          <p id="progressText">
-            0% completed
-          </p>
-
-          <div class="progress">
-
-            <div
-              class="progress-bar"
-              id="mainProgress"
-              style="width:0%">
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- COURSES -->
-
-      <section
-        class="page"
-        id="courses">
-
-        <h1>📚 Course Library</h1>
-
-        <p style="color:#64748b">
-          Explore available subjects and learning programs.
-        </p>
-
-        <div
-          class="course-grid"
-          id="courseLibrary">
-        </div>
-
-      </section>
-
-
-      <!-- LESSONS -->
-
-      <section
-        class="page"
-        id="lessons">
-
-        <h1>📖 Learning Center</h1>
-
-        <div class="lesson">
-
-          <h2>
-            Computer Technology — Module 1
-          </h2>
-
-          <h3>
-            Introduction to Computer Systems
-          </h3>
-
-          <p>
-            A computer system is an electronic system
-            that receives data, processes information,
-            stores information, and produces useful
-            results.
-          </p>
-
-          <p>
-            Computer systems are made of hardware and
-            software. Hardware refers to physical
-            components such as the processor, memory,
-            storage, keyboard, mouse, and monitor.
-          </p>
-
-          <p>
-            Software consists of instructions and
-            programs that tell computer hardware what
-            to do.
-          </p>
-
-          <h3>
-            Learning Objective
-          </h3>
-
-          <p>
-            After this lesson, you should be able to
-            explain the difference between hardware
-            and software and identify common computer
-            components.
-          </p>
-
-          <button
-            class="complete"
-            id="completeLesson">
-            ✓ MARK LESSON COMPLETE
-          </button>
-
-        </div>
-
-      </section>
-
-
-      <!-- QUIZZES -->
-
-      <section
-        class="page"
-        id="quizzes">
-
-        <h1>🧠 Quiz Center</h1>
-
-        <div class="panel">
-
-          <div class="question">
-            Which of the following is hardware?
-          </div>
-
-          <button
-            class="option"
-            data-answer="wrong">
-            A. Microsoft Word
-          </button>
-
-          <button
-            class="option"
-            data-answer="correct">
-            B. Keyboard
-          </button>
-
-          <button
-            class="option"
-            data-answer="wrong">
-            C. Operating System
-          </button>
-
-          <button
-            class="option"
-            data-answer="wrong">
-            D. Web Browser
-          </button>
-
-          <div id="quizResult"></div>
-
-        </div>
-
-      </section>
-
-
-      <!-- PROGRESS -->
-
-      <section
-        class="page"
-        id="progress">
-
-        <h1>📊 Academic Progress</h1>
-
-        <div class="panel">
-
-          <h2>
-            Overall Progress
-          </h2>
-
-          <div class="progress">
-
-            <div
-              class="progress-bar"
-              id="progressLarge"
-              style="width:0%">
-            </div>
-
-          </div>
-
-          <p id="largeProgressText">
-            0% completed
-          </p>
+          <span
+            class="room-status"
+            id="kitchen"
+          >
+            ● Stable
+          </span>
 
         </div>
 
 
-        <div class="panel">
+        <div class="room">
 
-          <h2>
-            📚 Course Progress
-          </h2>
+          <span class="room-name">
+            Garage
+          </span>
 
-          <div id="courseProgress">
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- ACHIEVEMENTS -->
-
-      <section
-        class="page"
-        id="achievements">
-
-        <h1>🏆 Achievements</h1>
-
-        <div class="badges">
-
-          <div class="badge">
-
-            <div class="badge-icon">
-              🚀
-            </div>
-
-            <h3>
-              First Step
-            </h3>
-
-            <p>
-              Create your WAPS Learn account.
-            </p>
-
-          </div>
-
-          <div class="badge">
-
-            <div class="badge-icon">
-              📖
-            </div>
-
-            <h3>
-              First Lesson
-            </h3>
-
-            <p>
-              Complete your first lesson.
-            </p>
-
-          </div>
-
-          <div class="badge">
-
-            <div class="badge-icon">
-              🧠
-            </div>
-
-            <h3>
-              Quiz Starter
-            </h3>
-
-            <p>
-              Complete your first quiz.
-            </p>
-
-          </div>
-
-          <div class="badge">
-
-            <div class="badge-icon">
-              ⭐
-            </div>
-
-            <h3>
-              Rising Scholar
-            </h3>
-
-            <p>
-              Earn 100 XP.
-            </p>
-
-          </div>
-
-          <div class="badge">
-
-            <div class="badge-icon">
-              🏆
-            </div>
-
-            <h3>
-              Knowledge Master
-            </h3>
-
-            <p>
-              Complete 10 lessons.
-            </p>
-
-          </div>
-
-          <div class="badge">
-
-            <div class="badge-icon">
-              🔥
-            </div>
-
-            <h3>
-              Study Streak
-            </h3>
-
-            <p>
-              Keep learning consistently.
-            </p>
-
-          </div>
+          <span
+            class="room-status"
+            id="garage"
+          >
+            ● Stable
+          </span>
 
         </div>
 
-      </section>
+      </div>
 
 
-      <!-- NOTIFICATIONS -->
+      <div style="
+        margin-top:20px;
+        display:flex;
+        gap:10px;
+      ">
 
-      <section
-        class="page"
-        id="notifications">
+        <button onclick="startRadar()">
+          START RADAR
+        </button>
 
-        <h1>🔔 Notifications</h1>
+        <button
+          class="danger"
+          onclick="stopRadar()"
+        >
+          STOP
+        </button>
 
-        <div class="panel">
+      </div>
 
-          <div class="notification">
-
-            <strong>
-              🎓 Welcome to WAPS Learn!
-            </strong>
-
-            <br>
-
-            <small>
-              Start your first course today.
-            </small>
-
-          </div>
-
-          <div class="notification">
-
-            <strong>
-              📚 New Computer Technology lesson
-            </strong>
-
-            <br>
-
-            <small>
-              Module 1 is ready for you.
-            </small>
-
-          </div>
-
-          <div class="notification">
-
-            <strong>
-              🧠 Quiz available
-            </strong>
-
-            <br>
-
-            <small>
-              Test your knowledge and earn XP.
-            </small>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- PROFILE -->
-
-      <section
-        class="page"
-        id="profile">
-
-        <h1>👤 Student Profile</h1>
-
-        <div class="profile">
-
-          <div
-            class="avatar"
-            id="avatar">
-            U
-          </div>
-
-          <h2 id="profileName">
-            Student
-          </h2>
-
-          <p id="profileEmail">
-            Loading...
-          </p>
-
-          <hr style="border-color:#1e293b">
-
-          <p>
-            <strong>XP:</strong>
-            <span id="profileXP">
-              0
-            </span>
-          </p>
-
-          <p>
-            <strong>Level:</strong>
-            <span id="profileLevel">
-              1
-            </span>
-          </p>
-
-          <p>
-            <strong>Lessons:</strong>
-            <span id="profileLessons">
-              0
-            </span>
-          </p>
-
-          <p>
-            <strong>Quizzes:</strong>
-            <span id="profileQuizzes">
-              0
-            </span>
-          </p>
-
-        </div>
-
-      </section>
-
-
-      <!-- SETTINGS -->
-
-      <section
-        class="page"
-        id="settings">
-
-        <h1>⚙️ Settings</h1>
-
-        <div class="panel">
-
-          <div class="setting">
-
-            <label>
-              Learning Goal
-            </label>
-
-            <select id="goal">
-
-              <option>
-                15 minutes per day
-              </option>
-
-              <option>
-                30 minutes per day
-              </option>
-
-              <option>
-                1 hour per day
-              </option>
-
-              <option>
-                2 hours per day
-              </option>
-
-            </select>
-
-          </div>
-
-
-          <div class="setting">
-
-            <label>
-              Preferred Subject
-            </label>
-
-            <select>
-
-              <option>
-                Mathematics
-              </option>
-
-              <option>
-                Science
-              </option>
-
-              <option>
-                English
-              </option>
-
-              <option>
-                Computer Technology
-              </option>
-
-              <option>
-                Research
-              </option>
-
-            </select>
-
-          </div>
-
-
-          <div class="setting">
-
-            <label>
-              Notifications
-            </label>
-
-            <button
-              id="notificationBtn"
-              style="background:#00e5ff;color:#001018">
-              Notifications Enabled
-            </button>
-
-          </div>
-
-        </div>
-
-      </section>
-
-    </main>
+    </section>
 
   </div>
 
 </div>
 
 
-<script type="module">
+<script>
 
-import {
-  initializeApp
-} from
-"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+/*
+  WAPS WI-FI RADAR
+  DEMO MODE
 
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  GoogleAuthProvider,
-  signInWithPopup,
-  signOut,
-  onAuthStateChanged
-} from
-"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+  This generates simulated measurements.
+
+  Later this can be replaced with
+  real ESP32 / CSI measurements.
+*/
 
 
-/* FIREBASE CONFIG */
+let radarRunning = true;
 
-const firebaseConfig = {
-
-  apiKey:
-  "AIzaSyCB9sWO3rQCaEVc4B86nkGx6U5iWa7ha9o",
-
-  authDomain:
-  "waps-c870d.firebaseapp.com",
-
-  projectId:
-  "waps-c870d",
-
-  storageBucket:
-  "waps-c870d.firebasestorage.app",
-
-  messagingSenderId:
-  "412405951662",
-
-  appId:
-  "1:412405951662:web:2b18a7b9c4dad02c71513f",
-
-  measurementId:
-  "G-MXE1VWC16P"
-
-};
+const graph =
+  document.getElementById("graph");
 
 
-const app =
-  initializeApp(firebaseConfig);
+/* CREATE GRAPH */
 
-const auth =
-  getAuth(app);
+for(let i = 0; i < 35; i++) {
 
-const googleProvider =
-  new GoogleAuthProvider();
+  const bar =
+    document.createElement("div");
 
+  bar.className = "bar";
 
-/* LOGIN */
+  bar.style.height =
+    (Math.random() * 90 + 10) + "%";
 
-const email =
-  document.getElementById("email");
+  graph.appendChild(bar);
 
-const password =
-  document.getElementById("password");
-
-const loginMessage =
-  document.getElementById("loginMessage");
+}
 
 
-document
-.getElementById("signupBtn")
-.onclick = async () => {
+/* UPDATE SIGNAL */
 
-  try {
+function updateRadar() {
 
-    await createUserWithEmailAndPassword(
-      auth,
-      email.value,
-      password.value
+  if(!radarRunning)
+    return;
+
+
+  const signal =
+    -30 - Math.floor(
+      Math.random() * 35
     );
 
-    loginMessage.style.color =
-      "#34d399";
-
-    loginMessage.innerText =
-      "Account created successfully!";
-
-  }
-
-  catch(error) {
-
-    loginMessage.style.color =
-      "#f87171";
-
-    loginMessage.innerText =
-      error.message;
-
-  }
-
-};
+  document.getElementById(
+    "signal"
+  ).textContent =
+    signal + " dBm";
 
 
-document
-.getElementById("loginBtn")
-.onclick = async () => {
+  const devices =
+    Math.floor(
+      Math.random() * 5
+    ) + 1;
 
-  try {
+  document.getElementById(
+    "devices"
+  ).textContent =
+    devices;
 
-    await signInWithEmailAndPassword(
-      auth,
-      email.value,
-      password.value
+
+  const activities =
+    [
+      "LOW",
+      "LOW",
+      "MEDIUM",
+      "HIGH"
+    ];
+
+  const activity =
+    activities[
+      Math.floor(
+        Math.random() *
+        activities.length
+      )
+    ];
+
+  document.getElementById(
+    "activity"
+  ).textContent =
+    activity;
+
+
+  /* UPDATE GRAPH */
+
+  const bars =
+    document.querySelectorAll(
+      ".bar"
     );
 
-  }
+  bars.forEach(bar => {
 
-  catch(error) {
+    bar.style.height =
+      (
+        Math.random() * 90 +
+        10
+      ) + "%";
 
-    loginMessage.style.color =
-      "#f87171";
-
-    loginMessage.innerText =
-      error.message;
-
-  }
-
-};
+  });
 
 
-document
-.getElementById("googleBtn")
-.onclick = async () => {
+  /* SIMULATED ROOM ACTIVITY */
 
-  try {
+  const rooms = [
+    "living",
+    "bedroom",
+    "kitchen",
+    "garage"
+  ];
 
-    await signInWithPopup(
-      auth,
-      googleProvider
-    );
+  rooms.forEach(room => {
 
-  }
+    const active =
+      Math.random() > .75;
 
-  catch(error) {
+    const element =
+      document.getElementById(
+        room
+      );
 
-    loginMessage.style.color =
-      "#f87171";
+    if(active) {
 
-    loginMessage.innerText =
-      error.message;
+      element.textContent =
+        "● Movement";
 
-  }
+      element.style.color =
+        "#f59e0b";
 
-};
+    } else {
 
+      element.textContent =
+        "● Stable";
 
-/* LOGOUT */
+      element.style.color =
+        "#34d399";
 
-document
-.getElementById("logoutBtn")
-.onclick = async () => {
-
-  await signOut(auth);
-
-};
-
-
-/* COURSES */
-
-const courses = [
-
-  {
-    name:"Mathematics",
-    icon:"📐",
-    description:
-    "Numbers, algebra, geometry and problem solving.",
-    progress:15
-  },
-
-  {
-    name:"Science",
-    icon:"🔬",
-    description:
-    "Biology, chemistry, physics and the natural world.",
-    progress:30
-  },
-
-  {
-    name:"English",
-    icon:"📖",
-    description:
-    "Grammar, reading, writing and communication.",
-    progress:20
-  },
-
-  {
-    name:"Computer Technology",
-    icon:"💻",
-    description:
-    "Computers, programming, hardware and software.",
-    progress:25
-  },
-
-  {
-    name:"Research",
-    icon:"🔎",
-    description:
-    "Research methods, data collection and analysis.",
-    progress:10
-  },
-
-  {
-    name:"Digital Skills",
-    icon:"🌐",
-    description:
-    "Useful technology and online skills.",
-    progress:5
-  }
-
-];
-
-
-function renderCourses(
-  container,
-  search=""
-) {
-
-  container.innerHTML = "";
-
-  courses
-  .filter(course =>
-    course.name
-    .toLowerCase()
-    .includes(search.toLowerCase())
-  )
-  .forEach(course => {
-
-    const card =
-      document.createElement("div");
-
-    card.className = "course";
-
-    card.innerHTML = `
-
-      <div class="course-icon">
-        ${course.icon}
-      </div>
-
-      <h3>
-        ${course.name}
-      </h3>
-
-      <p>
-        ${course.description}
-      </p>
-
-      <div class="progress">
-
-        <div
-          class="progress-bar"
-          style="width:${course.progress}%">
-        </div>
-
-      </div>
-
-      <small>
-        ${course.progress}% completed
-      </small>
-
-      <button>
-        START LEARNING
-      </button>
-
-    `;
-
-    container.appendChild(card);
+    }
 
   });
 
 }
 
 
-renderCourses(
-  document.getElementById(
-    "recommendedCourses"
-  )
-);
-
-renderCourses(
-  document.getElementById(
-    "courseLibrary"
-  )
+setInterval(
+  updateRadar,
+  1200
 );
 
 
-/* GLOBAL SEARCH */
+/* CONTROLS */
 
-document
-.getElementById("globalSearch")
-.addEventListener(
-  "input",
-  event => {
+function startRadar() {
 
-    const value =
-      event.target.value;
+  radarRunning = true;
 
-    renderCourses(
-      document.getElementById(
-        "recommendedCourses"
-      ),
-      value
-    );
-
-  }
-);
-
-
-/* NAVIGATION */
-
-document
-.querySelectorAll(".nav-item")
-.forEach(item => {
-
-  item.onclick = () => {
-
-    document
-    .querySelectorAll(".nav-item")
-    .forEach(x =>
-      x.classList.remove("active")
-    );
-
-    item.classList.add("active");
-
-    document
-    .querySelectorAll(".page")
-    .forEach(page =>
-      page.classList.remove("active")
-    );
-
-    document
-    .getElementById(
-      item.dataset.page
-    )
-    .classList.add("active");
-
-  };
-
-});
-
-
-/* USER DATA */
-
-let xp = 0;
-let lessons = 0;
-let quizzes = 0;
-
-
-function updateStats() {
-
-  const level =
-    Math.floor(xp / 100) + 1;
-
-  const progress =
-    Math.min(
-      100,
-      lessons * 20
-    );
-
-
-  document.getElementById(
-    "xp"
-  ).innerText = xp;
-
-  document.getElementById(
-    "lessonCount"
-  ).innerText = lessons;
-
-  document.getElementById(
-    "quizCount"
-  ).innerText = quizzes;
-
-  document.getElementById(
-    "level"
-  ).innerText = level;
-
-
-  document.getElementById(
-    "profileXP"
-  ).innerText = xp;
-
-  document.getElementById(
-    "profileLevel"
-  ).innerText = level;
-
-  document.getElementById(
-    "profileLessons"
-  ).innerText = lessons;
-
-  document.getElementById(
-    "profileQuizzes"
-  ).innerText = quizzes;
-
-
-  document.getElementById(
-    "mainProgress"
-  ).style.width =
-    progress + "%";
-
-  document.getElementById(
-    "progressText"
-  ).innerText =
-    progress + "% completed";
+  document.querySelector(
+    ".status"
+  ).textContent =
+    "● SENSOR ONLINE";
 
 }
 
 
-/* COMPLETE LESSON */
+function stopRadar() {
 
-document
-.getElementById("completeLesson")
-.onclick = () => {
+  radarRunning = false;
 
-  if(lessons === 0) {
+  document.querySelector(
+    ".status"
+  ).textContent =
+    "● SENSOR OFFLINE";
 
-    lessons = 1;
-
-    xp += 20;
-
-    document.getElementById(
-      "completeLesson"
-    ).innerText =
-      "✓ LESSON COMPLETED";
-
-    updateStats();
-
-  }
-
-};
-
-
-/* QUIZ */
-
-document
-.querySelectorAll(".option")
-.forEach(button => {
-
-  button.onclick = () => {
-
-    const result =
-      document.getElementById(
-        "quizResult"
-      );
-
-
-    if(
-      button.dataset.answer ===
-      "correct"
-    ) {
-
-      result.style.color =
-        "#34d399";
-
-      result.innerText =
-        "✓ Correct! You earned 10 XP.";
-
-      if(quizzes === 0) {
-
-        quizzes = 1;
-
-        xp += 10;
-
-        updateStats();
-
-      }
-
-    }
-
-    else {
-
-      result.style.color =
-        "#f87171";
-
-      result.innerText =
-        "✗ Incorrect. Try again.";
-
-    }
-
-  };
-
-});
-
-
-/* NOTIFICATIONS */
-
-document
-.getElementById("notificationBtn")
-.onclick = () => {
-
-  const button =
-    document.getElementById(
-      "notificationBtn"
-    );
-
-  if(
-    button.innerText.includes(
-      "Enabled"
-    )
-  ) {
-
-    button.innerText =
-      "Notifications Disabled";
-
-    button.style.background =
-      "#334155";
-
-    button.style.color =
-      "white";
-
-  }
-
-  else {
-
-    button.innerText =
-      "Notifications Enabled";
-
-    button.style.background =
-      "#00e5ff";
-
-    button.style.color =
-      "#001018";
-
-  }
-
-};
-
-
-/* AUTH STATE */
-
-onAuthStateChanged(
-  auth,
-  user => {
-
-    const login =
-      document.getElementById(
-        "loginPage"
-      );
-
-    const application =
-      document.getElementById(
-        "app"
-      );
-
-
-    if(user) {
-
-      login.style.display =
-        "none";
-
-      application.style.display =
-        "block";
-
-
-      const name =
-        user.displayName ||
-        user.email.split("@")[0];
-
-
-      document.getElementById(
-        "welcomeName"
-      ).innerText = name;
-
-      document.getElementById(
-        "navName"
-      ).innerText = name;
-
-      document.getElementById(
-        "profileName"
-      ).innerText = name;
-
-      document.getElementById(
-        "profileEmail"
-      ).innerText =
-        user.email;
-
-      document.getElementById(
-        "avatar"
-      ).innerText =
-        name.charAt(0).toUpperCase();
-
-
-      updateStats();
-
-    }
-
-    else {
-
-      login.style.display =
-        "flex";
-
-      application.style.display =
-        "none";
-
-    }
-
-  }
-
-);
+}
 
 </script>
-GitHub Pages
-   │
-   │  Student asks:
-   │  "Explain photosynthesis"
-   ↓
-WAPS AI Tutor
-   │
-   ↓
-Secure backend
-   │
-   │  OpenAI API key stays here
-   ↓
-OpenAI
-   │
-   ↓
-AI answer
-   ↓
-WAPS AI Tutor
-  <div style="display:flex; gap:10px; margin-top:10px;">
 
-  <button
-    id="voiceBtn"
-    style="
-      flex:1;
-      padding:14px;
-      background:#8b5cf6;
-      color:white;
-      border:0;
-      border-radius:10px;
-      cursor:pointer;
-      font-weight:bold;
-    "
-  >
-    🎤 Speak
-  </button>
-
-  <button
-    id="stopVoiceBtn"
-    style="
-      flex:1;
-      padding:14px;
-      background:#ef4444;
-      color:white;
-      border:0;
-      border-radius:10px;
-      cursor:pointer;
-      font-weight:bold;
-    "
-  >
-    🔇 Stop Voice
-  </button>
-
-</div>
-  <!-- FLOATING AI BUTTON -->
-
-<button id="floatingAI" aria-label="Open AI Tutor">
-  🤖
-</button>
-
-<!-- AI CHAT WINDOW -->
-
-<div id="aiWindow">
-
-  <div class="ai-header">
-    <div>
-      <strong>WAPS AI</strong>
-      <small>● ONLINE</small>
-    </div>
-
-    <button id="closeAI">×</button>
-  </div>
-
-  <div id="aiMessages">
-    <div class="ai-message">
-      🤖 Hello! I'm your WAPS AI Tutor.<br><br>
-      Ask me about lessons, homework, quizzes, or anything
-      you're learning.
-    </div>
-  </div>
-
-  <div class="ai-input-area">
-
-    <input
-      id="floatingAIInput"
-      type="text"
-      placeholder="Ask your AI tutor..."
-    >
-
-    <button id="aiSend">
-      ➤
-    </button>
-
-  </div>
-
-</div>
-
-
-<style>
-
-/* FLOATING AI ICON */
-
-#floatingAI {
-
-  position: fixed;
-
-  right: 25px;
-  bottom: 25px;
-
-  width: 65px;
-  height: 65px;
-
-  border-radius: 50%;
-
-  border: 2px solid #00e5ff;
-
-  background:
-    radial-gradient(
-      circle,
-      #0f172a,
-      #030712
-    );
-
-  color: #00e5ff;
-
-  font-size: 30px;
-
-  cursor: pointer;
-
-  z-index: 9999;
-
-  box-shadow:
-    0 0 10px #00e5ff,
-    0 0 30px rgba(0,229,255,.5);
-
-  animation: aiPulse 2s infinite;
-
-}
-
-
-#floatingAI:hover {
-
-  transform: scale(1.12);
-
-  box-shadow:
-    0 0 15px #00e5ff,
-    0 0 45px rgba(0,229,255,.8);
-
-}
-
-
-@keyframes aiPulse {
-
-  0%,100% {
-    box-shadow:
-      0 0 10px #00e5ff,
-      0 0 25px rgba(0,229,255,.4);
-  }
-
-  50% {
-    box-shadow:
-      0 0 20px #00e5ff,
-      0 0 50px rgba(0,229,255,.8);
-  }
-
-}
-
-
-/* AI WINDOW */
-
-#aiWindow {
-
-  position: fixed;
-
-  right: 25px;
-  bottom: 105px;
-
-  width: 360px;
-  max-width: calc(100vw - 30px);
-
-  height: 500px;
-
-  background:
-    rgba(3,7,18,.95);
-
-  border:
-    1px solid rgba(0,229,255,.4);
-
-  border-radius: 20px;
-
-  backdrop-filter: blur(20px);
-
-  box-shadow:
-    0 0 40px rgba(0,229,255,.2);
-
-  z-index: 9998;
-
-  display: none;
-
-  overflow: hidden;
-
-}
-
-
-/* HEADER */
-
-.ai-header {
-
-  height: 65px;
-
-  display: flex;
-
-  justify-content: space-between;
-
-  align-items: center;
-
-  padding: 0 18px;
-
-  background:
-    rgba(0,229,255,.06);
-
-  border-bottom:
-    1px solid rgba(0,229,255,.15);
-
-}
-
-
-.ai-header strong {
-
-  display: block;
-
-  color: #00e5ff;
-
-  letter-spacing: 2px;
-
-}
-
-
-.ai-header small {
-
-  color: #34d399;
-
-  font-size: 10px;
-
-}
-
-
-#closeAI {
-
-  width: 35px;
-  height: 35px;
-
-  padding: 0;
-
-  background: transparent;
-
-  color: #94a3b8;
-
-  font-size: 25px;
-
-}
-
-
-/* MESSAGES */
-
-#aiMessages {
-
-  height: 375px;
-
-  overflow-y: auto;
-
-  padding: 15px;
-
-}
-
-
-.ai-message {
-
-  background:
-    rgba(0,229,255,.07);
-
-  border:
-    1px solid rgba(0,229,255,.12);
-
-  padding: 12px;
-
-  border-radius: 12px;
-
-  color: #cbd5e1;
-
-  font-size: 14px;
-
-  line-height: 1.5;
-
-  margin-bottom: 10px;
-
-}
-
-
-.user-message {
-
-  background:
-    rgba(139,92,246,.15);
-
-  padding: 12px;
-
-  border-radius: 12px;
-
-  margin-bottom: 10px;
-
-  text-align: right;
-
-  color: white;
-
-}
-
-
-/* INPUT */
-
-.ai-input-area {
-
-  display: flex;
-
-  gap: 8px;
-
-  padding: 12px;
-
-  border-top:
-    1px solid rgba(0,229,255,.15);
-
-}
-
-
-#floatingAIInput {
-
-  flex: 1;
-
-  margin: 0;
-
-  min-width: 0;
-
-}
-
-
-#aiSend {
-
-  width: 45px;
-
-  padding: 0;
-
-  background: #00e5ff;
-
-  color: #001018;
-
-}
-
-
-@media(max-width:500px) {
-
-  #floatingAI {
-
-    right: 15px;
-    bottom: 15px;
-
-  }
-
-  #aiWindow {
-
-    right: 15px;
-    bottom: 90px;
-
-    height: 70vh;
-
-  }
-
-}
-
-</style>
-
-
-<script>
-
-/* OPEN AI */
-
-const floatingAI =
-  document.getElementById(
-    "floatingAI"
-  );
-
-const aiWindow =
-  document.getElementById(
-    "aiWindow"
-  );
-
-const closeAI =
-  document.getElementById(
-    "closeAI"
-  );
-
-
-floatingAI.onclick = () => {
-
-  aiWindow.style.display =
-    "block";
-
-};
-
-
-closeAI.onclick = () => {
-
-  aiWindow.style.display =
-    "none";
-
-};
-
-
-/* SEND MESSAGE */
-
-const aiInput =
-  document.getElementById(
-    "floatingAIInput"
-  );
-
-const aiSend =
-  document.getElementById(
-    "aiSend"
-  );
-
-const aiMessages =
-  document.getElementById(
-    "aiMessages"
-  );
-
-
-function sendAIMessage() {
-
-  const text =
-    aiInput.value.trim();
-
-  if (!text) return;
-
-
-  aiMessages.innerHTML += `
-
-    <div class="user-message">
-      👤 ${text}
-    </div>
-
-  `;
-
-
-  /*
-    DEMO RESPONSE
-
-    Replace this later with
-    your secure OpenAI backend.
-  */
-
-  aiMessages.innerHTML += `
-
-    <div class="ai-message">
-
-      🤖 <strong>WAPS AI:</strong><br>
-
-      I received your question:
-      "${text}"
-
-      <br><br>
-
-      My full AI connection can be
-      connected through the secure
-      backend next.
-
-    </div>
-
-  `;
-
-
-  aiInput.value = "";
-
-  aiMessages.scrollTop =
-    aiMessages.scrollHeight;
-
-}
-
-
-aiSend.onclick =
-  sendAIMessage;
-
-
-aiInput.addEventListener(
-  "keydown",
-  event => {
-
-    if (
-      event.key === "Enter"
-    ) {
-
-      sendAIMessage();
-
-    }
-
-  }
-);
-
-</script>
 </body>
 </html>
