@@ -1,375 +1,883 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Secure Login</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LearnSphere AI</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, Helvetica, sans-serif;
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #07111f;
+    color: white;
+}
+
+header {
+    background: #0d1b2d;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 25px;
+    font-weight: bold;
+    color: #5ee7ff;
+}
+
+nav button {
+    background: none;
+    border: none;
+    color: white;
+    margin: 5px;
+    padding: 10px;
+    cursor: pointer;
+}
+
+nav button:hover {
+    background: #1b334d;
+    border-radius: 8px;
+}
+
+.page {
+    display: none;
+    padding: 40px;
+    max-width: 1200px;
+    margin: auto;
+}
+
+.active {
+    display: block;
+}
+
+.hero {
+    text-align: center;
+    padding: 80px 20px;
+}
+
+.hero h1 {
+    font-size: 60px;
+    margin-bottom: 20px;
+}
+
+.hero span {
+    color: #5ee7ff;
+}
+
+.card-container {
+    display: grid;
+    grid-template-columns:
+        repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    background: #0d1b2d;
+    padding: 25px;
+    border-radius: 15px;
+    border: 1px solid #ffffff15;
+}
+
+button {
+    cursor: pointer;
+}
+
+.primary {
+    background: #5ee7ff;
+    color: #06111d;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.subject {
+    width: 100%;
+    padding: 25px;
+    background: #10243a;
+    color: white;
+    border: 1px solid #ffffff15;
+    border-radius: 12px;
+    text-align: left;
+}
+
+.subject:hover {
+    border-color: #5ee7ff;
+}
+
+.quiz {
+    background: #0d1b2d;
+    padding: 25px;
+    border-radius: 15px;
+}
+
+.option {
+    display: block;
+    width: 100%;
+    margin: 10px 0;
+    padding: 15px;
+    background: #162d46;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    text-align: left;
+}
+
+.option:hover {
+    background: #204566;
+}
+
+.chat {
+    background: #0d1b2d;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.messages {
+    height: 400px;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.message {
+    padding: 12px;
+    margin: 10px;
+    border-radius: 10px;
+    max-width: 80%;
+}
+
+.ai {
+    background: #172c43;
+}
+
+.user {
+    background: #12546a;
+    margin-left: auto;
+}
+
+.chat-input {
+    display: flex;
+    padding: 15px;
+    gap: 10px;
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 14px;
+    background: #07111f;
+    color: white;
+    border: 1px solid #ffffff22;
+    border-radius: 8px;
+}
+
+/* CHESS */
+
+#board {
+    width: min(90vw, 600px);
+    height: min(90vw, 600px);
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    margin: 30px auto;
+    border: 5px solid #263b50;
+}
+
+.square {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: clamp(25px, 7vw, 55px);
+    cursor: pointer;
+}
+
+.white {
+    background: #dce6ef;
+}
+
+.black {
+    background: #54708a;
+}
+
+.selected {
+    outline: 5px solid #5ee7ff;
+    outline-offset: -5px;
+}
+
+@media(max-width:700px) {
+
+    .hero h1 {
+        font-size: 40px;
     }
 
-    body {
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background:
-        radial-gradient(circle at top left, #243bff33, transparent 35%),
-        radial-gradient(circle at bottom right, #00d4ff22, transparent 35%),
-        #070b18;
-      color: white;
+    .page {
+        padding: 20px;
     }
 
-    .login-container {
-      width: 100%;
-      max-width: 420px;
-      padding: 20px;
+    header {
+        flex-direction: column;
+        gap: 15px;
     }
-
-    .login-box {
-      background: rgba(15, 22, 45, 0.88);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 24px;
-      padding: 40px 32px;
-      box-shadow: 0 25px 70px rgba(0,0,0,0.5);
-      backdrop-filter: blur(20px);
-    }
-
-    .logo {
-      width: 65px;
-      height: 65px;
-      margin: 0 auto 20px;
-      border-radius: 18px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 28px;
-      font-weight: bold;
-      background: linear-gradient(135deg, #4169ff, #00d4ff);
-      box-shadow: 0 0 35px rgba(0,180,255,0.35);
-    }
-
-    h1 {
-      text-align: center;
-      font-size: 28px;
-      margin-bottom: 8px;
-    }
-
-    .subtitle {
-      text-align: center;
-      color: #9ba5c5;
-      font-size: 14px;
-      margin-bottom: 30px;
-    }
-
-    label {
-      display: block;
-      font-size: 13px;
-      color: #b9c2df;
-      margin-bottom: 8px;
-    }
-
-    .input-group {
-      margin-bottom: 18px;
-    }
-
-    input {
-      width: 100%;
-      padding: 14px 15px;
-      border-radius: 12px;
-      border: 1px solid #293252;
-      outline: none;
-      background: #0b1125;
-      color: white;
-      font-size: 15px;
-      transition: 0.25s;
-    }
-
-    input:focus {
-      border-color: #4d7cff;
-      box-shadow: 0 0 0 3px rgba(77,124,255,0.12);
-    }
-
-    .password-wrapper {
-      position: relative;
-    }
-
-    .password-wrapper input {
-      padding-right: 50px;
-    }
-
-    .show-password {
-      position: absolute;
-      right: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      cursor: pointer;
-      color: #8d98b8;
-      user-select: none;
-    }
-
-    .forgot {
-      display: block;
-      text-align: right;
-      color: #6e9aff;
-      font-size: 13px;
-      text-decoration: none;
-      margin-top: -7px;
-      margin-bottom: 20px;
-    }
-
-    .login-btn {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 12px;
-      color: white;
-      font-size: 15px;
-      font-weight: bold;
-      cursor: pointer;
-      background: linear-gradient(135deg, #4169ff, #00aeea);
-      transition: 0.25s;
-    }
-
-    .login-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 30px rgba(40,130,255,0.3);
-    }
-
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 24px 0;
-      color: #66708f;
-      font-size: 12px;
-    }
-
-    .divider::before,
-    .divider::after {
-      content: "";
-      height: 1px;
-      flex: 1;
-      background: #293252;
-    }
-
-    .google-btn {
-      width: 100%;
-      padding: 13px;
-      border-radius: 12px;
-      border: 1px solid #303957;
-      background: #10172d;
-      color: white;
-      font-size: 15px;
-      cursor: pointer;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 12px;
-      transition: 0.25s;
-    }
-
-    .google-btn:hover {
-      background: #171f3a;
-      border-color: #465274;
-    }
-
-    .google-icon {
-      width: 20px;
-      height: 20px;
-    }
-
-    .signup {
-      text-align: center;
-      color: #8993b2;
-      font-size: 13px;
-      margin-top: 25px;
-    }
-
-    .signup a {
-      color: #6e9aff;
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    #message {
-      display: none;
-      margin-top: 15px;
-      padding: 12px;
-      border-radius: 10px;
-      text-align: center;
-      font-size: 13px;
-    }
-
-    .success {
-      display: block !important;
-      background: #123a2a;
-      color: #61e6a2;
-    }
-
-    .error {
-      display: block !important;
-      background: #3a1720;
-      color: #ff7d91;
-    }
-  </style>
+}
+</style>
 </head>
 
 <body>
 
-  <div class="login-container">
-    <div class="login-box">
+<header>
 
-      <div class="logo">M</div>
+<div class="logo">
+LearnSphere AI
+</div>
 
-      <h1>Welcome Back</h1>
-      <p class="subtitle">Sign in to continue to your account</p>
+<nav>
+<button onclick="showPage('home')">Home</button>
+<button onclick="showPage('learn')">Learn</button>
+<button onclick="showPage('quiz')">Quiz</button>
+<button onclick="showPage('ai')">AI Tutor</button>
+<button onclick="showPage('chess')">Chess</button>
+</nav>
 
-      <form id="loginForm">
+</header>
 
-        <div class="input-group">
-          <label>Email address</label>
-          <input
-            type="email"
-            id="email"
-            placeholder="you@example.com"
-            required
-          >
-        </div>
+<!-- HOME -->
 
-        <div class="input-group">
-          <label>Password</label>
+<section id="home" class="page active">
 
-          <div class="password-wrapper">
-            <input
-              type="password"
-              id="password"
-              placeholder="Enter your password"
-              required
-              minlength="6"
-            >
+<div class="hero">
 
-            <span
-              class="show-password"
-              onclick="togglePassword()"
-            >👁</span>
-          </div>
-        </div>
+<h1>
+Learn.
+<span>Think.</span>
+Create.
+</h1>
 
-        <a href="#" class="forgot">Forgot password?</a>
+<p>
+An advanced free learning platform powered by AI.
+</p>
 
-        <button type="submit" class="login-btn">
-          Sign In
-        </button>
+<br>
 
-      </form>
+<button class="primary"
+onclick="showPage('learn')">
+Start Learning
+</button>
 
-      <div class="divider">OR</div>
+</div>
 
-      <button class="google-btn" onclick="googleLogin()">
+<div class="card-container">
 
-        <svg class="google-icon"
-          viewBox="0 0 24 24">
+<div class="card">
+<h2>AI Tutor</h2>
+<p>
+Ask questions and receive explanations.
+</p>
+</div>
 
-          <path
-            fill="#4285F4"
-            d="M21.35 12.23c0-.71-.06-1.39-.18-2.05H12v3.88h5.24a4.48 4.48 0 0 1-1.94 2.94v2.44h3.14c1.84-1.69 2.91-4.18 2.91-7.21z"/>
+<div class="card">
+<h2>Advanced Quizzes</h2>
+<p>
+Test your knowledge across multiple subjects.
+</p>
+</div>
 
-          <path
-            fill="#34A853"
-            d="M12 21.5c2.63 0 4.84-.87 6.45-2.36l-3.14-2.44c-.87.58-1.98.92-3.31.92-2.54 0-4.69-1.72-5.46-4.03H3.3v2.52A9.74 9.74 0 0 0 12 21.5z"/>
+<div class="card">
+<h2>Chess</h2>
+<p>
+Practice your strategy against another player.
+</p>
+</div>
 
-          <path
-            fill="#FBBC05"
-            d="M6.54 13.59A5.85 5.85 0 0 1 6.23 12c0-.55.11-1.09.31-1.59V7.89H3.3A9.5 9.5 0 0 0 2.5 12c0 1.53.37 2.98 1.02 4.11l3.02-2.52z"/>
+<div class="card">
+<h2>Games</h2>
+<p>
+Learn through interactive educational games.
+</p>
+</div>
 
-          <path
-            fill="#EA4335"
-            d="M12 6.38c1.43 0 2.71.49 3.72 1.45l2.79-2.79C16.83 3.47 14.63 2.5 12 2.5a9.74 9.74 0 0 0-8.7 5.39l3.24 2.52C7.31 8.1 9.46 6.38 12 6.38z"/>
+</div>
 
-        </svg>
+</section>
 
-        Continue with Google
+<!-- LEARNING -->
 
-      </button>
+<section id="learn" class="page">
 
-      <div id="message"></div>
+<h1>Learning Center</h1>
 
-      <p class="signup">
-        Don't have an account?
-        <a href="#">Create account</a>
-      </p>
+<br>
 
-    </div>
-  </div>
+<div class="card-container">
 
-  <script>
+<button class="subject"
+onclick="lesson('Mathematics')">
 
-    function togglePassword() {
-      const password = document.getElementById("password");
+<h2>Mathematics</h2>
+<p>Algebra • Geometry • Calculus</p>
 
-      if (password.type === "password") {
-        password.type = "text";
-      } else {
-        password.type = "password";
-      }
-    }
+</button>
+
+<button class="subject"
+onclick="lesson('Science')">
+
+<h2>Science</h2>
+<p>Physics • Biology • Chemistry</p>
+
+</button>
+
+<button class="subject"
+onclick="lesson('Computer Science')">
+
+<h2>Computer Science</h2>
+<p>Programming • Algorithms • AI</p>
+
+</button>
+
+<button class="subject"
+onclick="lesson('English')">
+
+<h2>English</h2>
+<p>Grammar • Writing • Vocabulary</p>
+
+</button>
+
+</div>
+
+<br>
+
+<div class="card" id="lesson">
+
+<h2>Select a subject</h2>
+
+<p>
+Choose a subject to begin learning.
+</p>
+
+</div>
+
+</section>
+
+<!-- QUIZ -->
+
+<section id="quiz" class="page">
+
+<h1>Advanced Quiz</h1>
+
+<br>
+
+<div class="quiz">
+
+<h2 id="question"></h2>
+
+<div id="options"></div>
+
+<p id="score"></p>
+
+</div>
+
+</section>
+
+<!-- AI -->
+
+<section id="ai" class="page">
+
+<h1>AI Tutor</h1>
+
+<br>
+
+<div class="chat">
+
+<div id="messages" class="messages">
+
+<div class="message ai">
+Hello! I'm your AI tutor.
+Ask me anything about your lessons.
+</div>
+
+</div>
+
+<div class="chat-input">
+
+<input
+id="userInput"
+placeholder="Ask your question..."
+>
+
+<button
+class="primary"
+onclick="sendMessage()">
+
+Send
+
+</button>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- CHESS -->
+
+<section id="chess" class="page">
+
+<h1>Chess Arena</h1>
+
+<p>Two-player local chess board.</p>
+
+<div id="board"></div>
+
+<button
+class="primary"
+onclick="createBoard()">
+
+Reset Chess
+
+</button>
+
+</section>
+
+<script>
+
+/* =========================
+PAGE SYSTEM
+========================= */
+
+function showPage(page) {
 
     document
-      .getElementById("loginForm")
-      .addEventListener("submit", function(event) {
+    .querySelectorAll(".page")
+    .forEach(p => {
 
-        event.preventDefault();
+        p.classList.remove("active");
 
-        const email =
-          document.getElementById("email").value;
+    });
 
-        const password =
-          document.getElementById("password").value;
-
-        const message =
-          document.getElementById("message");
-
-        if (!email || !password) {
-          message.className = "error";
-          message.textContent =
-            "Please enter your email and password.";
-          return;
-        }
-
-        message.className = "success";
-        message.textContent =
-          "Login information submitted.";
-
-        /*
-          IMPORTANT:
-
-          In a real website, NEVER store passwords
-          directly inside this HTML/JavaScript.
-
-          Send the credentials securely to your
-          authentication backend instead.
-        */
-      });
+    document
+    .getElementById(page)
+    .classList.add("active");
+}
 
 
-    function googleLogin() {
+/* =========================
+LESSONS
+========================= */
 
-      const message =
-        document.getElementById("message");
+const lessons = {
 
-      message.className = "success";
-      message.textContent =
-        "Google sign-in needs to be connected to Google OAuth.";
+Mathematics:
+`
+<h2>Mathematics</h2>
+
+<p>
+Mathematics studies numbers, structures,
+patterns and relationships.
+</p>
+
+<br>
+
+<h3>Advanced Topics</h3>
+
+<ul>
+<li>Algebra</li>
+<li>Geometry</li>
+<li>Calculus</li>
+<li>Probability</li>
+<li>Statistics</li>
+</ul>
+`,
+
+Science:
+`
+<h2>Science</h2>
+
+<p>
+Science uses observation, experiments and
+evidence to understand the natural world.
+</p>
+
+<br>
+
+<ul>
+<li>Physics</li>
+<li>Chemistry</li>
+<li>Biology</li>
+<li>Astronomy</li>
+</ul>
+`,
+
+"Computer Science":
+`
+<h2>Computer Science</h2>
+
+<p>
+Computer science studies computation,
+algorithms and information systems.
+</p>
+
+<br>
+
+<ul>
+<li>Programming</li>
+<li>Algorithms</li>
+<li>Artificial Intelligence</li>
+<li>Cybersecurity</li>
+<li>Databases</li>
+</ul>
+`,
+
+English:
+`
+<h2>English</h2>
+
+<p>
+Improve grammar, vocabulary, reading and
+academic writing.
+</p>
+`
+
+};
+
+function lesson(subject) {
+
+    document
+    .getElementById("lesson")
+    .innerHTML = lessons[subject];
+
+}
+
+
+/* =========================
+QUIZ ENGINE
+========================= */
+
+const questions = [
+
+{
+question:
+"What is the derivative of x³?",
+
+options:
+[
+"3x²",
+"x²",
+"3x",
+"x³"
+],
+
+answer:0
+},
+
+{
+question:
+"Which structure follows FIFO?",
+
+options:
+[
+"Stack",
+"Queue",
+"Tree",
+"Graph"
+],
+
+answer:1
+},
+
+{
+question:
+"What molecule stores genetic information?",
+
+options:
+[
+"ATP",
+"DNA",
+"Glucose",
+"Lipid"
+],
+
+answer:1
+}
+
+];
+
+let currentQuestion = 0;
+let points = 0;
+
+function loadQuiz() {
+
+    let q =
+    questions[currentQuestion];
+
+    document
+    .getElementById("question")
+    .textContent = q.question;
+
+    let container =
+    document.getElementById("options");
+
+    container.innerHTML = "";
+
+    q.options.forEach(
+    (option,index) => {
+
+        let button =
+        document.createElement("button");
+
+        button.className = "option";
+
+        button.textContent =
+        option;
+
+        button.onclick = () =>
+        answer(index);
+
+        container.appendChild(button);
+
+    });
+
+    document
+    .getElementById("score")
+    .textContent =
+    "Score: " + points;
+}
+
+function answer(index) {
+
+    if(
+        index ===
+        questions[currentQuestion].answer
+    ) {
+
+        points++;
 
     }
 
-  </script>
+    currentQuestion++;
+
+    if(
+        currentQuestion >=
+        questions.length
+    ) {
+
+        currentQuestion = 0;
+
+    }
+
+    loadQuiz();
+}
+
+loadQuiz();
+
+
+/* =========================
+AI TUTOR
+========================= */
+
+function sendMessage() {
+
+    let input =
+    document.getElementById("userInput");
+
+    let text =
+    input.value.trim();
+
+    if(!text) return;
+
+    addMessage(text,"user");
+
+    input.value = "";
+
+    setTimeout(() => {
+
+        let response =
+        localAI(text);
+
+        addMessage(
+            response,
+            "ai"
+        );
+
+    },500);
+}
+
+function addMessage(text,type) {
+
+    let message =
+    document.createElement("div");
+
+    message.className =
+    "message " + type;
+
+    message.textContent =
+    text;
+
+    document
+    .getElementById("messages")
+    .appendChild(message);
+
+}
+
+function localAI(question) {
+
+    let q =
+    question.toLowerCase();
+
+    if(
+        q.includes("photosynthesis")
+    ) {
+
+        return `
+Photosynthesis is the process
+plants use to convert light energy
+into chemical energy.
+
+The main inputs are:
+
+• Light
+• Carbon dioxide
+• Water
+
+The process produces glucose
+and releases oxygen.
+`;
+
+    }
+
+    if(
+        q.includes("javascript")
+    ) {
+
+        return `
+JavaScript is a programming language
+commonly used to make websites
+interactive.
+
+For example:
+
+let number = 10;
+
+console.log(number);
+
+This creates a variable and prints
+its value.
+`;
+
+    }
+
+    if(
+        q.includes("math")
+    ) {
+
+        return `
+Send me the exact mathematics
+problem.
+
+I can then break it into:
+
+1. Known information
+2. Formula
+3. Calculation
+4. Final answer
+5. Verification
+`;
+
+    }
+
+    return `
+I can help you learn this.
+
+Try asking me:
+
+"Explain this concept."
+
+"Give me an example."
+
+"Give me a difficult quiz."
+
+"Explain this step by step."
+
+"Find the error in my code."
+`;
+
+}
+
+
+/* =========================
+CHESS
+========================= */
+
+const pieces = {
+
+white: [
+"♖","♘","♗","♕",
+"♔","♗","♘","♖"
+],
+
+black: [
+"♜","♞","♝","♛",
+"♚","♝","♞","♜"
+]
+
+};
+
+function createBoard() {
+
+    const board =
+    document.getElementById("board");
+
+    board.innerHTML = "";
+
+    for(
+        let row=0;
+        row<8;
+        row++
+    ) {
+
+        for(
+            let col=0;
+            col<8;
+            col++
+        ) {
+
+            let square =
+            document.createElement("div");
+
+            square.className =
+            "square " +
+            ((row+col)%2===0
+            ?"white"
+            :"black");
+
+            if(row === 0)
+                square.textContent =
+                pieces.black[col];
+
+            if(row === 1)
+                square.textContent = "♟";
+
+            if(row === 6)
+                square.textContent = "♙";
+
+            if(row === 7)
+                square.textContent =
+                pieces.white[col];
+
+            board.appendChild(square);
+
+        }
+
+    }
+
+}
+
+createBoard();
+
+</script>
 
 </body>
 </html>
