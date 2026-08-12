@@ -1,11 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Login Website</title>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -18,147 +22,291 @@
 
     .box {
       background: white;
-      width: 320px;
+      width: 350px;
       padding: 30px;
       border-radius: 20px;
       text-align: center;
       box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
 
+    h1 {
+      margin-bottom: 5px;
+    }
+
     input {
       width: 100%;
-      padding: 12px;
+      padding: 13px;
       margin: 8px 0;
-      box-sizing: border-box;
       border: 1px solid #ccc;
       border-radius: 8px;
+      font-size: 15px;
     }
 
     button {
       width: 100%;
-      padding: 12px;
+      padding: 13px;
       margin-top: 10px;
       border: none;
       border-radius: 8px;
       cursor: pointer;
+      font-size: 16px;
       background: #667eea;
       color: white;
-      font-size: 16px;
     }
 
     button:hover {
       opacity: 0.9;
     }
 
+    .google {
+      background: white;
+      color: #333;
+      border: 1px solid #ccc;
+    }
+
+    .logout {
+      background: #e74c3c;
+    }
+
     #message {
       margin-top: 15px;
       font-size: 14px;
+    }
+
+    #dashboard {
+      display: none;
     }
   </style>
 </head>
 
 <body>
 
-<div class="box">
+  <!-- LOGIN -->
+  <div class="box" id="loginBox">
 
-  <h1>My Website</h1>
-  <h2>Login</h2>
+    <h1>My Website</h1>
+    <p>Sign in to continue</p>
 
-  <input id="email" type="email" placeholder="Email">
+    <input
+      id="email"
+      type="email"
+      placeholder="Email"
+    >
 
-  <input id="password" type="password" placeholder="Password">
+    <input
+      id="password"
+      type="password"
+      placeholder="Password"
+    >
 
-  <button id="loginBtn">Login</button>
+    <button id="loginBtn">
+      Login
+    </button>
 
-  <button id="signupBtn">Create Account</button>
+    <button id="signupBtn">
+      Create Account
+    </button>
 
-  <p id="message"></p>
+    <button class="google" id="googleBtn">
+      Continue with Google
+    </button>
 
-</div>
+    <p id="message"></p>
 
-<script type="module">
-
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword
-}
-from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-
-
-// YOUR FIREBASE CONFIG
-
-const firebaseConfig = {
-  apiKey: "PUT_YOUR_API_KEY_HERE",
-  authDomain: "PUT_YOUR_AUTH_DOMAIN_HERE",
-  projectId: "PUT_YOUR_PROJECT_ID_HERE",
-  storageBucket: "PUT_YOUR_STORAGE_BUCKET_HERE",
-  messagingSenderId: "PUT_YOUR_SENDER_ID_HERE",
-  appId: "PUT_YOUR_APP_ID_HERE"
-};
+  </div>
 
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+  <!-- DASHBOARD -->
+  <div class="box" id="dashboard">
+
+    <h1>Welcome! 🎉</h1>
+
+    <p id="userInfo"></p>
+
+    <button class="logout" id="logoutBtn">
+      Logout
+    </button>
+
+  </div>
 
 
-// CREATE ACCOUNT
+  <script type="module">
 
-document.getElementById("signupBtn").addEventListener("click", function() {
+    import { initializeApp }
+    from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  const message = document.getElementById("message");
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged
+    }
+    from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
-  createUserWithEmailAndPassword(auth, email, password)
 
-    .then(() => {
+    // =====================================
+    // FIREBASE CONFIG
+    // =====================================
 
-      message.style.color = "green";
-      message.innerText = "Account created successfully!";
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
 
-    })
 
-    .catch((error) => {
+    // =====================================
+    // FIREBASE
+    // =====================================
 
-      message.style.color = "red";
-      message.innerText = error.message;
+    const app = initializeApp(firebaseConfig);
+
+    const auth = getAuth(app);
+
+    const googleProvider = new GoogleAuthProvider();
+
+
+    // =====================================
+    // ELEMENTS
+    // =====================================
+
+    const email =
+      document.getElementById("email");
+
+    const password =
+      document.getElementById("password");
+
+    const message =
+      document.getElementById("message");
+
+    const loginBox =
+      document.getElementById("loginBox");
+
+    const dashboard =
+      document.getElementById("dashboard");
+
+    const userInfo =
+      document.getElementById("userInfo");
+
+
+    // =====================================
+    // EMAIL LOGIN
+    // =====================================
+
+    document.getElementById("loginBtn")
+      .addEventListener("click", async () => {
+
+        try {
+
+          await signInWithEmailAndPassword(
+            auth,
+            email.value,
+            password.value
+          );
+
+        } catch (error) {
+
+          message.style.color = "red";
+          message.innerText = error.message;
+
+        }
+
+      });
+
+
+    // =====================================
+    // CREATE ACCOUNT
+    // =====================================
+
+    document.getElementById("signupBtn")
+      .addEventListener("click", async () => {
+
+        try {
+
+          await createUserWithEmailAndPassword(
+            auth,
+            email.value,
+            password.value
+          );
+
+        } catch (error) {
+
+          message.style.color = "red";
+          message.innerText = error.message;
+
+        }
+
+      });
+
+
+    // =====================================
+    // GOOGLE LOGIN
+    // =====================================
+
+    document.getElementById("googleBtn")
+      .addEventListener("click", async () => {
+
+        try {
+
+          await signInWithPopup(
+            auth,
+            googleProvider
+          );
+
+        } catch (error) {
+
+          message.style.color = "red";
+          message.innerText = error.message;
+
+        }
+
+      });
+
+
+    // =====================================
+    // LOGOUT
+    // =====================================
+
+    document.getElementById("logoutBtn")
+      .addEventListener("click", async () => {
+
+        await signOut(auth);
+
+      });
+
+
+    // =====================================
+    // CHECK LOGIN
+    // =====================================
+
+    onAuthStateChanged(auth, (user) => {
+
+      if (user) {
+
+        loginBox.style.display = "none";
+
+        dashboard.style.display = "block";
+
+        userInfo.innerText =
+          "Logged in as: " + user.email;
+
+      } else {
+
+        loginBox.style.display = "block";
+
+        dashboard.style.display = "none";
+
+      }
 
     });
 
-});
-
-
-// LOGIN
-
-document.getElementById("loginBtn").addEventListener("click", function() {
-
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  const message = document.getElementById("message");
-
-  signInWithEmailAndPassword(auth, email, password)
-
-    .then(() => {
-
-      message.style.color = "green";
-      message.innerText = "Login successful!";
-
-    })
-
-    .catch((error) => {
-
-      message.style.color = "red";
-      message.innerText = error.message;
-
-    });
-
-});
-
-</script>
+  </script>
 
 </body>
 </html>
