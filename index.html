@@ -1962,6 +1962,457 @@ WAPS AI Tutor
   </button>
 
 </div>
-  
+  <!-- FLOATING AI BUTTON -->
+
+<button id="floatingAI" aria-label="Open AI Tutor">
+  🤖
+</button>
+
+<!-- AI CHAT WINDOW -->
+
+<div id="aiWindow">
+
+  <div class="ai-header">
+    <div>
+      <strong>WAPS AI</strong>
+      <small>● ONLINE</small>
+    </div>
+
+    <button id="closeAI">×</button>
+  </div>
+
+  <div id="aiMessages">
+    <div class="ai-message">
+      🤖 Hello! I'm your WAPS AI Tutor.<br><br>
+      Ask me about lessons, homework, quizzes, or anything
+      you're learning.
+    </div>
+  </div>
+
+  <div class="ai-input-area">
+
+    <input
+      id="floatingAIInput"
+      type="text"
+      placeholder="Ask your AI tutor..."
+    >
+
+    <button id="aiSend">
+      ➤
+    </button>
+
+  </div>
+
+</div>
+
+
+<style>
+
+/* FLOATING AI ICON */
+
+#floatingAI {
+
+  position: fixed;
+
+  right: 25px;
+  bottom: 25px;
+
+  width: 65px;
+  height: 65px;
+
+  border-radius: 50%;
+
+  border: 2px solid #00e5ff;
+
+  background:
+    radial-gradient(
+      circle,
+      #0f172a,
+      #030712
+    );
+
+  color: #00e5ff;
+
+  font-size: 30px;
+
+  cursor: pointer;
+
+  z-index: 9999;
+
+  box-shadow:
+    0 0 10px #00e5ff,
+    0 0 30px rgba(0,229,255,.5);
+
+  animation: aiPulse 2s infinite;
+
+}
+
+
+#floatingAI:hover {
+
+  transform: scale(1.12);
+
+  box-shadow:
+    0 0 15px #00e5ff,
+    0 0 45px rgba(0,229,255,.8);
+
+}
+
+
+@keyframes aiPulse {
+
+  0%,100% {
+    box-shadow:
+      0 0 10px #00e5ff,
+      0 0 25px rgba(0,229,255,.4);
+  }
+
+  50% {
+    box-shadow:
+      0 0 20px #00e5ff,
+      0 0 50px rgba(0,229,255,.8);
+  }
+
+}
+
+
+/* AI WINDOW */
+
+#aiWindow {
+
+  position: fixed;
+
+  right: 25px;
+  bottom: 105px;
+
+  width: 360px;
+  max-width: calc(100vw - 30px);
+
+  height: 500px;
+
+  background:
+    rgba(3,7,18,.95);
+
+  border:
+    1px solid rgba(0,229,255,.4);
+
+  border-radius: 20px;
+
+  backdrop-filter: blur(20px);
+
+  box-shadow:
+    0 0 40px rgba(0,229,255,.2);
+
+  z-index: 9998;
+
+  display: none;
+
+  overflow: hidden;
+
+}
+
+
+/* HEADER */
+
+.ai-header {
+
+  height: 65px;
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  padding: 0 18px;
+
+  background:
+    rgba(0,229,255,.06);
+
+  border-bottom:
+    1px solid rgba(0,229,255,.15);
+
+}
+
+
+.ai-header strong {
+
+  display: block;
+
+  color: #00e5ff;
+
+  letter-spacing: 2px;
+
+}
+
+
+.ai-header small {
+
+  color: #34d399;
+
+  font-size: 10px;
+
+}
+
+
+#closeAI {
+
+  width: 35px;
+  height: 35px;
+
+  padding: 0;
+
+  background: transparent;
+
+  color: #94a3b8;
+
+  font-size: 25px;
+
+}
+
+
+/* MESSAGES */
+
+#aiMessages {
+
+  height: 375px;
+
+  overflow-y: auto;
+
+  padding: 15px;
+
+}
+
+
+.ai-message {
+
+  background:
+    rgba(0,229,255,.07);
+
+  border:
+    1px solid rgba(0,229,255,.12);
+
+  padding: 12px;
+
+  border-radius: 12px;
+
+  color: #cbd5e1;
+
+  font-size: 14px;
+
+  line-height: 1.5;
+
+  margin-bottom: 10px;
+
+}
+
+
+.user-message {
+
+  background:
+    rgba(139,92,246,.15);
+
+  padding: 12px;
+
+  border-radius: 12px;
+
+  margin-bottom: 10px;
+
+  text-align: right;
+
+  color: white;
+
+}
+
+
+/* INPUT */
+
+.ai-input-area {
+
+  display: flex;
+
+  gap: 8px;
+
+  padding: 12px;
+
+  border-top:
+    1px solid rgba(0,229,255,.15);
+
+}
+
+
+#floatingAIInput {
+
+  flex: 1;
+
+  margin: 0;
+
+  min-width: 0;
+
+}
+
+
+#aiSend {
+
+  width: 45px;
+
+  padding: 0;
+
+  background: #00e5ff;
+
+  color: #001018;
+
+}
+
+
+@media(max-width:500px) {
+
+  #floatingAI {
+
+    right: 15px;
+    bottom: 15px;
+
+  }
+
+  #aiWindow {
+
+    right: 15px;
+    bottom: 90px;
+
+    height: 70vh;
+
+  }
+
+}
+
+</style>
+
+
+<script>
+
+/* OPEN AI */
+
+const floatingAI =
+  document.getElementById(
+    "floatingAI"
+  );
+
+const aiWindow =
+  document.getElementById(
+    "aiWindow"
+  );
+
+const closeAI =
+  document.getElementById(
+    "closeAI"
+  );
+
+
+floatingAI.onclick = () => {
+
+  aiWindow.style.display =
+    "block";
+
+};
+
+
+closeAI.onclick = () => {
+
+  aiWindow.style.display =
+    "none";
+
+};
+
+
+/* SEND MESSAGE */
+
+const aiInput =
+  document.getElementById(
+    "floatingAIInput"
+  );
+
+const aiSend =
+  document.getElementById(
+    "aiSend"
+  );
+
+const aiMessages =
+  document.getElementById(
+    "aiMessages"
+  );
+
+
+function sendAIMessage() {
+
+  const text =
+    aiInput.value.trim();
+
+  if (!text) return;
+
+
+  aiMessages.innerHTML += `
+
+    <div class="user-message">
+      👤 ${text}
+    </div>
+
+  `;
+
+
+  /*
+    DEMO RESPONSE
+
+    Replace this later with
+    your secure OpenAI backend.
+  */
+
+  aiMessages.innerHTML += `
+
+    <div class="ai-message">
+
+      🤖 <strong>WAPS AI:</strong><br>
+
+      I received your question:
+      "${text}"
+
+      <br><br>
+
+      My full AI connection can be
+      connected through the secure
+      backend next.
+
+    </div>
+
+  `;
+
+
+  aiInput.value = "";
+
+  aiMessages.scrollTop =
+    aiMessages.scrollHeight;
+
+}
+
+
+aiSend.onclick =
+  sendAIMessage;
+
+
+aiInput.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      event.key === "Enter"
+    ) {
+
+      sendAIMessage();
+
+    }
+
+  }
+);
+
+</script>
 </body>
 </html>
