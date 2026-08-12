@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WAPS | Futuristic Login</title>
+  <title>WAPS // Future System</title>
 
   <style>
     * {
@@ -12,15 +12,14 @@
 
     body {
       margin: 0;
-      min-height: 100vh;
-      font-family: Arial, Helvetica, sans-serif;
-      background: #050816;
+      font-family: Arial, sans-serif;
+      background: #030712;
       color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
+      min-height: 100vh;
+      overflow-x: hidden;
     }
+
+    /* FUTURISTIC BACKGROUND */
 
     body::before {
       content: "";
@@ -29,10 +28,10 @@
       height: 500px;
       background: #00e5ff;
       filter: blur(180px);
-      opacity: 0.15;
-      top: -150px;
+      opacity: .12;
+      top: -200px;
       left: -150px;
-      animation: moveGlow 8s infinite alternate;
+      z-index: -2;
     }
 
     body::after {
@@ -40,46 +39,41 @@
       position: fixed;
       width: 500px;
       height: 500px;
-      background: #7c3aed;
+      background: #8b5cf6;
       filter: blur(180px);
-      opacity: 0.18;
-      bottom: -180px;
+      opacity: .13;
+      bottom: -200px;
       right: -150px;
-      animation: moveGlow 10s infinite alternate;
-    }
-
-    @keyframes moveGlow {
-      from {
-        transform: translate(0, 0);
-      }
-
-      to {
-        transform: translate(100px, -50px);
-      }
+      z-index: -2;
     }
 
     .grid {
       position: fixed;
       inset: 0;
+      z-index: -1;
       background-image:
-        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
+        linear-gradient(rgba(0,229,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,.035) 1px, transparent 1px);
+      background-size: 45px 45px;
     }
 
-    .card {
-      position: relative;
-      z-index: 2;
+    /* LOGIN */
+
+    .login-container {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .login-card {
       width: 380px;
       max-width: 92%;
       padding: 35px;
-      background: rgba(10, 15, 35, 0.78);
-      border: 1px solid rgba(0, 229, 255, 0.35);
-      border-radius: 24px;
-      box-shadow:
-        0 0 40px rgba(0, 229, 255, 0.12),
-        inset 0 0 30px rgba(124, 58, 237, 0.05);
+      background: rgba(10,15,30,.82);
+      border: 1px solid rgba(0,229,255,.35);
+      border-radius: 25px;
+      box-shadow: 0 0 50px rgba(0,229,255,.1);
       backdrop-filter: blur(20px);
     }
 
@@ -87,140 +81,221 @@
       text-align: center;
       font-size: 42px;
       font-weight: bold;
-      letter-spacing: 8px;
+      letter-spacing: 9px;
       color: #00e5ff;
-      text-shadow: 0 0 20px rgba(0,229,255,0.8);
+      text-shadow: 0 0 25px #00e5ff;
     }
 
     .subtitle {
       text-align: center;
-      color: #9ca3af;
-      margin-bottom: 28px;
-    }
-
-    .field {
-      margin-bottom: 14px;
-    }
-
-    .field label {
-      display: block;
-      font-size: 12px;
-      color: #67e8f9;
-      margin-bottom: 6px;
-      letter-spacing: 1px;
+      color: #64748b;
+      margin-bottom: 30px;
+      letter-spacing: 2px;
     }
 
     input {
       width: 100%;
       padding: 14px;
-      border-radius: 10px;
-      border: 1px solid rgba(0,229,255,0.25);
-      background: rgba(255,255,255,0.04);
+      margin: 8px 0;
+      background: rgba(255,255,255,.04);
       color: white;
+      border: 1px solid #263244;
+      border-radius: 10px;
       outline: none;
-      font-size: 15px;
     }
 
     input:focus {
       border-color: #00e5ff;
-      box-shadow: 0 0 15px rgba(0,229,255,0.2);
+      box-shadow: 0 0 15px rgba(0,229,255,.2);
     }
 
     button {
       width: 100%;
       padding: 14px;
       margin-top: 10px;
-      border: none;
+      border: 0;
       border-radius: 10px;
       cursor: pointer;
-      font-size: 15px;
       font-weight: bold;
-      transition: 0.2s;
+      font-size: 15px;
+      transition: .2s;
     }
 
-    .login {
+    button:hover {
+      transform: translateY(-2px);
+    }
+
+    .login-btn {
       background: #00e5ff;
       color: #001018;
-      box-shadow: 0 0 20px rgba(0,229,255,0.3);
     }
 
-    .signup {
+    .signup-btn {
       background: transparent;
       color: #00e5ff;
       border: 1px solid #00e5ff;
     }
 
-    .google {
+    .google-btn {
       background: white;
-      color: #111827;
-    }
-
-    button:hover {
-      transform: translateY(-2px);
-      filter: brightness(1.1);
-    }
-
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 20px 0;
-      color: #6b7280;
-      font-size: 12px;
-    }
-
-    .divider::before,
-    .divider::after {
-      content: "";
-      height: 1px;
-      flex: 1;
-      background: #374151;
+      color: #111;
     }
 
     #message {
-      min-height: 20px;
       text-align: center;
-      margin-top: 15px;
+      min-height: 20px;
       font-size: 13px;
-      color: #f87171;
+      margin-top: 15px;
     }
+
+    /* DASHBOARD */
 
     #dashboard {
       display: none;
-      text-align: center;
     }
 
-    .user-icon {
-      width: 75px;
-      height: 75px;
-      margin: 10px auto 20px;
-      border-radius: 50%;
-      border: 2px solid #00e5ff;
+    .navbar {
+      height: 70px;
       display: flex;
-      justify-content: center;
       align-items: center;
-      font-size: 30px;
-      color: #00e5ff;
-      box-shadow: 0 0 25px rgba(0,229,255,0.4);
+      justify-content: space-between;
+      padding: 0 35px;
+      border-bottom: 1px solid rgba(0,229,255,.15);
+      background: rgba(3,7,18,.8);
+      backdrop-filter: blur(15px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
-    .status {
+    .nav-logo {
+      color: #00e5ff;
+      font-size: 23px;
+      font-weight: bold;
+      letter-spacing: 5px;
+      text-shadow: 0 0 15px #00e5ff;
+    }
+
+    .nav-status {
       color: #34d399;
-      font-size: 13px;
-      margin-bottom: 20px;
+      font-size: 12px;
+    }
+
+    .main {
+      max-width: 1200px;
+      margin: auto;
+      padding: 40px 25px;
+    }
+
+    .welcome {
+      margin-bottom: 35px;
+    }
+
+    .welcome h1 {
+      font-size: 42px;
+      margin-bottom: 8px;
+    }
+
+    .welcome span {
+      color: #00e5ff;
+      text-shadow: 0 0 15px #00e5ff;
+    }
+
+    .welcome p {
+      color: #64748b;
+    }
+
+    /* CARDS */
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .card {
+      padding: 25px;
+      background: rgba(15,23,42,.65);
+      border: 1px solid rgba(0,229,255,.15);
+      border-radius: 18px;
+      backdrop-filter: blur(12px);
+      transition: .3s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      border-color: #00e5ff;
+      box-shadow: 0 0 25px rgba(0,229,255,.12);
+    }
+
+    .card-icon {
+      font-size: 30px;
+      margin-bottom: 15px;
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+    }
+
+    .card p {
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .online {
+      color: #34d399;
+    }
+
+    /* LARGE PANEL */
+
+    .system-panel {
+      margin-top: 25px;
+      padding: 30px;
+      border-radius: 20px;
+      background: rgba(15,23,42,.65);
+      border: 1px solid rgba(139,92,246,.25);
+    }
+
+    .system-panel h2 {
+      color: #a78bfa;
+    }
+
+    .bar {
+      height: 8px;
+      background: #111827;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 15px;
+    }
+
+    .bar-inner {
+      height: 100%;
+      width: 87%;
+      background: #00e5ff;
+      box-shadow: 0 0 15px #00e5ff;
     }
 
     .logout {
+      width: auto;
+      padding: 10px 18px;
       background: #ef4444;
       color: white;
     }
 
-    .footer {
-      text-align: center;
-      color: #4b5563;
-      font-size: 10px;
-      margin-top: 25px;
-      letter-spacing: 2px;
+    /* RESPONSIVE */
+
+    @media(max-width: 800px) {
+      .cards {
+        grid-template-columns: 1fr;
+      }
+
+      .welcome h1 {
+        font-size: 30px;
+      }
+
+      .navbar {
+        padding: 0 18px;
+      }
     }
   </style>
 </head>
@@ -229,79 +304,196 @@
 
 <div class="grid"></div>
 
-<!-- LOGIN -->
-<div class="card" id="loginPage">
 
-  <div class="logo">WAPS</div>
+<!-- ================= LOGIN ================= -->
 
-  <div class="subtitle">
-    FUTURE ACCESS SYSTEM
-  </div>
+<div class="login-container" id="loginPage">
 
-  <div class="field">
-    <label>EMAIL</label>
+  <div class="login-card">
+
+    <div class="logo">WAPS</div>
+
+    <div class="subtitle">
+      FUTURE ACCESS SYSTEM
+    </div>
+
     <input
       id="email"
       type="email"
-      placeholder="Enter your email"
+      placeholder="Email"
     >
-  </div>
 
-  <div class="field">
-    <label>PASSWORD</label>
     <input
       id="password"
       type="password"
-      placeholder="Enter your password"
+      placeholder="Password"
     >
-  </div>
 
-  <button class="login" id="loginBtn">
-    ACCESS SYSTEM
-  </button>
+    <button class="login-btn" id="loginBtn">
+      ACCESS SYSTEM
+    </button>
 
-  <button class="signup" id="signupBtn">
-    CREATE ACCOUNT
-  </button>
+    <button class="signup-btn" id="signupBtn">
+      CREATE ACCOUNT
+    </button>
 
-  <div class="divider">
-    OR
-  </div>
+    <button class="google-btn" id="googleBtn">
+      Continue with Google
+    </button>
 
-  <button class="google" id="googleBtn">
-    Continue with Google
-  </button>
+    <p id="message"></p>
 
-  <p id="message"></p>
-
-  <div class="footer">
-    SECURE AUTHENTICATION
   </div>
 
 </div>
 
 
-<!-- DASHBOARD -->
-<div class="card" id="dashboard">
+<!-- ================= DASHBOARD ================= -->
 
-  <div class="user-icon">
-    ◉
-  </div>
+<div id="dashboard">
 
-  <h1>ACCESS GRANTED</h1>
+  <nav class="navbar">
 
-  <p class="status">
-    ● SYSTEM ONLINE
-  </p>
+    <div class="nav-logo">
+      WAPS
+    </div>
 
-  <p id="userEmail"></p>
+    <div class="nav-status">
+      ● SYSTEM ONLINE
+    </div>
 
-  <button class="logout" id="logoutBtn">
-    LOGOUT
-  </button>
+    <button class="logout" id="logoutBtn">
+      LOGOUT
+    </button>
+
+  </nav>
+
+
+  <main class="main">
+
+    <section class="welcome">
+
+      <h1>
+        Welcome, <span id="username">User</span>
+      </h1>
+
+      <p>
+        Your futuristic control center is ready.
+      </p>
+
+    </section>
+
+
+    <section class="cards">
+
+      <div class="card">
+
+        <div class="card-icon">👤</div>
+
+        <h3>Profile</h3>
+
+        <p id="userEmail">
+          Loading account...
+        </p>
+
+      </div>
+
+
+      <div class="card">
+
+        <div class="card-icon">🔐</div>
+
+        <h3>Security</h3>
+
+        <p class="online">
+          Authentication secured
+        </p>
+
+      </div>
+
+
+      <div class="card">
+
+        <div class="card-icon">🌐</div>
+
+        <h3>Network</h3>
+
+        <p class="online">
+          Connection stable
+        </p>
+
+      </div>
+
+    </section>
+
+
+    <section class="system-panel">
+
+      <h2>⚡ SYSTEM STATUS</h2>
+
+      <p>
+        Core system performance
+      </p>
+
+      <div class="bar">
+        <div class="bar-inner"></div>
+      </div>
+
+      <p class="online">
+        87% Operational
+      </p>
+
+    </section>
+
+
+    <section class="cards" style="margin-top:25px;">
+
+      <div class="card">
+
+        <div class="card-icon">🚀</div>
+
+        <h3>Future Mode</h3>
+
+        <p>
+          Advanced interface enabled.
+        </p>
+
+      </div>
+
+
+      <div class="card">
+
+        <div class="card-icon">🛰️</div>
+
+        <h3>System Link</h3>
+
+        <p>
+          Firebase authentication connected.
+        </p>
+
+      </div>
+
+
+      <div class="card">
+
+        <div class="card-icon">✨</div>
+
+        <h3>Experience</h3>
+
+        <p>
+          Welcome to the next generation.
+        </p>
+
+      </div>
+
+    </section>
+
+  </main>
 
 </div>
 
+
+<!-- ================= FIREBASE ================= -->
 
 <script type="module">
 
@@ -320,24 +512,24 @@
   from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 
-  // =====================================
-  // YOUR FIREBASE CONFIG
-  // =====================================
-
   const firebaseConfig = {
+
     apiKey: "AIzaSyCB9sWO3rQCaEVc4B86nkGx6U5iWa7ha9o",
+
     authDomain: "waps-c870d.firebaseapp.com",
+
     projectId: "waps-c870d",
+
     storageBucket: "waps-c870d.firebasestorage.app",
+
     messagingSenderId: "412405951662",
+
     appId: "1:412405951662:web:2b18a7b9c4dad02c71513f",
+
     measurementId: "G-MXE1VWC16P"
+
   };
 
-
-  // =====================================
-  // FIREBASE START
-  // =====================================
 
   const app = initializeApp(firebaseConfig);
 
@@ -347,15 +539,14 @@
     new GoogleAuthProvider();
 
 
-  // =====================================
-  // ELEMENTS
-  // =====================================
-
   const loginPage =
     document.getElementById("loginPage");
 
   const dashboard =
     document.getElementById("dashboard");
+
+  const message =
+    document.getElementById("message");
 
   const email =
     document.getElementById("email");
@@ -363,22 +554,18 @@
   const password =
     document.getElementById("password");
 
-  const message =
-    document.getElementById("message");
-
   const userEmail =
     document.getElementById("userEmail");
 
+  const username =
+    document.getElementById("username");
 
-  // =====================================
-  // CREATE ACCOUNT
-  // =====================================
+
+  /* CREATE ACCOUNT */
 
   document
     .getElementById("signupBtn")
     .addEventListener("click", async () => {
-
-      message.style.color = "#f87171";
 
       try {
 
@@ -389,14 +576,12 @@
         );
 
         message.style.color = "#34d399";
-
         message.innerText =
           "Account created successfully!";
 
-      }
+      } catch (error) {
 
-      catch (error) {
-
+        message.style.color = "#f87171";
         message.innerText =
           error.message;
 
@@ -405,15 +590,11 @@
     });
 
 
-  // =====================================
-  // EMAIL LOGIN
-  // =====================================
+  /* LOGIN */
 
   document
     .getElementById("loginBtn")
     .addEventListener("click", async () => {
-
-      message.style.color = "#f87171";
 
       try {
 
@@ -423,10 +604,9 @@
           password.value
         );
 
-      }
+      } catch (error) {
 
-      catch (error) {
-
+        message.style.color = "#f87171";
         message.innerText =
           error.message;
 
@@ -435,15 +615,11 @@
     });
 
 
-  // =====================================
-  // GOOGLE LOGIN
-  // =====================================
+  /* GOOGLE */
 
   document
     .getElementById("googleBtn")
     .addEventListener("click", async () => {
-
-      message.style.color = "#f87171";
 
       try {
 
@@ -452,10 +628,9 @@
           googleProvider
         );
 
-      }
+      } catch (error) {
 
-      catch (error) {
-
+        message.style.color = "#f87171";
         message.innerText =
           error.message;
 
@@ -464,9 +639,7 @@
     });
 
 
-  // =====================================
-  // LOGOUT
-  // =====================================
+  /* LOGOUT */
 
   document
     .getElementById("logoutBtn")
@@ -477,9 +650,7 @@
     });
 
 
-  // =====================================
-  // LOGIN STATE
-  // =====================================
+  /* AUTH STATE */
 
   onAuthStateChanged(auth, (user) => {
 
@@ -490,13 +661,23 @@
       dashboard.style.display = "block";
 
       userEmail.innerText =
-        user.email || "Google User";
+        user.email || "Google account";
 
-    }
+      if (user.displayName) {
 
-    else {
+        username.innerText =
+          user.displayName;
 
-      loginPage.style.display = "block";
+      } else {
+
+        username.innerText =
+          user.email.split("@")[0];
+
+      }
+
+    } else {
+
+      loginPage.style.display = "flex";
 
       dashboard.style.display = "none";
 
