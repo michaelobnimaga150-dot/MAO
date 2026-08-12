@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Login Website</title>
+  <title>WAPS | Futuristic Login</title>
 
   <style>
     * {
@@ -12,310 +12,499 @@
 
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #667eea, #764ba2);
       min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #050816;
+      color: white;
       display: flex;
       justify-content: center;
       align-items: center;
+      overflow: hidden;
     }
 
-    .box {
-      background: white;
-      width: 350px;
-      padding: 30px;
-      border-radius: 20px;
+    body::before {
+      content: "";
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      background: #00e5ff;
+      filter: blur(180px);
+      opacity: 0.15;
+      top: -150px;
+      left: -150px;
+      animation: moveGlow 8s infinite alternate;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      background: #7c3aed;
+      filter: blur(180px);
+      opacity: 0.18;
+      bottom: -180px;
+      right: -150px;
+      animation: moveGlow 10s infinite alternate;
+    }
+
+    @keyframes moveGlow {
+      from {
+        transform: translate(0, 0);
+      }
+
+      to {
+        transform: translate(100px, -50px);
+      }
+    }
+
+    .grid {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    .card {
+      position: relative;
+      z-index: 2;
+      width: 380px;
+      max-width: 92%;
+      padding: 35px;
+      background: rgba(10, 15, 35, 0.78);
+      border: 1px solid rgba(0, 229, 255, 0.35);
+      border-radius: 24px;
+      box-shadow:
+        0 0 40px rgba(0, 229, 255, 0.12),
+        inset 0 0 30px rgba(124, 58, 237, 0.05);
+      backdrop-filter: blur(20px);
+    }
+
+    .logo {
       text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      font-size: 42px;
+      font-weight: bold;
+      letter-spacing: 8px;
+      color: #00e5ff;
+      text-shadow: 0 0 20px rgba(0,229,255,0.8);
     }
 
-    h1 {
-      margin-bottom: 5px;
+    .subtitle {
+      text-align: center;
+      color: #9ca3af;
+      margin-bottom: 28px;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      color: #67e8f9;
+      margin-bottom: 6px;
+      letter-spacing: 1px;
     }
 
     input {
       width: 100%;
-      padding: 13px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(0,229,255,0.25);
+      background: rgba(255,255,255,0.04);
+      color: white;
+      outline: none;
       font-size: 15px;
+    }
+
+    input:focus {
+      border-color: #00e5ff;
+      box-shadow: 0 0 15px rgba(0,229,255,0.2);
     }
 
     button {
       width: 100%;
-      padding: 13px;
+      padding: 14px;
       margin-top: 10px;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
-      font-size: 16px;
-      background: #667eea;
-      color: white;
+      font-size: 15px;
+      font-weight: bold;
+      transition: 0.2s;
     }
 
-    button:hover {
-      opacity: 0.9;
+    .login {
+      background: #00e5ff;
+      color: #001018;
+      box-shadow: 0 0 20px rgba(0,229,255,0.3);
+    }
+
+    .signup {
+      background: transparent;
+      color: #00e5ff;
+      border: 1px solid #00e5ff;
     }
 
     .google {
       background: white;
-      color: #333;
-      border: 1px solid #ccc;
+      color: #111827;
     }
 
-    .logout {
-      background: #e74c3c;
+    button:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.1);
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 20px 0;
+      color: #6b7280;
+      font-size: 12px;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: "";
+      height: 1px;
+      flex: 1;
+      background: #374151;
     }
 
     #message {
+      min-height: 20px;
+      text-align: center;
       margin-top: 15px;
-      font-size: 14px;
+      font-size: 13px;
+      color: #f87171;
     }
 
     #dashboard {
       display: none;
+      text-align: center;
+    }
+
+    .user-icon {
+      width: 75px;
+      height: 75px;
+      margin: 10px auto 20px;
+      border-radius: 50%;
+      border: 2px solid #00e5ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 30px;
+      color: #00e5ff;
+      box-shadow: 0 0 25px rgba(0,229,255,0.4);
+    }
+
+    .status {
+      color: #34d399;
+      font-size: 13px;
+      margin-bottom: 20px;
+    }
+
+    .logout {
+      background: #ef4444;
+      color: white;
+    }
+
+    .footer {
+      text-align: center;
+      color: #4b5563;
+      font-size: 10px;
+      margin-top: 25px;
+      letter-spacing: 2px;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- LOGIN -->
-  <div class="box" id="loginBox">
+<div class="grid"></div>
 
-    <h1>My Website</h1>
-    <p>Sign in to continue</p>
+<!-- LOGIN -->
+<div class="card" id="loginPage">
 
+  <div class="logo">WAPS</div>
+
+  <div class="subtitle">
+    FUTURE ACCESS SYSTEM
+  </div>
+
+  <div class="field">
+    <label>EMAIL</label>
     <input
       id="email"
       type="email"
-      placeholder="Email"
+      placeholder="Enter your email"
     >
+  </div>
 
+  <div class="field">
+    <label>PASSWORD</label>
     <input
       id="password"
       type="password"
-      placeholder="Password"
+      placeholder="Enter your password"
     >
-
-    <button id="loginBtn">
-      Login
-    </button>
-
-    <button id="signupBtn">
-      Create Account
-    </button>
-
-    <button class="google" id="googleBtn">
-      Continue with Google
-    </button>
-
-    <p id="message"></p>
-
   </div>
 
+  <button class="login" id="loginBtn">
+    ACCESS SYSTEM
+  </button>
 
-  <!-- DASHBOARD -->
-  <div class="box" id="dashboard">
+  <button class="signup" id="signupBtn">
+    CREATE ACCOUNT
+  </button>
 
-    <h1>Welcome! 🎉</h1>
-
-    <p id="userInfo"></p>
-
-    <button class="logout" id="logoutBtn">
-      Logout
-    </button>
-
+  <div class="divider">
+    OR
   </div>
 
+  <button class="google" id="googleBtn">
+    Continue with Google
+  </button>
 
-  <script type="module">
+  <p id="message"></p>
 
-    import { initializeApp }
-    from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+  <div class="footer">
+    SECURE AUTHENTICATION
+  </div>
 
-    import {
-      getAuth,
-      createUserWithEmailAndPassword,
-      signInWithEmailAndPassword,
-      GoogleAuthProvider,
-      signInWithPopup,
-      signOut,
-      onAuthStateChanged
-    }
-    from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+</div>
 
 
-    // =====================================
-    // FIREBASE CONFIG
-    // =====================================
+<!-- DASHBOARD -->
+<div class="card" id="dashboard">
 
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
+  <div class="user-icon">
+    ◉
+  </div>
 
+  <h1>ACCESS GRANTED</h1>
 
-    // =====================================
-    // FIREBASE
-    // =====================================
+  <p class="status">
+    ● SYSTEM ONLINE
+  </p>
 
-    const app = initializeApp(firebaseConfig);
+  <p id="userEmail"></p>
 
-    const auth = getAuth(app);
+  <button class="logout" id="logoutBtn">
+    LOGOUT
+  </button>
 
-    const googleProvider = new GoogleAuthProvider();
+</div>
 
 
-    // =====================================
-    // ELEMENTS
-    // =====================================
+<script type="module">
 
-    const email =
-      document.getElementById("email");
+  import { initializeApp }
+  from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 
-    const password =
-      document.getElementById("password");
-
-    const message =
-      document.getElementById("message");
-
-    const loginBox =
-      document.getElementById("loginBox");
-
-    const dashboard =
-      document.getElementById("dashboard");
-
-    const userInfo =
-      document.getElementById("userInfo");
+  import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    GoogleAuthProvider,
+    signInWithPopup,
+    signOut,
+    onAuthStateChanged
+  }
+  from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 
-    // =====================================
-    // EMAIL LOGIN
-    // =====================================
+  // =====================================
+  // YOUR FIREBASE CONFIG
+  // =====================================
 
-    document.getElementById("loginBtn")
-      .addEventListener("click", async () => {
-
-        try {
-
-          await signInWithEmailAndPassword(
-            auth,
-            email.value,
-            password.value
-          );
-
-        } catch (error) {
-
-          message.style.color = "red";
-          message.innerText = error.message;
-
-        }
-
-      });
+  const firebaseConfig = {
+    apiKey: "AIzaSyCB9sWO3rQCaEVc4B86nkGx6U5iWa7ha9o",
+    authDomain: "waps-c870d.firebaseapp.com",
+    projectId: "waps-c870d",
+    storageBucket: "waps-c870d.firebasestorage.app",
+    messagingSenderId: "412405951662",
+    appId: "1:412405951662:web:2b18a7b9c4dad02c71513f",
+    measurementId: "G-MXE1VWC16P"
+  };
 
 
-    // =====================================
-    // CREATE ACCOUNT
-    // =====================================
+  // =====================================
+  // FIREBASE START
+  // =====================================
 
-    document.getElementById("signupBtn")
-      .addEventListener("click", async () => {
+  const app = initializeApp(firebaseConfig);
 
-        try {
+  const auth = getAuth(app);
 
-          await createUserWithEmailAndPassword(
-            auth,
-            email.value,
-            password.value
-          );
-
-        } catch (error) {
-
-          message.style.color = "red";
-          message.innerText = error.message;
-
-        }
-
-      });
+  const googleProvider =
+    new GoogleAuthProvider();
 
 
-    // =====================================
-    // GOOGLE LOGIN
-    // =====================================
+  // =====================================
+  // ELEMENTS
+  // =====================================
 
-    document.getElementById("googleBtn")
-      .addEventListener("click", async () => {
+  const loginPage =
+    document.getElementById("loginPage");
 
-        try {
+  const dashboard =
+    document.getElementById("dashboard");
 
-          await signInWithPopup(
-            auth,
-            googleProvider
-          );
+  const email =
+    document.getElementById("email");
 
-        } catch (error) {
+  const password =
+    document.getElementById("password");
 
-          message.style.color = "red";
-          message.innerText = error.message;
+  const message =
+    document.getElementById("message");
 
-        }
-
-      });
-
-
-    // =====================================
-    // LOGOUT
-    // =====================================
-
-    document.getElementById("logoutBtn")
-      .addEventListener("click", async () => {
-
-        await signOut(auth);
-
-      });
+  const userEmail =
+    document.getElementById("userEmail");
 
 
-    // =====================================
-    // CHECK LOGIN
-    // =====================================
+  // =====================================
+  // CREATE ACCOUNT
+  // =====================================
 
-    onAuthStateChanged(auth, (user) => {
+  document
+    .getElementById("signupBtn")
+    .addEventListener("click", async () => {
 
-      if (user) {
+      message.style.color = "#f87171";
 
-        loginBox.style.display = "none";
+      try {
 
-        dashboard.style.display = "block";
+        await createUserWithEmailAndPassword(
+          auth,
+          email.value,
+          password.value
+        );
 
-        userInfo.innerText =
-          "Logged in as: " + user.email;
+        message.style.color = "#34d399";
 
-      } else {
+        message.innerText =
+          "Account created successfully!";
 
-        loginBox.style.display = "block";
+      }
 
-        dashboard.style.display = "none";
+      catch (error) {
+
+        message.innerText =
+          error.message;
 
       }
 
     });
 
-  </script>
+
+  // =====================================
+  // EMAIL LOGIN
+  // =====================================
+
+  document
+    .getElementById("loginBtn")
+    .addEventListener("click", async () => {
+
+      message.style.color = "#f87171";
+
+      try {
+
+        await signInWithEmailAndPassword(
+          auth,
+          email.value,
+          password.value
+        );
+
+      }
+
+      catch (error) {
+
+        message.innerText =
+          error.message;
+
+      }
+
+    });
+
+
+  // =====================================
+  // GOOGLE LOGIN
+  // =====================================
+
+  document
+    .getElementById("googleBtn")
+    .addEventListener("click", async () => {
+
+      message.style.color = "#f87171";
+
+      try {
+
+        await signInWithPopup(
+          auth,
+          googleProvider
+        );
+
+      }
+
+      catch (error) {
+
+        message.innerText =
+          error.message;
+
+      }
+
+    });
+
+
+  // =====================================
+  // LOGOUT
+  // =====================================
+
+  document
+    .getElementById("logoutBtn")
+    .addEventListener("click", async () => {
+
+      await signOut(auth);
+
+    });
+
+
+  // =====================================
+  // LOGIN STATE
+  // =====================================
+
+  onAuthStateChanged(auth, (user) => {
+
+    if (user) {
+
+      loginPage.style.display = "none";
+
+      dashboard.style.display = "block";
+
+      userEmail.innerText =
+        user.email || "Google User";
+
+    }
+
+    else {
+
+      loginPage.style.display = "block";
+
+      dashboard.style.display = "none";
+
+    }
+
+  });
+
+</script>
 
 </body>
 </html>
-const firebaseConfig = {
-  apiKey: "AIzaSyCB9sWO3rQCaEVc4B86nkGx6U5iWa7ha9o",
-  authDomain: "waps-c870d.firebaseapp.com",
-  projectId: "waps-c870d",
-  storageBucket: "waps-c870d.firebasestorage.app",
-  messagingSenderId: "412405951662",
-  appId: "1:412405951662:web:2b18a7b9c4dad02c71513f",
-  measurementId: "G-MXE1VWC16P"
-};
