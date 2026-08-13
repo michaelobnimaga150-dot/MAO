@@ -1085,7 +1085,7 @@ body {
         </button>
 
         <div class="login-message" id="loginMessage">
-            Demo authentication mode
+            Sign in securely with Firebase
         </div>
 
     </div>
@@ -1958,7 +1958,27 @@ body {
 </div>
 
 
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+
 <script>
+
+/* =========================================================
+   FIREBASE AUTHENTICATION
+   ========================================================= */
+const firebaseConfig = {
+    apiKey: "AIzaSyCB9sWO3rQCaEVc4B86nkGx6U5iWa7ha9o",
+    authDomain: "waps-c870d.firebaseapp.com",
+    projectId: "waps-c870d",
+    storageBucket: "waps-c870d.firebasestorage.app",
+    messagingSenderId: "412405951662",
+    appId: "1:412405951662:web:2b18a7b9c4dad02c71513f",
+    measurementId: "G-MXE1VWC16P"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const googleProvider = new firebase.auth.GoogleAuthProvider();
 
 /* =========================================================
    CONNECTCHAT APPLICATION JAVASCRIPT
@@ -1997,105 +2017,131 @@ const state = {
    LOGIN
    --------------------------------------------------------- */
 
+function setLoginMessage(message, isError = false) {
+    const element = document.getElementById("loginMessage");
+    element.textContent = message;
+    element.style.color = isError ? "var(--danger)" : "var(--muted)";
+}
+
+function showAppForUser(user) {
+    if (!user) return;
+
+    state.loggedIn = true;
+    state.currentUser.email = user.email || "";
+    state.currentUser.name = user.displayName || (user.email ? user.email.split("@")[0] : "User");
+    state.currentUser.avatar = user.photoURL || "https://i.pravatar.cc/100?img=12";
+
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("app").style.display = "block";
+
+    // Update profile information with the authenticated Firebase user.
+    document.querySelectorAll(".user-mini img, .profile-menu-header img").forEach(img => {
+        img.src = state.currentUser.avatar;
+    });
+
+    const profileName = document.querySelector(".profile-menu-header strong");
+    if (profileName) profileName.textContent = state.currentUser.name;
+
+    const profileStatus = document.querySelector(".profile-menu-header div div");
+    if (profileStatus) profileStatus.textContent = state.currentUser.email || "Active now";
+
+    showToast("Welcome, " + state.currentUser.name + "!");
+}
+
 function loginWithEmail() {
-
-    const email =
-        document.getElementById("loginEmail").value.trim();
-
-    const password =
-        document.getElementById("loginPassword").value;
-
-    const message =
-        document.getElementById("loginMessage");
-
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
 
     if (!email) {
-
-        message.textContent =
-            "Please enter your email address.";
-
+        setLoginMessage("Please enter your email address.", true);
         return;
-
     }
-
 
     if (!password) {
-
-        message.textContent =
-            "Please enter your password.";
-
+        setLoginMessage("Please enter your password.", true);
         return;
-
     }
 
+    setLoginMessage("Signing you in...");
 
-    message.textContent =
-        "Signing you in...";
+    auth.signInWithEmailAndPassword(email, password)
+        .then(result => {
+            setLoginMessage("Signed in successfully.");
+            showAppForUser(result.user);
+        })
+        .catch(error => {
+            let message = "Unable to sign in.";
 
+            switch (error.code) {
+                case "auth/invalid-email":
+                    message = "Please enter a valid email address.";
+                    break;
+                case "auth/user-not-found":
+                    message = "No account was found with this email. Create the account in Firebase Authentication first.";
+                    break;
+                case "auth/wrong-password":
+                case "auth/invalid-credential":
+                    message = "Incorrect email or password.";
+                    break;
+                case "auth/too-many-requests":
+                    message = "Too many attempts. Please wait and try again.";
+                    break;
+                case "auth/network-request-failed":
+                    message = "Network error. Check your internet connection.";
+                    break;
+            }
 
-    setTimeout(() => {
-
-        state.loggedIn = true;
-
-        state.currentUser.email = email;
-
-        document.getElementById("loginScreen").style.display =
-            "none";
-
-        document.getElementById("app").style.display =
-            "block";
-
-        showToast("Welcome to ConnectChat!");
-
-    }, 700);
-
+            setLoginMessage(message, true);
+        });
 }
-
-
-/* ---------------------------------------------------------
-   GOOGLE LOGIN
-   --------------------------------------------------------- */
 
 function googleLogin() {
+    setLoginMessage("Opening Google sign-in...");
 
-    /*
-       IMPORTANT:
+    auth.signInWithPopup(googleProvider)
+        .then(result => {
+            showAppForUser(result.user);
+        })
+        .catch(error => {
+            console.error("Google sign-in error:", error);
 
-       This is only a demonstration button.
-
-       Real Google authentication requires
-       Google OAuth / Firebase Authentication
-       / another authentication provider.
-    */
-
-    showToast(
-        "Google OAuth needs to be connected to your backend."
-    );
-
+            if (error.code === "auth/popup-closed-by-user") {
+                setLoginMessage("Google sign-in was cancelled.", true);
+            } else if (error.code === "auth/popup-blocked") {
+                setLoginMessage("Your browser blocked the Google sign-in popup. Allow popups and try again.", true);
+            } else if (error.code === "auth/unauthorized-domain") {
+                setLoginMessage("This website domain is not authorized in Firebase Authentication.", true);
+            } else {
+                setLoginMessage(error.message || "Google sign-in failed.", true);
+            }
+        });
 }
 
+// Keep the user signed in after refreshing the GitHub Pages website.
+auth.onAuthStateChanged(user => {
+    if (user) {
+        showAppForUser(user);
+    }
+});
 
 /* ---------------------------------------------------------
    LOGOUT
    --------------------------------------------------------- */
 
 function logout() {
-
-    state.loggedIn = false;
-
-    document.getElementById("app").style.display =
-        "none";
-
-    document.getElementById("loginScreen").style.display =
-        "flex";
-
-    document.getElementById("loginPassword").value =
-        "";
-
-    showToast("You have been logged out.");
-
+    auth.signOut()
+        .then(() => {
+            state.loggedIn = false;
+            document.getElementById("app").style.display = "none";
+            document.getElementById("loginScreen").style.display = "flex";
+            document.getElementById("loginPassword").value = "";
+            setLoginMessage("You have been logged out.");
+        })
+        .catch(error => {
+            console.error("Logout error:", error);
+            showToast("Unable to log out.");
+        });
 }
-
 
 /* ---------------------------------------------------------
    PROFILE MENU
