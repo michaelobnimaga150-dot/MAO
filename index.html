@@ -1,1321 +1,525 @@
-/*
-  ================================================================
-       ESP32 WI-FI ACTIVITY SENSOR - VERSION 1.0
-  ================================================================
-
-  Features
-  ----------------------------------------------------------------
-  - ESP32 Wi-Fi connection
-  - RSSI measurement
-  - Automatic baseline calibration
-  - Exponential moving average filter
-  - Activity calculation
-  - Presence/activity state
-  - Adaptive baseline
-  - Confidence estimation
-  - Web dashboard hosted by ESP32
-  - Live signal graph
-  - Radar-style activity visualization
-  - Activity history
-  - REST-style JSON endpoint
-  - Automatic Wi-Fi reconnect
-  - Uptime monitoring
-  - Sensor calibration
-  - Adjustable sensitivity
-  - Mobile responsive interface
-
-  Hardware
-  ----------------------------------------------------------------
-  ESP32 development board
-
-  Network
-  ----------------------------------------------------------------
-  Your PLDT Home Fiber Wi-Fi
-
-  IMPORTANT
-  ----------------------------------------------------------------
-  This is an experimental Wi-Fi sensing project.
-
-  RSSI changes can be caused by:
-  - People
-  - Moving objects
-  - Doors
-  - Furniture
-  - Other Wi-Fi devices
-  - Interference
-  - Router activity
-
-  Therefore this system should NOT be treated as a reliable
-  security, surveillance, or person-identification system.
-
-  ================================================================
-*/
-
-#include <WiFi.h>
-#include <WebServer.h>
-
-// ---------------------------------------------------------------
-// USER CONFIGURATION
-// ---------------------------------------------------------------
-
-const char* WIFI_SSID     = "YOUR_PLDT_WIFI";
-const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
-
-// Device name
-const char* DEVICE_NAME = "ESP32-WIFI-SENSOR-01";
-
-// Web server
-WebServer server(80);
-
-// ---------------------------------------------------------------
-// SENSOR SETTINGS
-// ---------------------------------------------------------------
-
-// How often RSSI is sampled
-const unsigned long SENSOR_INTERVAL = 250;
-
-// Dashboard update interval
-const unsigned long DASHBOARD_INTERVAL = 500;
-
-// Calibration duration
-const unsigned long CALIBRATION_TIME = 10000;
-
-// Number of samples kept in history
-const int HISTORY_SIZE = 120;
-
-// Default detection threshold
-float detectionThreshold = 3.5;
-
-// Stronger filtering = smoother but slower response
-float filterStrength = 0.18;
-
-// Baseline adaptation
-float baselineAdaptation = 0.008;
-
-// ---------------------------------------------------------------
-// SENSOR VARIABLES
-// ---------------------------------------------------------------
-
-int rawRSSI = 0;
-
-float filteredRSSI = 0.0;
-
-float baselineRSSI = 0.0;
-
-float signalDifference = 0.0;
-
-float activityLevel = 0.0;
-
-float confidence = 0.0;
-
-bool activityDetected = false;
-
-bool calibrated = false;
-
-bool sensorReady = false;
-
-// ---------------------------------------------------------------
-// TIMING
-// ---------------------------------------------------------------
-
-unsigned long bootTime = 0;
-
-unsigned long lastSensorRead = 0;
-
-unsigned long lastDashboardUpdate = 0;
-
-unsigned long calibrationStart = 0;
-
-unsigned long lastWiFiCheck = 0;
-
-// ---------------------------------------------------------------
-// CALIBRATION VARIABLES
-// ---------------------------------------------------------------
-
-float calibrationSum = 0.0;
-
-int calibrationSamples = 0;
-
-// ---------------------------------------------------------------
-// HISTORY
-// ---------------------------------------------------------------
-
-float activityHistory[HISTORY_SIZE];
-
-float rssiHistory[HISTORY_SIZE];
-
-unsigned long timeHistory[HISTORY_SIZE];
-
-int historyIndex = 0;
-
-int historyCount = 0;
-
-// ---------------------------------------------------------------
-// EVENT COUNTERS
-// ---------------------------------------------------------------
-
-unsigned long totalSamples = 0;
-
-unsigned long detectedEvents = 0;
-
-unsigned long wifiReconnects = 0;
-
-// ---------------------------------------------------------------
-// STATUS
-// ---------------------------------------------------------------
-
-String lastEvent = "System started";
-
-unsigned long lastEventTime = 0;
-
-// ---------------------------------------------------------------
-// UTILITY FUNCTIONS
-// ---------------------------------------------------------------
-
-float absoluteFloat(float value) {
-
-  if (value < 0) {
-    return -value;
-  }
-
-  return value;
-}
-
-// ---------------------------------------------------------------
-// WIFI STATUS
-// ---------------------------------------------------------------
-
-String wifiStatusText() {
-
-  if (WiFi.status() == WL_CONNECTED) {
-    return "CONNECTED";
-  }
-
-  return "DISCONNECTED";
-}
-
-// ---------------------------------------------------------------
-// WIFI RSSI
-// ---------------------------------------------------------------
-
-int readRSSI() {
-
-  if (WiFi.status() != WL_CONNECTED) {
-    return -100;
-  }
-
-  return WiFi.RSSI();
-}
-
-// ---------------------------------------------------------------
-// ADD HISTORY SAMPLE
-// ---------------------------------------------------------------
-
-void addHistory(float activity, float rssi) {
-
-  activityHistory[historyIndex] = activity;
-
-  rssiHistory[historyIndex] = rssi;
-
-  timeHistory[historyIndex] =
-      millis() - bootTime;
-
-  historyIndex++;
-
-  if (historyIndex >= HISTORY_SIZE) {
-    historyIndex = 0;
-  }
-
-  if (historyCount < HISTORY_SIZE) {
-    historyCount++;
-  }
-}
-
-// ---------------------------------------------------------------
-// CALIBRATION
-// ---------------------------------------------------------------
-
-void startCalibration() {
-
-  calibrated = false;
-
-  sensorReady = false;
-
-  calibrationStart = millis();
-
-  calibrationSum = 0.0;
-
-  calibrationSamples = 0;
-
-  activityLevel = 0.0;
-
-  activityDetected = false;
-
-  lastEvent = "Calibration started";
-
-  lastEventTime = millis();
-
-  Serial.println();
-  Serial.println("--------------------------------");
-  Serial.println("CALIBRATION STARTED");
-  Serial.println("Keep the environment as still");
-  Serial.println("as possible for 10 seconds.");
-  Serial.println("--------------------------------");
-}
-
-// ---------------------------------------------------------------
-// PROCESS CALIBRATION
-// ---------------------------------------------------------------
-
-void processCalibration() {
-
-  if (calibrated) {
-    return;
-  }
-
-  if (WiFi.status() != WL_CONNECTED) {
-    return;
-  }
-
-  int rssi = readRSSI();
-
-  if (rssi <= -100) {
-    return;
-  }
-
-  calibrationSum += rssi;
-
-  calibrationSamples++;
-
-  unsigned long elapsed =
-      millis() - calibrationStart;
-
-  if (elapsed >= CALIBRATION_TIME) {
-
-    if (calibrationSamples > 0) {
-
-      baselineRSSI =
-          calibrationSum /
-          calibrationSamples;
-
-      filteredRSSI =
-          baselineRSSI;
-
-      calibrated = true;
-
-      sensorReady = true;
-
-      lastEvent =
-          "Calibration complete";
-
-      lastEventTime =
-          millis();
-
-      Serial.println();
-      Serial.println("--------------------------------");
-      Serial.println("CALIBRATION COMPLETE");
-      Serial.print("Baseline RSSI: ");
-      Serial.println(baselineRSSI);
-      Serial.print("Samples: ");
-      Serial.println(calibrationSamples);
-      Serial.println("--------------------------------");
-    }
-  }
-}
-
-// ---------------------------------------------------------------
-// RSSI FILTER
-// ---------------------------------------------------------------
-
-void updateFilteredRSSI(float newRSSI) {
-
-  if (filteredRSSI == 0) {
-
-    filteredRSSI =
-        newRSSI;
-
-    return;
-  }
-
-  filteredRSSI =
-      filteredRSSI *
-      (1.0 - filterStrength)
-      +
-      newRSSI *
-      filterStrength;
-}
-
-// ---------------------------------------------------------------
-// BASELINE ADAPTATION
-// ---------------------------------------------------------------
-
-void updateBaseline() {
-
-  if (!calibrated) {
-    return;
-  }
-
-  /*
-    Only adapt baseline when the environment
-    appears stable.
-
-    This prevents the baseline from immediately
-    following a movement event.
-  */
-
-  if (activityLevel < detectionThreshold * 0.5) {
-
-    baselineRSSI =
-        baselineRSSI *
-        (1.0 - baselineAdaptation)
-        +
-        filteredRSSI *
-        baselineAdaptation;
-  }
-}
-
-// ---------------------------------------------------------------
-// ACTIVITY CALCULATION
-// ---------------------------------------------------------------
-
-void calculateActivity() {
-
-  signalDifference =
-      absoluteFloat(
-        filteredRSSI -
-        baselineRSSI
-      );
-
-  /*
-    Smooth activity value
-  */
-
-  activityLevel =
-      activityLevel * 0.70
-      +
-      signalDifference * 0.30;
-
-  /*
-    Convert activity to confidence.
-  */
-
-  float normalized =
-      activityLevel /
-      (detectionThreshold * 3.0);
-
-  if (normalized > 1.0) {
-    normalized = 1.0;
-  }
-
-  if (normalized < 0.0) {
-    normalized = 0.0;
-  }
-
-  confidence =
-      normalized * 100.0;
-
-  bool previousState =
-      activityDetected;
-
-  /*
-    Detection hysteresis.
-
-    This prevents rapid ON/OFF switching.
-  */
-
-  if (!activityDetected) {
-
-    if (activityLevel >=
-        detectionThreshold) {
-
-      activityDetected = true;
-    }
-
-  } else {
-
-    if (activityLevel <
-        detectionThreshold * 0.65) {
-
-      activityDetected = false;
-    }
-  }
-
-  /*
-    Detect new event.
-  */
-
-  if (activityDetected &&
-      !previousState) {
-
-    detectedEvents++;
-
-    lastEvent =
-        "Activity detected";
-
-    lastEventTime =
-        millis();
-
-    Serial.println(
-      "[EVENT] Activity detected"
-    );
-  }
-
-  if (!activityDetected &&
-      previousState) {
-
-    lastEvent =
-        "Environment stable";
-
-    lastEventTime =
-        millis();
-
-    Serial.println(
-      "[EVENT] Environment stable"
-    );
-  }
-}
-
-// ---------------------------------------------------------------
-// SENSOR LOOP
-// ---------------------------------------------------------------
-
-void updateSensor() {
-
-  if (millis() -
-      lastSensorRead <
-      SENSOR_INTERVAL) {
-
-    return;
-  }
-
-  lastSensorRead =
-      millis();
-
-  if (WiFi.status() !=
-      WL_CONNECTED) {
-
-    return;
-  }
-
-  rawRSSI =
-      readRSSI();
-
-  if (rawRSSI <= -100) {
-    return;
-  }
-
-  totalSamples++;
-
-  /*
-    Calibration phase
-  */
-
-  if (!calibrated) {
-
-    processCalibration();
-
-    return;
-  }
-
-  /*
-    Normal sensor processing
-  */
-
-  updateFilteredRSSI(
-      rawRSSI
-  );
-
-  calculateActivity();
-
-  updateBaseline();
-
-  addHistory(
-      activityLevel,
-      filteredRSSI
-  );
-}
-
-// ---------------------------------------------------------------
-// WIFI RECONNECTION
-// ---------------------------------------------------------------
-
-void checkWiFi() {
-
-  if (millis() -
-      lastWiFiCheck <
-      5000) {
-
-    return;
-  }
-
-  lastWiFiCheck =
-      millis();
-
-  if (WiFi.status() ==
-      WL_CONNECTED) {
-
-    return;
-  }
-
-  Serial.println(
-    "Wi-Fi disconnected."
-  );
-
-  Serial.println(
-    "Attempting reconnection..."
-  );
-
-  wifiReconnects++;
-
-  WiFi.disconnect();
-
-  delay(100);
-
-  WiFi.begin(
-    WIFI_SSID,
-    WIFI_PASSWORD
-  );
-}
-
-// ---------------------------------------------------------------
-// FORMAT UPTIME
-// ---------------------------------------------------------------
-
-String formatUptime(
-  unsigned long seconds
-) {
-
-  unsigned long days =
-      seconds / 86400;
-
-  seconds %= 86400;
-
-  unsigned long hours =
-      seconds / 3600;
-
-  seconds %= 3600;
-
-  unsigned long minutes =
-      seconds / 60;
-
-  seconds %= 60;
-
-  String result = "";
-
-  result += String(days);
-  result += "d ";
-
-  result += String(hours);
-  result += "h ";
-
-  result += String(minutes);
-  result += "m ";
-
-  result += String(seconds);
-  result += "s";
-
-  return result;
-}
-
-// ---------------------------------------------------------------
-// JSON ESCAPE
-// ---------------------------------------------------------------
-
-String jsonEscape(
-  String text
-) {
-
-  text.replace(
-    "\\",
-    "\\\\"
-  );
-
-  text.replace(
-    "\"",
-    "\\\""
-  );
-
-  return text;
-}
-
-// ---------------------------------------------------------------
-// CREATE SENSOR JSON
-// ---------------------------------------------------------------
-
-String createSensorJSON() {
-
-  String json = "{";
-
-  json += "\"device\":\"";
-  json += jsonEscape(
-    DEVICE_NAME
-  );
-  json += "\",";
-
-  json += "\"wifi\":\"";
-  json += wifiStatusText();
-  json += "\",";
-
-  json += "\"rssi\":";
-  json += String(rawRSSI);
-  json += ",";
-
-  json += "\"filteredRSSI\":";
-  json += String(
-    filteredRSSI,
-    2
-  );
-  json += ",";
-
-  json += "\"baselineRSSI\":";
-  json += String(
-    baselineRSSI,
-    2
-  );
-  json += ",";
-
-  json += "\"difference\":";
-  json += String(
-    signalDifference,
-    2
-  );
-  json += ",";
-
-  json += "\"activity\":";
-  json += String(
-    activityLevel,
-    2
-  );
-  json += ",";
-
-  json += "\"confidence\":";
-  json += String(
-    confidence,
-    1
-  );
-  json += ",";
-
-  json += "\"detected\":";
-  json += activityDetected
-          ? "true"
-          : "false";
-  json += ",";
-
-  json += "\"calibrated\":";
-  json += calibrated
-          ? "true"
-          : "false";
-  json += ",";
-
-  json += "\"samples\":";
-  json += String(
-    totalSamples
-  );
-  json += ",";
-
-  json += "\"events\":";
-  json += String(
-    detectedEvents
-  );
-  json += ",";
-
-  json += "\"reconnects\":";
-  json += String(
-    wifiReconnects
-  );
-  json += ",";
-
-  json += "\"uptime\":";
-  json += String(
-    (millis() - bootTime) / 1000
-  );
-  json += ",";
-
-  json += "\"lastEvent\":\"";
-  json += jsonEscape(
-    lastEvent
-  );
-  json += "\"";
-
-  json += "}";
-
-  return json;
-}
-
-// ---------------------------------------------------------------
-// WEB API
-// ---------------------------------------------------------------
-
-void handleAPI() {
-
-  server.sendHeader(
-    "Access-Control-Allow-Origin",
-    "*"
-  );
-
-  server.send(
-    200,
-    "application/json",
-    createSensorJSON()
-  );
-}
-
-// ---------------------------------------------------------------
-// RESET CALIBRATION API
-// ---------------------------------------------------------------
-
-void handleCalibration() {
-
-  startCalibration();
-
-  server.send(
-    200,
-    "application/json",
-    "{\"status\":\"calibration_started\"}"
-  );
-}
-
-// ---------------------------------------------------------------
-// SET SENSITIVITY API
-// ---------------------------------------------------------------
-
-void handleSensitivity() {
-
-  if (!server.hasArg("value")) {
-
-    server.send(
-      400,
-      "application/json",
-      "{\"error\":\"missing value\"}"
-    );
-
-    return;
-  }
-
-  float value =
-      server.arg("value")
-      .toFloat();
-
-  /*
-    Keep safe limits.
-  */
-
-  if (value < 0.5) {
-    value = 0.5;
-  }
-
-  if (value > 20.0) {
-    value = 20.0;
-  }
-
-  detectionThreshold =
-      value;
-
-  String response =
-      "{\"threshold\":" +
-      String(
-        detectionThreshold,
-        2
-      ) +
-      "}";
-
-  server.send(
-    200,
-    "application/json",
-    response
-  );
-}
-
-// ---------------------------------------------------------------
-// HISTORY API
-// ---------------------------------------------------------------
-
-void handleHistory() {
-
-  String json = "[";
-
-  int start =
-      historyCount < HISTORY_SIZE
-      ? 0
-      : historyIndex;
-
-  for (
-    int i = 0;
-    i < historyCount;
-    i++
-  ) {
-
-    int index =
-        (start + i) %
-        HISTORY_SIZE;
-
-    if (i > 0) {
-      json += ",";
-    }
-
-    json += "{";
-
-    json += "\"activity\":";
-    json += String(
-      activityHistory[index],
-      2
-    );
-
-    json += ",";
-
-    json += "\"rssi\":";
-    json += String(
-      rssiHistory[index],
-      2
-    );
-
-    json += ",";
-
-    json += "\"time\":";
-    json += String(
-      timeHistory[index] / 1000
-    );
-
-    json += "}";
-  }
-
-  json += "]";
-
-  server.send(
-    200,
-    "application/json",
-    json
-  );
-}
-
-// ---------------------------------------------------------------
-// HTML DASHBOARD
-// ---------------------------------------------------------------
-
-const char MAIN_PAGE[] PROGMEM = R"HTML(
-
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#03070b">
 
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1.0">
-
-<title>ESP32 Wi-Fi Sensor</title>
+<title>WiFi Sense Command Center</title>
 
 <style>
 
-* {
-  box-sizing:border-box;
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
 }
 
-body {
-
-  margin:0;
-
-  background:
-    radial-gradient(
-      circle at top,
-      #102030 0%,
-      #05080c 45%,
-      #020407 100%
-    );
-
-  color:#e8f2f8;
-
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
-
-  min-height:100vh;
+:root{
+    --bg:#02060a;
+    --panel:#07121a;
+    --panel2:#0b1923;
+    --border:#193443;
+    --text:#e7f3f8;
+    --muted:#718c9c;
+    --green:#42e88b;
+    --red:#ff525d;
+    --yellow:#e6cb5b;
+    --blue:#48a9ff;
+    --cyan:#46d9e8;
 }
 
-header {
-
-  padding:20px;
-
-  border-bottom:
-    1px solid #1d3546;
-
-  background:
-    rgba(5,12,19,.92);
-
-  position:sticky;
-
-  top:0;
-
-  z-index:20;
-
-  backdrop-filter:
-    blur(10px);
+body{
+    min-height:100vh;
+    color:var(--text);
+    background:
+        radial-gradient(
+            circle at 50% -20%,
+            #123044 0,
+            #061019 38%,
+            #020407 80%
+        );
+    font-family:
+        Inter,
+        Arial,
+        sans-serif;
+    overflow-x:hidden;
 }
 
-.headerFlex {
+/* HEADER */
 
-  max-width:1400px;
-
-  margin:auto;
-
-  display:flex;
-
-  justify-content:
-    space-between;
-
-  align-items:center;
-
-  gap:20px;
+header{
+    position:sticky;
+    top:0;
+    z-index:100;
+    border-bottom:1px solid var(--border);
+    background:rgba(2,7,11,.94);
+    backdrop-filter:blur(15px);
 }
 
-.title {
-
-  font-size:25px;
-
-  font-weight:800;
-
-  letter-spacing:1px;
+.header{
+    max-width:1500px;
+    margin:auto;
+    padding:16px 22px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
 }
 
-.subtitle {
-
-  color:#7590a4;
-
-  font-size:13px;
-
-  margin-top:5px;
+.brand{
+    display:flex;
+    gap:13px;
+    align-items:center;
 }
 
-.connection {
-
-  display:flex;
-
-  align-items:center;
-
-  gap:8px;
-
-  font-size:13px;
-
-  color:#6fd89c;
+.logo{
+    width:45px;
+    height:45px;
+    border:1px solid #28556b;
+    border-radius:12px;
+    display:grid;
+    place-items:center;
+    background:#0a1c28;
+    font-size:21px;
 }
 
-.dot {
-
-  width:10px;
-
-  height:10px;
-
-  border-radius:50%;
-
-  background:#50e18b;
-
-  box-shadow:
-    0 0 15px #50e18b;
+.title{
+    font-size:20px;
+    font-weight:900;
+    letter-spacing:1px;
 }
 
-.container {
-
-  max-width:1400px;
-
-  margin:auto;
-
-  padding:20px;
+.subtitle{
+    margin-top:4px;
+    font-size:10px;
+    color:var(--muted);
+    letter-spacing:1px;
 }
 
-.cards {
-
-  display:grid;
-
-  grid-template-columns:
-    repeat(
-      auto-fit,
-      minmax(190px,1fr)
-    );
-
-  gap:15px;
+.connection{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    font-size:11px;
+    font-weight:800;
+    color:var(--green);
 }
 
-.card {
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(15,28,40,.96),
-      rgba(7,14,21,.96)
-    );
-
-  border:
-    1px solid #1d374a;
-
-  border-radius:15px;
-
-  padding:20px;
-
-  box-shadow:
-    0 10px 35px
-    rgba(0,0,0,.25);
+.dot{
+    width:9px;
+    height:9px;
+    border-radius:50%;
+    background:var(--green);
+    box-shadow:0 0 15px var(--green);
+    animation:pulse 1.6s infinite;
 }
 
-.cardLabel {
-
-  color:#6e899c;
-
-  font-size:11px;
-
-  letter-spacing:1.5px;
-
-  text-transform:
-    uppercase;
+@keyframes pulse{
+    50%{
+        opacity:.35;
+    }
 }
 
-.cardValue {
+/* MAIN */
 
-  font-size:29px;
-
-  font-weight:800;
-
-  margin-top:10px;
+main{
+    max-width:1500px;
+    margin:auto;
+    padding:22px;
 }
 
-.green {
+/* STATUS */
 
-  color:#54e68e;
-
-  text-shadow:
-    0 0 15px
-    rgba(84,230,142,.35);
+.status{
+    display:grid;
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(165px,1fr)
+        );
+    gap:12px;
 }
 
-.red {
-
-  color:#ff5f62;
-
-  text-shadow:
-    0 0 15px
-    rgba(255,95,98,.35);
+.card{
+    background:
+        linear-gradient(
+            145deg,
+            rgba(11,28,39,.98),
+            rgba(4,11,17,.98)
+        );
+    border:1px solid var(--border);
+    border-radius:15px;
+    padding:17px;
+    min-height:108px;
+    box-shadow:
+        0 12px 35px
+        rgba(0,0,0,.22);
 }
 
-.yellow {
-
-  color:#e8ca58;
+.label{
+    color:var(--muted);
+    font-size:9px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
 }
 
-.grid {
-
-  display:grid;
-
-  grid-template-columns:
-    minmax(0,1.5fr)
-    minmax(300px,1fr);
-
-  gap:18px;
-
-  margin-top:18px;
+.value{
+    margin-top:10px;
+    font-size:26px;
+    font-weight:900;
 }
 
-.panel {
-
-  background:
-    rgba(7,15,23,.94);
-
-  border:
-    1px solid #1b3447;
-
-  border-radius:16px;
-
-  padding:20px;
+.green{
+    color:var(--green);
 }
 
-.panelTitle {
-
-  font-size:17px;
-
-  font-weight:700;
-
-  margin-bottom:15px;
+.red{
+    color:var(--red);
 }
 
-.radarContainer {
-
-  width:100%;
-
-  display:flex;
-
-  justify-content:center;
-
-  align-items:center;
+.yellow{
+    color:var(--yellow);
 }
 
-#radar {
-
-  width:min(
-    100%,
-    620px
-  );
-
-  height:auto;
-
-  border-radius:50%;
+.blue{
+    color:var(--blue);
 }
 
-canvas {
-
-  display:block;
+.cyan{
+    color:var(--cyan);
 }
 
-.chart {
+/* GRID */
 
-  width:100%;
-
-  height:220px;
+.dashboard{
+    display:grid;
+    grid-template-columns:
+        minmax(0,1.45fr)
+        minmax(340px,.75fr);
+    gap:17px;
+    margin-top:17px;
 }
 
-.controls {
-
-  display:flex;
-
-  flex-wrap:wrap;
-
-  gap:10px;
-
-  margin-top:15px;
+.panel{
+    background:rgba(5,14,21,.95);
+    border:1px solid var(--border);
+    border-radius:16px;
+    overflow:hidden;
+    box-shadow:
+        0 15px 45px
+        rgba(0,0,0,.2);
 }
 
-button {
-
-  border:1px solid #2c536b;
-
-  background:#0d2030;
-
-  color:#dbeaf3;
-
-  padding:
-    11px 16px;
-
-  border-radius:9px;
-
-  cursor:pointer;
-
-  font-weight:700;
+.panel-head{
+    padding:15px 18px;
+    border-bottom:1px solid #142b39;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
 }
 
-button:hover {
-
-  background:#153249;
+.panel-title{
+    font-size:13px;
+    font-weight:900;
+    letter-spacing:.8px;
 }
 
-input {
-
-  width:80px;
-
-  background:#050b11;
-
-  border:
-    1px solid #2a4759;
-
-  color:white;
-
-  padding:10px;
-
-  border-radius:8px;
+.tag{
+    font-size:9px;
+    color:var(--muted);
+    border:1px solid #234252;
+    border-radius:6px;
+    padding:5px 8px;
 }
 
-.info {
+/* RADAR */
 
-  display:grid;
-
-  grid-template-columns:
-    1fr 1fr;
-
-  gap:10px;
+.radar-panel{
+    min-height:700px;
 }
 
-.infoBox {
-
-  padding:14px;
-
-  background:#09131d;
-
-  border-radius:10px;
-
-  border:
-    1px solid #172e3e;
+.radar-box{
+    padding:15px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
 }
 
-.infoLabel {
-
-  font-size:11px;
-
-  color:#678196;
+#radar{
+    width:min(100%,650px);
+    aspect-ratio:1;
 }
 
-.infoValue {
+/* SIDE */
 
-  margin-top:5px;
-
-  font-weight:700;
+.side{
+    display:flex;
+    flex-direction:column;
+    gap:17px;
 }
 
-.warning {
-
-  margin-top:18px;
-
-  padding:13px;
-
-  background:
-    rgba(120,85,20,.15);
-
-  border:
-    1px solid #55441e;
-
-  color:#c7b87b;
-
-  border-radius:10px;
-
-  font-size:12px;
-
-  line-height:1.5;
+.metrics{
+    padding:17px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
 }
 
-@media(max-width:900px) {
+.metric{
+    padding:13px;
+    border-radius:10px;
+    background:#061119;
+    border:1px solid #142e3d;
+}
 
-  .grid {
+.metric-name{
+    color:var(--muted);
+    font-size:9px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+}
 
-    grid-template-columns:1fr;
-  }
+.metric-value{
+    margin-top:7px;
+    font-size:18px;
+    font-weight:900;
+}
 
-  .headerFlex {
+/* PEOPLE */
 
-    align-items:
-      flex-start;
+.people-box{
+    padding:20px;
+    text-align:center;
+}
 
-    flex-direction:
-      column;
-  }
+.people-number{
+    font-size:70px;
+    line-height:1;
+    font-weight:1000;
+    color:var(--cyan);
+    text-shadow:
+        0 0 25px
+        rgba(70,217,232,.35);
+}
+
+.people-status{
+    margin-top:12px;
+    color:var(--muted);
+    font-size:10px;
+    letter-spacing:1.5px;
+}
+
+/* DEVICE LIST */
+
+.devices{
+    max-height:280px;
+    overflow:auto;
+    padding:10px 15px;
+}
+
+.device{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px 5px;
+    border-bottom:1px solid #102733;
+}
+
+.device-left{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.device-icon{
+    width:34px;
+    height:34px;
+    display:grid;
+    place-items:center;
+    border-radius:8px;
+    background:#0b202c;
+}
+
+.device-name{
+    font-size:12px;
+    font-weight:700;
+}
+
+.device-type{
+    margin-top:3px;
+    color:var(--muted);
+    font-size:9px;
+}
+
+.device-state{
+    color:var(--green);
+    font-size:9px;
+}
+
+/* CONTROLS */
+
+.controls{
+    padding:17px;
+}
+
+.control-line{
+    display:flex;
+    gap:9px;
+    align-items:center;
+    margin-top:10px;
+}
+
+input[type=range]{
+    width:100%;
+    accent-color:var(--green);
+}
+
+.range{
+    width:50px;
+    text-align:right;
+    color:var(--yellow);
+    font-size:12px;
+}
+
+button{
+    border:1px solid #28536a;
+    border-radius:8px;
+    padding:10px 12px;
+    color:var(--text);
+    background:#0b1d29;
+    cursor:pointer;
+    font-weight:800;
+}
+
+button:hover{
+    background:#123047;
+}
+
+.primary{
+    background:#103825;
+    border-color:#28764a;
+}
+
+/* GRAPH */
+
+.graph{
+    margin-top:17px;
+}
+
+.graph-box{
+    padding:15px;
+}
+
+#graph{
+    width:100%;
+    height:240px;
+}
+
+/* LOG */
+
+.log{
+    height:190px;
+    overflow:auto;
+    padding:10px 15px;
+    font-family:
+        "Courier New",
+        monospace;
+    font-size:11px;
+}
+
+.log-entry{
+    padding:7px 0;
+    border-bottom:1px solid #102532;
+    color:#87a2b2;
+}
+
+.log-entry strong{
+    color:var(--green);
+}
+
+/* WARNING */
+
+.warning{
+    margin-top:17px;
+    padding:15px;
+    border:1px solid #574b26;
+    border-radius:12px;
+    background:rgba(90,70,20,.12);
+    color:#c9bc80;
+    font-size:11px;
+    line-height:1.6;
+}
+
+/* FOOTER */
+
+footer{
+    padding:25px;
+    text-align:center;
+    color:#4f6878;
+    font-size:10px;
+}
+
+/* MOBILE */
+
+@media(max-width:1000px){
+
+    .dashboard{
+        grid-template-columns:1fr;
+    }
+
+    .radar-panel{
+        min-height:auto;
+    }
+}
+
+@media(max-width:600px){
+
+    main{
+        padding:12px;
+    }
+
+    .header{
+        padding:13px;
+    }
+
+    .title{
+        font-size:15px;
+    }
+
+    .subtitle{
+        font-size:8px;
+    }
+
+    .people-number{
+        font-size:60px;
+    }
 }
 
 </style>
-
 </head>
 
 <body>
 
 <header>
 
-<div class="headerFlex">
+<div class="header">
+
+<div class="brand">
+
+<div class="logo">
+📡
+</div>
 
 <div>
 
 <div class="title">
-ESP32 WI-FI ACTIVITY SENSOR
+WIFI SENSE COMMAND CENTER
 </div>
 
 <div class="subtitle">
-Experimental real-time sensing dashboard
+LIVE NETWORK ACTIVITY MONITOR
+</div>
+
 </div>
 
 </div>
@@ -1328,7 +532,7 @@ id="connectionDot">
 </div>
 
 <span id="connectionText">
-CONNECTING
+CHECKING
 </span>
 
 </div>
@@ -1337,77 +541,134 @@ CONNECTING
 
 </header>
 
-<div class="container">
 
-<div class="cards">
+<main>
 
-<div class="card">
 
-<div class="cardLabel">
-Person / Activity
-</div>
+<!-- ========================================================
+     STATUS
+========================================================= -->
 
-<div
-class="cardValue green"
-id="status">
-NO ACTIVITY
-</div>
-
-</div>
+<section class="status">
 
 <div class="card">
 
-<div class="cardLabel">
-Wi-Fi RSSI
+<div class="label">
+Network
 </div>
 
 <div
-class="cardValue"
-id="rssi">
--- dBm
+class="value green"
+id="network">
+ONLINE
 </div>
 
 </div>
+
 
 <div class="card">
 
-<div class="cardLabel">
-Activity Level
+<div class="label">
+Connection
 </div>
 
 <div
-class="cardValue yellow"
+class="value blue"
+id="connection">
+UNKNOWN
+</div>
+
+</div>
+
+
+<div class="card">
+
+<div class="label">
+Latency
+</div>
+
+<div
+class="value"
+id="latency">
+--
+</div>
+
+</div>
+
+
+<div class="card">
+
+<div class="label">
+Activity
+</div>
+
+<div
+class="value green"
 id="activity">
-0.00
+STABLE
 </div>
 
 </div>
+
 
 <div class="card">
 
-<div class="cardLabel">
-Confidence
+<div class="label">
+People Detected
 </div>
 
 <div
-class="cardValue"
-id="confidence">
-0%
+class="value cyan"
+id="peopleTop">
+0
 </div>
 
 </div>
 
+
+<div class="card">
+
+<div class="label">
+Devices Detected
 </div>
 
-<div class="grid">
+<div
+class="value yellow"
+id="devicesTop">
+0
+</div>
 
-<div class="panel">
+</div>
 
-<div class="panelTitle">
+</section>
+
+
+<!-- ========================================================
+     DASHBOARD
+========================================================= -->
+
+<section class="dashboard">
+
+
+<!-- RADAR -->
+
+<div class="panel radar-panel">
+
+<div class="panel-head">
+
+<div class="panel-title">
 LIVE ACTIVITY RADAR
 </div>
 
-<div class="radarContainer">
+<div
+class="tag"
+id="radarStatus">
+SCANNING
+</div>
+
+</div>
+
+<div class="radar-box">
 
 <canvas
 id="radar"
@@ -1419,1275 +680,1514 @@ height="650">
 
 </div>
 
+
+<!-- SIDE -->
+
+<div class="side">
+
+
+<!-- PEOPLE -->
+
 <div class="panel">
 
-<div class="panelTitle">
-SENSOR INFORMATION
+<div class="panel-head">
+
+<div class="panel-title">
+PERSON ACTIVITY ESTIMATE
 </div>
 
-<div class="info">
+<div class="tag">
+ESTIMATE
+</div>
 
-<div class="infoBox">
+</div>
 
-<div class="infoLabel">
-BASELINE
+<div class="people-box">
+
+<div
+class="people-number"
+id="people">
+0
 </div>
 
 <div
-class="infoValue"
-id="baseline">
+class="people-status"
+id="peopleStatus">
+NO SIGNIFICANT ACTIVITY
+</div>
+
+</div>
+
+</div>
+
+
+<!-- DEVICES -->
+
+<div class="panel">
+
+<div class="panel-head">
+
+<div class="panel-title">
+VISIBLE DEVICES
+</div>
+
+<div
+class="tag"
+id="deviceTag">
+0 DEVICES
+</div>
+
+</div>
+
+<div
+class="devices"
+id="deviceList">
+</div>
+
+</div>
+
+
+<!-- TELEMETRY -->
+
+<div class="panel">
+
+<div class="panel-head">
+
+<div class="panel-title">
+NETWORK TELEMETRY
+</div>
+
+</div>
+
+<div class="metrics">
+
+<div class="metric">
+
+<div class="metric-name">
+RTT
+</div>
+
+<div
+class="metric-value"
+id="rtt">
 --
 </div>
 
 </div>
 
-<div class="infoBox">
 
-<div class="infoLabel">
-FILTERED RSSI
+<div class="metric">
+
+<div class="metric-name">
+DOWNLINK
 </div>
 
 <div
-class="infoValue"
-id="filtered">
+class="metric-value"
+id="downlink">
 --
 </div>
 
 </div>
 
-<div class="infoBox">
 
-<div class="infoLabel">
-DIFFERENCE
+<div class="metric">
+
+<div class="metric-name">
+ONLINE
 </div>
 
 <div
-class="infoValue"
-id="difference">
---
+class="metric-value"
+id="online">
+YES
 </div>
 
 </div>
 
-<div class="infoBox">
 
-<div class="infoLabel">
-EVENTS
+<div class="metric">
+
+<div class="metric-name">
+PEAK
 </div>
 
 <div
-class="infoValue"
-id="events">
+class="metric-value"
+id="peak">
 0
 </div>
 
 </div>
 
-<div class="infoBox">
-
-<div class="infoLabel">
-SAMPLES
-</div>
-
-<div
-class="infoValue"
-id="samples">
-0
 </div>
 
 </div>
 
-<div class="infoBox">
 
-<div class="infoLabel">
-UPTIME
-</div>
+<!-- CONTROLS -->
 
-<div
-class="infoValue"
-id="uptime">
---
-</div>
+<div class="panel">
 
+<div class="panel-head">
+
+<div class="panel-title">
+SENSOR CONTROL
 </div>
 
 </div>
 
 <div class="controls">
 
-<button onclick="calibrate()">
+<div class="label">
+Sensitivity
+</div>
+
+<div class="control-line">
+
+<input
+type="range"
+id="sensitivity"
+min="1"
+max="100"
+value="50">
+
+<div
+class="range"
+id="sensitivityValue">
+50
+</div>
+
+</div>
+
+
+<div class="control-line">
+
+<button
+class="primary"
+onclick="calibrate()">
 CALIBRATE
 </button>
 
-<input
-id="sensitivity"
-type="number"
-step="0.1"
-min="0.5"
-max="20"
-value="3.5">
+<button
+onclick="clearLog()">
+CLEAR
+</button>
 
-<button onclick="setSensitivity()">
-SET SENSITIVITY
+<button
+onclick="fullScreen()">
+FULL
 </button>
 
 </div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- GRAPH -->
+
+<section class="panel graph">
+
+<div class="panel-head">
+
+<div class="panel-title">
+LIVE ACTIVITY GRAPH
+</div>
+
+<div class="tag">
+REAL TIME
+</div>
+
+</div>
+
+<div class="graph-box">
+
+<canvas
+id="graph"
+width="1400"
+height="240">
+</canvas>
+
+</div>
+
+</section>
+
+
+<!-- EVENT LOG -->
+
+<section class="panel graph">
+
+<div class="panel-head">
+
+<div class="panel-title">
+SYSTEM EVENT LOG
+</div>
+
+<div
+class="tag"
+id="events">
+0 EVENTS
+</div>
+
+</div>
+
+<div
+class="log"
+id="log">
+</div>
+
+</section>
+
+
+<!-- INFO -->
 
 <div class="warning">
 
 <strong>IMPORTANT:</strong>
 
-This system estimates environmental
-activity from Wi-Fi signal changes.
-It does not provide reliable person
-identification or precise location.
+This browser-only version cannot directly read your PLDT
+router's complete client list, Wi-Fi RSSI, CSI or radio
+channel data. Therefore the people counter and radar are
+<strong>activity estimates</strong>, not genuine physical
+person tracking.
+
+The device section shows devices that the webpage can
+identify about the current browser/device environment;
+it cannot secretly scan all phones connected to your
+PLDT router.
+
+For genuine Wi-Fi person sensing and accurate device
+discovery, you would need authorized router/API access or
+appropriate sensing hardware.
 
 </div>
 
-</div>
+</main>
 
-</div>
 
-<div class="panel">
+<footer>
 
-<div class="panelTitle">
-LIVE SIGNAL HISTORY
-</div>
+WiFi Sense Command Center • Browser Edition
 
-<canvas
-class="chart"
-id="chart"
-width="1200"
-height="220">
-</canvas>
+</footer>
 
-</div>
-
-</div>
 
 <script>
 
-/* ============================================================
-   CLIENT DASHBOARD ENGINE
-   ============================================================ */
+/* ==========================================================
+   STATE
+========================================================== */
+
+const state = {
+
+    start:Date.now(),
+
+    latency:0,
+
+    previousLatency:0,
+
+    baseline:null,
+
+    activity:0,
+
+    sensitivity:50,
+
+    people:0,
+
+    devices:0,
+
+    peak:0,
+
+    events:0,
+
+    detected:false,
+
+    samples:[],
+
+    angle:0
+
+};
+
+
+/* ==========================================================
+   CANVAS
+========================================================== */
 
 const radar =
-document.getElementById(
-  "radar"
-);
+document.getElementById("radar");
 
-const radarCtx =
+const rctx =
 radar.getContext("2d");
 
-const chart =
-document.getElementById(
-  "chart"
-);
+const graph =
+document.getElementById("graph");
 
-const chartCtx =
-chart.getContext("2d");
-
-let currentActivity = 0;
-
-let detected = false;
-
-let sweepAngle = 0;
-
-let history = [];
-
-let connected = false;
+const gctx =
+graph.getContext("2d");
 
 
-/* ============================================================
-   FORMAT
-   ============================================================ */
+/* ==========================================================
+   LOG
+========================================================== */
 
-function formatUptime(seconds) {
+function log(message){
 
-  let d =
-    Math.floor(
-      seconds / 86400
-    );
+    state.events++;
 
-  seconds %= 86400;
+    const box =
+    document.getElementById("log");
 
-  let h =
-    Math.floor(
-      seconds / 3600
-    );
+    const time =
+    new Date().toLocaleTimeString();
 
-  seconds %= 3600;
+    const item =
+    document.createElement("div");
 
-  let m =
-    Math.floor(
-      seconds / 60
-    );
+    item.className =
+    "log-entry";
 
-  let s =
-    Math.floor(
-      seconds % 60
-    );
+    item.innerHTML =
+    "<strong>[" +
+    time +
+    "]</strong> " +
+    message;
 
-  return (
-    d + "d " +
-    h + "h " +
-    m + "m " +
-    s + "s"
-  );
-}
+    box.prepend(item);
 
-
-/* ============================================================
-   UPDATE DASHBOARD
-   ============================================================ */
-
-function updateDashboard(data) {
-
-  currentActivity =
-    Number(data.activity) || 0;
-
-  detected =
-    data.detected === true;
-
-  document.getElementById(
-    "rssi"
-  ).textContent =
-    data.rssi + " dBm";
-
-  document.getElementById(
-    "filtered"
-  ).textContent =
-    Number(
-      data.filteredRSSI
-    ).toFixed(2);
-
-  document.getElementById(
-    "baseline"
-  ).textContent =
-    Number(
-      data.baselineRSSI
-    ).toFixed(2);
-
-  document.getElementById(
-    "difference"
-  ).textContent =
-    Number(
-      data.difference
-    ).toFixed(2);
-
-  document.getElementById(
-    "activity"
-  ).textContent =
-    Number(
-      data.activity
-    ).toFixed(2);
-
-  document.getElementById(
-    "confidence"
-  ).textContent =
-    Number(
-      data.confidence
-    ).toFixed(0)
-    + "%";
-
-  document.getElementById(
-    "events"
-  ).textContent =
-    data.events;
-
-  document.getElementById(
-    "samples"
-  ).textContent =
-    data.samples;
-
-  document.getElementById(
-    "uptime"
-  ).textContent =
-    formatUptime(
-      data.uptime
-    );
-
-  const status =
     document.getElementById(
-      "status"
-    );
+        "events"
+    ).textContent =
+    state.events +
+    " EVENTS";
 
-  if (detected) {
-
-    status.textContent =
-      "ACTIVITY DETECTED";
-
-    status.className =
-      "cardValue red";
-
-  } else {
-
-    status.textContent =
-      "NO ACTIVITY";
-
-    status.className =
-      "cardValue green";
-  }
-
-  history.push({
-    activity:
-      Number(data.activity),
-
-    rssi:
-      Number(data.rssi),
-
-    time:
-      Date.now()
-  });
-
-  if (
-    history.length >
-    100
-  ) {
-
-    history.shift();
-  }
 }
 
 
-/* ============================================================
+/* ==========================================================
+   NETWORK INFORMATION
+========================================================== */
+
+function networkInfo(){
+
+    const c =
+    navigator.connection ||
+    navigator.mozConnection ||
+    navigator.webkitConnection;
+
+    if(!c){
+
+        document.getElementById(
+            "connection"
+        ).textContent =
+        "LIMITED";
+
+        return;
+
+    }
+
+    document.getElementById(
+        "connection"
+    ).textContent =
+    (
+        c.effectiveType ||
+        c.type ||
+        "UNKNOWN"
+    ).toUpperCase();
+
+
+    if(
+        typeof c.downlink ===
+        "number"
+    ){
+
+        document.getElementById(
+            "downlink"
+        ).textContent =
+        c.downlink.toFixed(1) +
+        " Mbps";
+
+    }
+
+}
+
+
+/* ==========================================================
+   LATENCY
+========================================================== */
+
+async function ping(){
+
+    if(!navigator.onLine){
+
+        state.latency =
+        999;
+
+        return;
+
+    }
+
+    const start =
+    performance.now();
+
+    try{
+
+        await fetch(
+            location.href +
+            "?network_test=" +
+            Date.now(),
+            {
+                method:"HEAD",
+                cache:"no-store"
+            }
+        );
+
+        const end =
+        performance.now();
+
+        state.previousLatency =
+        state.latency;
+
+        state.latency =
+        Math.round(
+            end-start
+        );
+
+    }catch{
+
+        state.latency =
+        999;
+
+    }
+
+}
+
+
+/* ==========================================================
+   ACTIVITY
+========================================================== */
+
+function calculateActivity(){
+
+    if(state.baseline === null){
+
+        state.baseline =
+        state.latency;
+
+        return;
+
+    }
+
+    const difference =
+    Math.abs(
+        state.latency -
+        state.baseline
+    );
+
+    const change =
+    Math.abs(
+        state.latency -
+        state.previousLatency
+    );
+
+    let value =
+    (
+        difference*.7 +
+        change*.3
+    ) *
+    (
+        state.sensitivity /
+        50
+    );
+
+    state.activity =
+    state.activity*.7 +
+    value*.3;
+
+    state.activity =
+    Math.max(
+        0,
+        Math.min(
+            100,
+            state.activity
+        )
+    );
+
+    if(
+        state.activity >
+        state.peak
+    ){
+
+        state.peak =
+        state.activity;
+
+    }
+
+
+    /*
+     * Activity-based estimate.
+     */
+
+    let people = 0;
+
+    if(
+        state.activity >= 70
+    ){
+
+        people = 3;
+
+    }else if(
+        state.activity >= 45
+    ){
+
+        people = 2;
+
+    }else if(
+        state.activity >= 18
+    ){
+
+        people = 1;
+
+    }
+
+
+    if(
+        people !==
+        state.people
+    ){
+
+        if(
+            people >
+            state.people
+        ){
+
+            log(
+                "Estimated activity increased: " +
+                people +
+                " possible active subject(s)"
+            );
+
+        }else{
+
+            log(
+                "Estimated activity decreased"
+            );
+
+        }
+
+    }
+
+
+    state.people =
+    people;
+
+
+    /*
+     * Estimate visible browser-side
+     * device count.
+     *
+     * This is NOT the router client count.
+     */
+
+    state.devices =
+    estimateDevices();
+
+
+    state.detected =
+    state.people > 0;
+
+}
+
+
+/* ==========================================================
+   DEVICE ESTIMATION
+========================================================== */
+
+function estimateDevices(){
+
+    /*
+     * A browser cannot enumerate the
+     * PLDT router's Wi-Fi clients.
+     *
+     * We therefore report the current
+     * browser environment as one visible
+     * endpoint and optionally add
+     * conservative network activity
+     * indicators.
+     */
+
+    let count = 1;
+
+    if(
+        state.activity > 70
+    ){
+
+        count = 2;
+
+    }
+
+    return count;
+
+}
+
+
+/* ==========================================================
+   DEVICE LIST
+========================================================== */
+
+function renderDevices(){
+
+    const list =
+    document.getElementById(
+        "deviceList"
+    );
+
+    list.innerHTML = "";
+
+    const devices = [
+
+        {
+            icon:"💻",
+            name:"This Browser",
+            type:
+            navigator.platform ||
+            "Computer",
+            status:"ONLINE"
+        }
+
+    ];
+
+
+    if(
+        state.devices >= 2
+    ){
+
+        devices.push({
+
+            icon:"📡",
+
+            name:
+            "Network Activity",
+
+            type:
+            "Estimated endpoint",
+
+            status:
+            "ACTIVE"
+
+        });
+
+    }
+
+
+    devices.forEach(
+        device => {
+
+            const row =
+            document.createElement(
+                "div"
+            );
+
+            row.className =
+            "device";
+
+            row.innerHTML = `
+
+                <div class="device-left">
+
+                    <div class="device-icon">
+                        ${device.icon}
+                    </div>
+
+                    <div>
+
+                        <div class="device-name">
+                            ${device.name}
+                        </div>
+
+                        <div class="device-type">
+                            ${device.type}
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="device-state">
+                    ${device.status}
+                </div>
+
+            `;
+
+            list.appendChild(row);
+
+        }
+    );
+
+
+    document.getElementById(
+        "deviceTag"
+    ).textContent =
+    state.devices +
+    " DEVICES";
+
+}
+
+
+/* ==========================================================
+   UI
+========================================================== */
+
+function updateUI(){
+
+    const online =
+    navigator.onLine;
+
+
+    document.getElementById(
+        "network"
+    ).textContent =
+    online ?
+    "ONLINE" :
+    "OFFLINE";
+
+
+    document.getElementById(
+        "network"
+    ).className =
+    online ?
+    "value green" :
+    "value red";
+
+
+    document.getElementById(
+        "online"
+    ).textContent =
+    online ?
+    "YES" :
+    "NO";
+
+
+    document.getElementById(
+        "latency"
+    ).textContent =
+    state.latency >= 999 ?
+    "--" :
+    state.latency +
+    " ms";
+
+
+    document.getElementById(
+        "rtt"
+    ).textContent =
+    state.latency >= 999 ?
+    "--" :
+    state.latency +
+    " ms";
+
+
+    document.getElementById(
+        "activity"
+    ).textContent =
+    state.detected ?
+    "ACTIVE" :
+    "STABLE";
+
+
+    document.getElementById(
+        "activity"
+    ).className =
+    state.detected ?
+    "value red" :
+    "value green";
+
+
+    document.getElementById(
+        "people"
+    ).textContent =
+    state.people;
+
+
+    document.getElementById(
+        "peopleTop"
+    ).textContent =
+    state.people;
+
+
+    document.getElementById(
+        "devicesTop"
+    ).textContent =
+    state.devices;
+
+
+    document.getElementById(
+        "peak"
+    ).textContent =
+    state.peak.toFixed(1);
+
+
+    document.getElementById(
+        "peopleStatus"
+    ).textContent =
+    state.people === 0
+    ?
+    "NO SIGNIFICANT ACTIVITY"
+    :
+    state.people +
+    " ESTIMATED ACTIVE SUBJECT" +
+    (
+        state.people === 1
+        ? ""
+        : "S"
+    );
+
+
+    document.getElementById(
+        "connectionText"
+    ).textContent =
+    online ?
+    "NETWORK ONLINE" :
+    "NETWORK OFFLINE";
+
+
+    document.getElementById(
+        "connectionDot"
+    ).style.background =
+    online ?
+    "var(--green)" :
+    "var(--red)";
+
+
+    renderDevices();
+
+}
+
+
+/* ==========================================================
    RADAR
-   ============================================================ */
+========================================================== */
 
-function drawRadar() {
+function drawRadar(){
 
-  const w =
+    const w =
     radar.width;
 
-  const h =
+    const h =
     radar.height;
 
-  const cx =
-    w / 2;
+    const cx =
+    w/2;
 
-  const cy =
-    h / 2;
+    const cy =
+    h/2;
 
-  radarCtx.clearRect(
-    0,
-    0,
-    w,
-    h
-  );
+    const radius =
+    Math.min(
+        cx,
+        cy
+    )-30;
 
-  /*
-    Background
-  */
 
-  radarCtx.fillStyle =
+    rctx.clearRect(
+        0,
+        0,
+        w,
+        h
+    );
+
+
+    rctx.fillStyle =
     "#02070b";
 
-  radarCtx.fillRect(
-    0,
-    0,
-    w,
-    h
-  );
-
-  /*
-    Radar circles
-  */
-
-  radarCtx.strokeStyle =
-    "#143c31";
-
-  radarCtx.lineWidth = 2;
-
-  for (
-    let r = 70;
-    r <= 280;
-    r += 70
-  ) {
-
-    radarCtx.beginPath();
-
-    radarCtx.arc(
-      cx,
-      cy,
-      r,
-      0,
-      Math.PI * 2
+    rctx.fillRect(
+        0,
+        0,
+        w,
+        h
     );
 
-    radarCtx.stroke();
-  }
 
-  /*
-    Crosshair
-  */
+    /*
+     * Rings
+     */
 
-  radarCtx.beginPath();
+    rctx.strokeStyle =
+    "#174335";
 
-  radarCtx.moveTo(
-    cx - 280,
-    cy
-  );
-
-  radarCtx.lineTo(
-    cx + 280,
-    cy
-  );
-
-  radarCtx.moveTo(
-    cx,
-    cy - 280
-  );
-
-  radarCtx.lineTo(
-    cx,
-    cy + 280
-  );
-
-  radarCtx.stroke();
+    rctx.lineWidth =
+    2;
 
 
-  /*
-    Outer boundary
-  */
+    for(
+        let i=1;
+        i<=4;
+        i++
+    ){
 
-  radarCtx.beginPath();
+        rctx.beginPath();
 
-  radarCtx.arc(
-    cx,
-    cy,
-    280,
-    0,
-    Math.PI * 2
-  );
+        rctx.arc(
+            cx,
+            cy,
+            radius*i/4,
+            0,
+            Math.PI*2
+        );
 
-  radarCtx.stroke();
+        rctx.stroke();
+
+    }
 
 
-  /*
-    Sweep
-  */
+    /*
+     * Crosshair
+     */
 
-  sweepAngle +=
-    0.035;
+    rctx.beginPath();
 
-  const sx =
+    rctx.moveTo(
+        cx-radius,
+        cy
+    );
+
+    rctx.lineTo(
+        cx+radius,
+        cy
+    );
+
+    rctx.moveTo(
+        cx,
+        cy-radius
+    );
+
+    rctx.lineTo(
+        cx,
+        cy+radius
+    );
+
+    rctx.stroke();
+
+
+    /*
+     * Sweep
+     */
+
+    state.angle += .025;
+
+    const x =
     cx +
     Math.cos(
-      sweepAngle
-    ) * 280;
+        state.angle
+    ) *
+    radius;
 
-  const sy =
+    const y =
     cy +
     Math.sin(
-      sweepAngle
-    ) * 280;
-
-  radarCtx.strokeStyle =
-    "#43e68c";
-
-  radarCtx.lineWidth = 3;
-
-  radarCtx.beginPath();
-
-  radarCtx.moveTo(
-    cx,
-    cy
-  );
-
-  radarCtx.lineTo(
-    sx,
-    sy
-  );
-
-  radarCtx.stroke();
+        state.angle
+    ) *
+    radius;
 
 
-  /*
-    Activity visualization
-  */
+    rctx.strokeStyle =
+    "#42e88b";
 
-  if (detected) {
+    rctx.lineWidth =
+    3;
 
-    let intensity =
-      Math.min(
-        currentActivity /
-        15,
-        1
-      );
-
-    /*
-      This position is deliberately
-      an activity visualization,
-      not an actual person's location.
-    */
-
-    let radius =
-      60 +
-      (1 - intensity) *
-      160;
-
-    let px =
-      cx +
-      Math.cos(
-        sweepAngle + 1.1
-      ) *
-      radius;
-
-    let py =
-      cy +
-      Math.sin(
-        sweepAngle + 1.1
-      ) *
-      radius;
-
-    /*
-      Glow
-    */
-
-    radarCtx.shadowBlur =
-      35;
-
-    radarCtx.shadowColor =
-      "#ff4f55";
-
-    radarCtx.fillStyle =
-      "#ff555b";
-
-    radarCtx.beginPath();
-
-    radarCtx.arc(
-      px,
-      py,
-      10 +
-      intensity * 20,
-      0,
-      Math.PI * 2
-    );
-
-    radarCtx.fill();
-
-    radarCtx.shadowBlur =
-      0;
-
-    /*
-      Label
-    */
-
-    radarCtx.fillStyle =
-      "#ff7777";
-
-    radarCtx.font =
-      "bold 16px Arial";
-
-    radarCtx.fillText(
-      "ACTIVITY",
-      px + 25,
-      py
-    );
-  }
-
-
-  /*
-    Center sensor
-  */
-
-  radarCtx.fillStyle =
-    "#4ce18c";
-
-  radarCtx.shadowBlur =
+    rctx.shadowBlur =
     15;
 
-  radarCtx.shadowColor =
-    "#4ce18c";
+    rctx.shadowColor =
+    "#42e88b";
 
-  radarCtx.beginPath();
+    rctx.beginPath();
 
-  radarCtx.arc(
-    cx,
-    cy,
-    6,
-    0,
-    Math.PI * 2
-  );
+    rctx.moveTo(
+        cx,
+        cy
+    );
 
-  radarCtx.fill();
+    rctx.lineTo(
+        x,
+        y
+    );
 
-  radarCtx.shadowBlur =
+    rctx.stroke();
+
+    rctx.shadowBlur =
     0;
 
 
-  requestAnimationFrame(
-    drawRadar
-  );
-}
+    /*
+     * Activity targets
+     *
+     * These are visualization points,
+     * not real physical positions.
+     */
+
+    for(
+        let i=0;
+        i<state.people;
+        i++
+    ){
+
+        const angle =
+        state.angle +
+        i*2.1;
+
+        const distance =
+        90 +
+        i*95 +
+        state.activity;
+
+        const px =
+        cx +
+        Math.cos(angle) *
+        Math.min(
+            distance,
+            radius-30
+        );
+
+        const py =
+        cy +
+        Math.sin(angle) *
+        Math.min(
+            distance,
+            radius-30
+        );
 
 
-/* ============================================================
-   CHART
-   ============================================================ */
+        rctx.shadowBlur =
+        25;
 
-function drawChart() {
+        rctx.shadowColor =
+        "#ff525d";
 
-  const w =
-    chart.width;
+        rctx.fillStyle =
+        "#ff525d";
 
-  const h =
-    chart.height;
 
-  chartCtx.clearRect(
-    0,
-    0,
-    w,
-    h
-  );
+        rctx.beginPath();
 
-  chartCtx.fillStyle =
-    "#050b10";
+        rctx.arc(
+            px,
+            py,
+            9,
+            0,
+            Math.PI*2
+        );
 
-  chartCtx.fillRect(
-    0,
-    0,
-    w,
-    h
-  );
+        rctx.fill();
 
-  /*
-    Grid
-  */
 
-  chartCtx.strokeStyle =
-    "#132936";
+        rctx.shadowBlur =
+        0;
 
-  chartCtx.lineWidth = 1;
 
-  for (
-    let y = 20;
-    y < h;
-    y += 40
-  ) {
+        rctx.fillStyle =
+        "#ff8b91";
 
-    chartCtx.beginPath();
+        rctx.font =
+        "bold 13px Arial";
 
-    chartCtx.moveTo(
-      0,
-      y
+        rctx.fillText(
+            "PERSON " +
+            (i+1),
+            px+15,
+            py
+        );
+
+    }
+
+
+    /*
+     * Center
+     */
+
+    rctx.fillStyle =
+    "#42e88b";
+
+    rctx.shadowBlur =
+    18;
+
+    rctx.shadowColor =
+    "#42e88b";
+
+
+    rctx.beginPath();
+
+    rctx.arc(
+        cx,
+        cy,
+        7,
+        0,
+        Math.PI*2
     );
 
-    chartCtx.lineTo(
-      w,
-      y
+    rctx.fill();
+
+    rctx.shadowBlur =
+    0;
+
+
+    /*
+     * Labels
+     */
+
+    rctx.fillStyle =
+    "#587989";
+
+    rctx.font =
+    "11px Arial";
+
+    rctx.fillText(
+        "ACTIVITY FIELD",
+        20,
+        25
     );
 
-    chartCtx.stroke();
-  }
-
-
-  if (
-    history.length < 2
-  ) {
 
     requestAnimationFrame(
-      drawChart
+        drawRadar
     );
 
-    return;
-  }
+}
 
 
-  /*
-    Activity line
-  */
+/* ==========================================================
+   GRAPH
+========================================================== */
 
-  chartCtx.strokeStyle =
-    "#4ee38d";
+function drawGraph(){
 
-  chartCtx.lineWidth = 3;
+    const w =
+    graph.width;
 
-  chartCtx.beginPath();
-
-  history.forEach(
-    (point, index) => {
-
-      const x =
-        index /
-        (history.length - 1) *
-        w;
-
-      const normalized =
-        Math.min(
-          point.activity / 15,
-          1
-        );
-
-      const y =
-        h -
-        normalized *
-        (h - 20) -
-        10;
-
-      if (index === 0) {
-
-        chartCtx.moveTo(
-          x,
-          y
-        );
-
-      } else {
-
-        chartCtx.lineTo(
-          x,
-          y
-        );
-      }
-    }
-  );
-
-  chartCtx.stroke();
+    const h =
+    graph.height;
 
 
-  /*
-    Activity points
-  */
-
-  history.forEach(
-    (point,index) => {
-
-      if (
-        point.activity <
-        3
-      ) {
-        return;
-      }
-
-      const x =
-        index /
-        (history.length - 1) *
-        w;
-
-      const normalized =
-        Math.min(
-          point.activity / 15,
-          1
-        );
-
-      const y =
-        h -
-        normalized *
-        (h - 20) -
-        10;
-
-      chartCtx.fillStyle =
-        "#ff555b";
-
-      chartCtx.beginPath();
-
-      chartCtx.arc(
-        x,
-        y,
-        3,
+    gctx.clearRect(
         0,
-        Math.PI * 2
-      );
+        0,
+        w,
+        h
+    );
 
-      chartCtx.fill();
+
+    gctx.fillStyle =
+    "#03080d";
+
+    gctx.fillRect(
+        0,
+        0,
+        w,
+        h
+    );
+
+
+    /*
+     * Grid
+     */
+
+    gctx.strokeStyle =
+    "#122a37";
+
+    for(
+        let y=20;
+        y<h;
+        y+=40
+    ){
+
+        gctx.beginPath();
+
+        gctx.moveTo(
+            0,
+            y
+        );
+
+        gctx.lineTo(
+            w,
+            y
+        );
+
+        gctx.stroke();
+
     }
-  );
 
 
-  requestAnimationFrame(
-    drawChart
-  );
+    if(
+        state.samples.length <
+        2
+    ){
+
+        requestAnimationFrame(
+            drawGraph
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * Line
+     */
+
+    gctx.strokeStyle =
+    "#42e88b";
+
+    gctx.lineWidth =
+    3;
+
+    gctx.beginPath();
+
+
+    state.samples.forEach(
+        (v,i)=>{
+
+            const x =
+            i/
+            (
+                state.samples.length-1
+            )*
+            w;
+
+            const y =
+            h-
+            (
+                v/100*
+                (h-20)
+            )-
+            10;
+
+
+            if(i===0){
+
+                gctx.moveTo(
+                    x,
+                    y
+                );
+
+            }else{
+
+                gctx.lineTo(
+                    x,
+                    y
+                );
+
+            }
+
+        }
+    );
+
+
+    gctx.stroke();
+
+
+    requestAnimationFrame(
+        drawGraph
+    );
+
 }
 
 
-/* ============================================================
-   CONNECTION
-   ============================================================ */
+/* ==========================================================
+   SAMPLE
+========================================================== */
 
-function setConnection(
-  state
-) {
+function sample(){
 
-  connected =
-    state;
+    state.samples.push(
+        state.activity
+    );
 
-  const text =
+
+    if(
+        state.samples.length >
+        120
+    ){
+
+        state.samples.shift();
+
+    }
+
+}
+
+
+/* ==========================================================
+   CALIBRATE
+========================================================== */
+
+function calibrate(){
+
+    state.baseline =
+    null;
+
+    state.activity =
+    0;
+
+    state.people =
+    0;
+
+    log(
+        "CALIBRATION STARTED"
+    );
+
+}
+
+
+/* ==========================================================
+   CLEAR
+========================================================== */
+
+function clearLog(){
+
     document.getElementById(
-      "connectionText"
-    );
+        "log"
+    ).innerHTML =
+    "";
 
-  const dot =
+    state.events =
+    0;
+
     document.getElementById(
-      "connectionDot"
-    );
+        "events"
+    ).textContent =
+    "0 EVENTS";
 
-  if (state) {
-
-    text.textContent =
-      "CONNECTED";
-
-    dot.style.background =
-      "#50e18b";
-
-    dot.style.boxShadow =
-      "0 0 15px #50e18b";
-
-  } else {
-
-    text.textContent =
-      "DISCONNECTED";
-
-    dot.style.background =
-      "#ff555b";
-
-    dot.style.boxShadow =
-      "0 0 15px #ff555b";
-  }
 }
 
 
-/* ============================================================
-   HTTP FALLBACK
-   ============================================================ */
+/* ==========================================================
+   FULLSCREEN
+========================================================== */
 
-async function pollAPI() {
+function fullScreen(){
 
-  try {
+    if(
+        !document.fullscreenElement
+    ){
 
-    const response =
-      await fetch(
-        "/api"
-      );
+        document.documentElement
+        .requestFullscreen();
 
-    const data =
-      await response.json();
+    }else{
 
-    updateDashboard(
-      data
-    );
+        document.exitFullscreen();
 
-    setConnection(
-      true
-    );
+    }
 
-  } catch (error) {
-
-    setConnection(
-      false
-    );
-  }
 }
 
 
-/* ============================================================
-   CALIBRATION
-   ============================================================ */
-
-async function calibrate() {
-
-  try {
-
-    await fetch(
-      "/calibrate"
-    );
-
-    alert(
-      "Calibration started. Keep the environment still for about 10 seconds."
-    );
-
-  } catch(error) {
-
-    alert(
-      "Unable to start calibration."
-    );
-  }
-}
-
-
-/* ============================================================
+/* ==========================================================
    SENSITIVITY
-   ============================================================ */
+========================================================== */
 
-async function setSensitivity() {
+document
+.getElementById("sensitivity")
+.addEventListener(
+    "input",
+    e=>{
 
-  const input =
-    document.getElementById(
-      "sensitivity"
-    );
+        state.sensitivity =
+        Number(e.target.value);
 
-  const value =
-    Number(
-      input.value
-    );
+        document.getElementById(
+            "sensitivityValue"
+        ).textContent =
+        state.sensitivity;
 
-  if (
-    !Number.isFinite(value)
-  ) {
-
-    return;
-  }
-
-  try {
-
-    await fetch(
-      "/sensitivity?value=" +
-      encodeURIComponent(
-        value
-      )
-    );
-
-    alert(
-      "Sensitivity updated."
-    );
-
-  } catch(error) {
-
-    alert(
-      "Could not update sensitivity."
-    );
-  }
-}
-
-
-/* ============================================================
-   START
-   ============================================================ */
-
-setInterval(
-  pollAPI,
-  700
+    }
 );
 
-pollAPI();
 
-drawRadar();
+/* ==========================================================
+   NETWORK EVENTS
+========================================================== */
 
-drawChart();
+window.addEventListener(
+    "online",
+    ()=>{
+        log(
+            "NETWORK CONNECTION RESTORED"
+        );
+    }
+);
+
+
+window.addEventListener(
+    "offline",
+    ()=>{
+        log(
+            "NETWORK CONNECTION LOST"
+        );
+    }
+);
+
+
+/* ==========================================================
+   MAIN LOOP
+========================================================== */
+
+async function loop(){
+
+    await ping();
+
+    calculateActivity();
+
+    sample();
+
+    updateUI();
+
+    networkInfo();
+
+}
+
+
+/* ==========================================================
+   START
+========================================================== */
+
+function start(){
+
+    log(
+        "WIFI SENSE SYSTEM INITIALIZED"
+    );
+
+    log(
+        "BROWSER NETWORK MONITOR ONLINE"
+    );
+
+    networkInfo();
+
+    drawRadar();
+
+    drawGraph();
+
+    setInterval(
+        loop,
+        1500
+    );
+
+    setInterval(
+        updateUI,
+        500
+    );
+
+}
+
+
+start();
 
 </script>
 
 </body>
-
 </html>
-
-)HTML";
-
-// ---------------------------------------------------------------
-// ROOT PAGE
-// ---------------------------------------------------------------
-
-void handleRoot() {
-
-  server.send(
-    200,
-    "text/html",
-    MAIN_PAGE
-  );
-}
-
-// ---------------------------------------------------------------
-// 404
-// ---------------------------------------------------------------
-
-void handleNotFound() {
-
-  String message =
-    "ESP32 Wi-Fi Sensor\n\n";
-
-  message +=
-    "Available endpoints:\n";
-
-  message +=
-    "/\n";
-
-  message +=
-    "/api\n";
-
-  message +=
-    "/history\n";
-
-  message +=
-    "/calibrate\n";
-
-  message +=
-    "/sensitivity?value=3.5\n";
-
-  server.send(
-    404,
-    "text/plain",
-    message
-  );
-}
-
-// ---------------------------------------------------------------
-// SETUP
-// ---------------------------------------------------------------
-
-void setup() {
-
-  Serial.begin(
-    115200
-  );
-
-  delay(1000);
-
-  bootTime =
-      millis();
-
-  /*
-    Initialize history
-  */
-
-  for (
-    int i = 0;
-    i < HISTORY_SIZE;
-    i++
-  ) {
-
-    activityHistory[i] =
-      0;
-
-    rssiHistory[i] =
-      -100;
-
-    timeHistory[i] =
-      0;
-  }
-
-  Serial.println();
-
-  Serial.println(
-    "=========================================="
-  );
-
-  Serial.println(
-    " ESP32 WI-FI ACTIVITY SENSOR"
-  );
-
-  Serial.println(
-    " VERSION 1.0"
-  );
-
-  Serial.println(
-    "=========================================="
-  );
-
-  Serial.println();
-
-  /*
-    Wi-Fi configuration
-  */
-
-  WiFi.mode(
-    WIFI_STA
-  );
-
-  WiFi.setAutoReconnect(
-    true
-  );
-
-  WiFi.persistent(
-    false
-  );
-
-  Serial.print(
-    "Connecting to: "
-  );
-
-  Serial.println(
-    WIFI_SSID
-  );
-
-  WiFi.begin(
-    WIFI_SSID,
-    WIFI_PASSWORD
-  );
-
-  int attempts = 0;
-
-  while (
-    WiFi.status() !=
-    WL_CONNECTED
-    &&
-    attempts < 60
-  ) {
-
-    delay(500);
-
-    Serial.print(
-      "."
-    );
-
-    attempts++;
-  }
-
-  Serial.println();
-
-  if (
-    WiFi.status() !=
-    WL_CONNECTED
-  ) {
-
-    Serial.println(
-      "Wi-Fi connection failed."
-    );
-
-    Serial.println(
-      "Check SSID and password."
-    );
-
-  } else {
-
-    Serial.println(
-      "Wi-Fi connected."
-    );
-
-    Serial.print(
-      "IP address: "
-    );
-
-    Serial.println(
-      WiFi.localIP()
-    );
-
-    Serial.print(
-      "Initial RSSI: "
-    );
-
-    Serial.println(
-      WiFi.RSSI()
-    );
-  }
-
-  /*
-    HTTP routes
-  */
-
-  server.on(
-    "/",
-    HTTP_GET,
-    handleRoot
-  );
-
-  server.on(
-    "/api",
-    HTTP_GET,
-    handleAPI
-  );
-
-  server.on(
-    "/history",
-    HTTP_GET,
-    handleHistory
-  );
-
-  server.on(
-    "/calibrate",
-    HTTP_GET,
-    handleCalibration
-  );
-
-  server.on(
-    "/sensitivity",
-    HTTP_GET,
-    handleSensitivity
-  );
-
-  server.onNotFound(
-    handleNotFound
-  );
-
-  /*
-    Start server
-  */
-
-  server.begin();
-
-  Serial.println(
-    "HTTP server started."
-  );
-
-  /*
-    Start calibration
-  */
-
-  startCalibration();
-
-  Serial.println();
-
-  Serial.println(
-    "Open the ESP32 IP address"
-  );
-
-  Serial.println(
-    "from a device connected"
-  );
-
-  Serial.println(
-    "to the same Wi-Fi network."
-  );
-
-  Serial.println();
-
-  Serial.println(
-    "Example:"
-  );
-
-  Serial.println(
-    "http://192.168.1.100"
-  );
-}
-
-// ---------------------------------------------------------------
-// MAIN LOOP
-// ---------------------------------------------------------------
-
-void loop() {
-
-  /*
-    Handle browser requests
-  */
-
-  server.handleClient();
-
-  /*
-    Keep Wi-Fi alive
-  */
-
-  checkWiFi();
-
-  /*
-    Sensor processing
-  */
-
-  updateSensor();
-
-  /*
-    Calibration
-  */
-
-  processCalibration();
-
-  /*
-    Dashboard timing
-    (HTTP polling is handled by browser)
-  */
-
-  if (
-    millis() -
-    lastDashboardUpdate >
-    DASHBOARD_INTERVAL
-  ) {
-
-    lastDashboardUpdate =
-      millis();
-  }
-
-  /*
-    Small cooperative delay.
-    Prevents the loop from consuming
-    unnecessary CPU continuously.
-  */
-
-  delay(2);
-}
