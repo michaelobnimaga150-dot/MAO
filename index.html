@@ -1,1894 +1,2693 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+/*
+  ================================================================
+       ESP32 WI-FI ACTIVITY SENSOR - VERSION 1.0
+  ================================================================
 
-<title>CyberShield Lab — Safe Malware Simulator</title>
+  Features
+  ----------------------------------------------------------------
+  - ESP32 Wi-Fi connection
+  - RSSI measurement
+  - Automatic baseline calibration
+  - Exponential moving average filter
+  - Activity calculation
+  - Presence/activity state
+  - Adaptive baseline
+  - Confidence estimation
+  - Web dashboard hosted by ESP32
+  - Live signal graph
+  - Radar-style activity visualization
+  - Activity history
+  - REST-style JSON endpoint
+  - Automatic Wi-Fi reconnect
+  - Uptime monitoring
+  - Sensor calibration
+  - Adjustable sensitivity
+  - Mobile responsive interface
 
-<style>
-* {
-    box-sizing: border-box;
+  Hardware
+  ----------------------------------------------------------------
+  ESP32 development board
+
+  Network
+  ----------------------------------------------------------------
+  Your PLDT Home Fiber Wi-Fi
+
+  IMPORTANT
+  ----------------------------------------------------------------
+  This is an experimental Wi-Fi sensing project.
+
+  RSSI changes can be caused by:
+  - People
+  - Moving objects
+  - Doors
+  - Furniture
+  - Other Wi-Fi devices
+  - Interference
+  - Router activity
+
+  Therefore this system should NOT be treated as a reliable
+  security, surveillance, or person-identification system.
+
+  ================================================================
+*/
+
+#include <WiFi.h>
+#include <WebServer.h>
+
+// ---------------------------------------------------------------
+// USER CONFIGURATION
+// ---------------------------------------------------------------
+
+const char* WIFI_SSID     = "YOUR_PLDT_WIFI";
+const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
+
+// Device name
+const char* DEVICE_NAME = "ESP32-WIFI-SENSOR-01";
+
+// Web server
+WebServer server(80);
+
+// ---------------------------------------------------------------
+// SENSOR SETTINGS
+// ---------------------------------------------------------------
+
+// How often RSSI is sampled
+const unsigned long SENSOR_INTERVAL = 250;
+
+// Dashboard update interval
+const unsigned long DASHBOARD_INTERVAL = 500;
+
+// Calibration duration
+const unsigned long CALIBRATION_TIME = 10000;
+
+// Number of samples kept in history
+const int HISTORY_SIZE = 120;
+
+// Default detection threshold
+float detectionThreshold = 3.5;
+
+// Stronger filtering = smoother but slower response
+float filterStrength = 0.18;
+
+// Baseline adaptation
+float baselineAdaptation = 0.008;
+
+// ---------------------------------------------------------------
+// SENSOR VARIABLES
+// ---------------------------------------------------------------
+
+int rawRSSI = 0;
+
+float filteredRSSI = 0.0;
+
+float baselineRSSI = 0.0;
+
+float signalDifference = 0.0;
+
+float activityLevel = 0.0;
+
+float confidence = 0.0;
+
+bool activityDetected = false;
+
+bool calibrated = false;
+
+bool sensorReady = false;
+
+// ---------------------------------------------------------------
+// TIMING
+// ---------------------------------------------------------------
+
+unsigned long bootTime = 0;
+
+unsigned long lastSensorRead = 0;
+
+unsigned long lastDashboardUpdate = 0;
+
+unsigned long calibrationStart = 0;
+
+unsigned long lastWiFiCheck = 0;
+
+// ---------------------------------------------------------------
+// CALIBRATION VARIABLES
+// ---------------------------------------------------------------
+
+float calibrationSum = 0.0;
+
+int calibrationSamples = 0;
+
+// ---------------------------------------------------------------
+// HISTORY
+// ---------------------------------------------------------------
+
+float activityHistory[HISTORY_SIZE];
+
+float rssiHistory[HISTORY_SIZE];
+
+unsigned long timeHistory[HISTORY_SIZE];
+
+int historyIndex = 0;
+
+int historyCount = 0;
+
+// ---------------------------------------------------------------
+// EVENT COUNTERS
+// ---------------------------------------------------------------
+
+unsigned long totalSamples = 0;
+
+unsigned long detectedEvents = 0;
+
+unsigned long wifiReconnects = 0;
+
+// ---------------------------------------------------------------
+// STATUS
+// ---------------------------------------------------------------
+
+String lastEvent = "System started";
+
+unsigned long lastEventTime = 0;
+
+// ---------------------------------------------------------------
+// UTILITY FUNCTIONS
+// ---------------------------------------------------------------
+
+float absoluteFloat(float value) {
+
+  if (value < 0) {
+    return -value;
+  }
+
+  return value;
 }
 
-:root {
-    --bg: #070a0f;
-    --panel: #0d121a;
-    --panel2: #111923;
-    --border: #263241;
-    --text: #e8eef5;
-    --muted: #8190a3;
-    --red: #ff4655;
-    --green: #37e58c;
-    --yellow: #ffc857;
-    --blue: #4da3ff;
-    --purple: #9b7bff;
+// ---------------------------------------------------------------
+// WIFI STATUS
+// ---------------------------------------------------------------
+
+String wifiStatusText() {
+
+  if (WiFi.status() == WL_CONNECTED) {
+    return "CONNECTED";
+  }
+
+  return "DISCONNECTED";
+}
+
+// ---------------------------------------------------------------
+// WIFI RSSI
+// ---------------------------------------------------------------
+
+int readRSSI() {
+
+  if (WiFi.status() != WL_CONNECTED) {
+    return -100;
+  }
+
+  return WiFi.RSSI();
+}
+
+// ---------------------------------------------------------------
+// ADD HISTORY SAMPLE
+// ---------------------------------------------------------------
+
+void addHistory(float activity, float rssi) {
+
+  activityHistory[historyIndex] = activity;
+
+  rssiHistory[historyIndex] = rssi;
+
+  timeHistory[historyIndex] =
+      millis() - bootTime;
+
+  historyIndex++;
+
+  if (historyIndex >= HISTORY_SIZE) {
+    historyIndex = 0;
+  }
+
+  if (historyCount < HISTORY_SIZE) {
+    historyCount++;
+  }
+}
+
+// ---------------------------------------------------------------
+// CALIBRATION
+// ---------------------------------------------------------------
+
+void startCalibration() {
+
+  calibrated = false;
+
+  sensorReady = false;
+
+  calibrationStart = millis();
+
+  calibrationSum = 0.0;
+
+  calibrationSamples = 0;
+
+  activityLevel = 0.0;
+
+  activityDetected = false;
+
+  lastEvent = "Calibration started";
+
+  lastEventTime = millis();
+
+  Serial.println();
+  Serial.println("--------------------------------");
+  Serial.println("CALIBRATION STARTED");
+  Serial.println("Keep the environment as still");
+  Serial.println("as possible for 10 seconds.");
+  Serial.println("--------------------------------");
+}
+
+// ---------------------------------------------------------------
+// PROCESS CALIBRATION
+// ---------------------------------------------------------------
+
+void processCalibration() {
+
+  if (calibrated) {
+    return;
+  }
+
+  if (WiFi.status() != WL_CONNECTED) {
+    return;
+  }
+
+  int rssi = readRSSI();
+
+  if (rssi <= -100) {
+    return;
+  }
+
+  calibrationSum += rssi;
+
+  calibrationSamples++;
+
+  unsigned long elapsed =
+      millis() - calibrationStart;
+
+  if (elapsed >= CALIBRATION_TIME) {
+
+    if (calibrationSamples > 0) {
+
+      baselineRSSI =
+          calibrationSum /
+          calibrationSamples;
+
+      filteredRSSI =
+          baselineRSSI;
+
+      calibrated = true;
+
+      sensorReady = true;
+
+      lastEvent =
+          "Calibration complete";
+
+      lastEventTime =
+          millis();
+
+      Serial.println();
+      Serial.println("--------------------------------");
+      Serial.println("CALIBRATION COMPLETE");
+      Serial.print("Baseline RSSI: ");
+      Serial.println(baselineRSSI);
+      Serial.print("Samples: ");
+      Serial.println(calibrationSamples);
+      Serial.println("--------------------------------");
+    }
+  }
+}
+
+// ---------------------------------------------------------------
+// RSSI FILTER
+// ---------------------------------------------------------------
+
+void updateFilteredRSSI(float newRSSI) {
+
+  if (filteredRSSI == 0) {
+
+    filteredRSSI =
+        newRSSI;
+
+    return;
+  }
+
+  filteredRSSI =
+      filteredRSSI *
+      (1.0 - filterStrength)
+      +
+      newRSSI *
+      filterStrength;
+}
+
+// ---------------------------------------------------------------
+// BASELINE ADAPTATION
+// ---------------------------------------------------------------
+
+void updateBaseline() {
+
+  if (!calibrated) {
+    return;
+  }
+
+  /*
+    Only adapt baseline when the environment
+    appears stable.
+
+    This prevents the baseline from immediately
+    following a movement event.
+  */
+
+  if (activityLevel < detectionThreshold * 0.5) {
+
+    baselineRSSI =
+        baselineRSSI *
+        (1.0 - baselineAdaptation)
+        +
+        filteredRSSI *
+        baselineAdaptation;
+  }
+}
+
+// ---------------------------------------------------------------
+// ACTIVITY CALCULATION
+// ---------------------------------------------------------------
+
+void calculateActivity() {
+
+  signalDifference =
+      absoluteFloat(
+        filteredRSSI -
+        baselineRSSI
+      );
+
+  /*
+    Smooth activity value
+  */
+
+  activityLevel =
+      activityLevel * 0.70
+      +
+      signalDifference * 0.30;
+
+  /*
+    Convert activity to confidence.
+  */
+
+  float normalized =
+      activityLevel /
+      (detectionThreshold * 3.0);
+
+  if (normalized > 1.0) {
+    normalized = 1.0;
+  }
+
+  if (normalized < 0.0) {
+    normalized = 0.0;
+  }
+
+  confidence =
+      normalized * 100.0;
+
+  bool previousState =
+      activityDetected;
+
+  /*
+    Detection hysteresis.
+
+    This prevents rapid ON/OFF switching.
+  */
+
+  if (!activityDetected) {
+
+    if (activityLevel >=
+        detectionThreshold) {
+
+      activityDetected = true;
+    }
+
+  } else {
+
+    if (activityLevel <
+        detectionThreshold * 0.65) {
+
+      activityDetected = false;
+    }
+  }
+
+  /*
+    Detect new event.
+  */
+
+  if (activityDetected &&
+      !previousState) {
+
+    detectedEvents++;
+
+    lastEvent =
+        "Activity detected";
+
+    lastEventTime =
+        millis();
+
+    Serial.println(
+      "[EVENT] Activity detected"
+    );
+  }
+
+  if (!activityDetected &&
+      previousState) {
+
+    lastEvent =
+        "Environment stable";
+
+    lastEventTime =
+        millis();
+
+    Serial.println(
+      "[EVENT] Environment stable"
+    );
+  }
+}
+
+// ---------------------------------------------------------------
+// SENSOR LOOP
+// ---------------------------------------------------------------
+
+void updateSensor() {
+
+  if (millis() -
+      lastSensorRead <
+      SENSOR_INTERVAL) {
+
+    return;
+  }
+
+  lastSensorRead =
+      millis();
+
+  if (WiFi.status() !=
+      WL_CONNECTED) {
+
+    return;
+  }
+
+  rawRSSI =
+      readRSSI();
+
+  if (rawRSSI <= -100) {
+    return;
+  }
+
+  totalSamples++;
+
+  /*
+    Calibration phase
+  */
+
+  if (!calibrated) {
+
+    processCalibration();
+
+    return;
+  }
+
+  /*
+    Normal sensor processing
+  */
+
+  updateFilteredRSSI(
+      rawRSSI
+  );
+
+  calculateActivity();
+
+  updateBaseline();
+
+  addHistory(
+      activityLevel,
+      filteredRSSI
+  );
+}
+
+// ---------------------------------------------------------------
+// WIFI RECONNECTION
+// ---------------------------------------------------------------
+
+void checkWiFi() {
+
+  if (millis() -
+      lastWiFiCheck <
+      5000) {
+
+    return;
+  }
+
+  lastWiFiCheck =
+      millis();
+
+  if (WiFi.status() ==
+      WL_CONNECTED) {
+
+    return;
+  }
+
+  Serial.println(
+    "Wi-Fi disconnected."
+  );
+
+  Serial.println(
+    "Attempting reconnection..."
+  );
+
+  wifiReconnects++;
+
+  WiFi.disconnect();
+
+  delay(100);
+
+  WiFi.begin(
+    WIFI_SSID,
+    WIFI_PASSWORD
+  );
+}
+
+// ---------------------------------------------------------------
+// FORMAT UPTIME
+// ---------------------------------------------------------------
+
+String formatUptime(
+  unsigned long seconds
+) {
+
+  unsigned long days =
+      seconds / 86400;
+
+  seconds %= 86400;
+
+  unsigned long hours =
+      seconds / 3600;
+
+  seconds %= 3600;
+
+  unsigned long minutes =
+      seconds / 60;
+
+  seconds %= 60;
+
+  String result = "";
+
+  result += String(days);
+  result += "d ";
+
+  result += String(hours);
+  result += "h ";
+
+  result += String(minutes);
+  result += "m ";
+
+  result += String(seconds);
+  result += "s";
+
+  return result;
+}
+
+// ---------------------------------------------------------------
+// JSON ESCAPE
+// ---------------------------------------------------------------
+
+String jsonEscape(
+  String text
+) {
+
+  text.replace(
+    "\\",
+    "\\\\"
+  );
+
+  text.replace(
+    "\"",
+    "\\\""
+  );
+
+  return text;
+}
+
+// ---------------------------------------------------------------
+// CREATE SENSOR JSON
+// ---------------------------------------------------------------
+
+String createSensorJSON() {
+
+  String json = "{";
+
+  json += "\"device\":\"";
+  json += jsonEscape(
+    DEVICE_NAME
+  );
+  json += "\",";
+
+  json += "\"wifi\":\"";
+  json += wifiStatusText();
+  json += "\",";
+
+  json += "\"rssi\":";
+  json += String(rawRSSI);
+  json += ",";
+
+  json += "\"filteredRSSI\":";
+  json += String(
+    filteredRSSI,
+    2
+  );
+  json += ",";
+
+  json += "\"baselineRSSI\":";
+  json += String(
+    baselineRSSI,
+    2
+  );
+  json += ",";
+
+  json += "\"difference\":";
+  json += String(
+    signalDifference,
+    2
+  );
+  json += ",";
+
+  json += "\"activity\":";
+  json += String(
+    activityLevel,
+    2
+  );
+  json += ",";
+
+  json += "\"confidence\":";
+  json += String(
+    confidence,
+    1
+  );
+  json += ",";
+
+  json += "\"detected\":";
+  json += activityDetected
+          ? "true"
+          : "false";
+  json += ",";
+
+  json += "\"calibrated\":";
+  json += calibrated
+          ? "true"
+          : "false";
+  json += ",";
+
+  json += "\"samples\":";
+  json += String(
+    totalSamples
+  );
+  json += ",";
+
+  json += "\"events\":";
+  json += String(
+    detectedEvents
+  );
+  json += ",";
+
+  json += "\"reconnects\":";
+  json += String(
+    wifiReconnects
+  );
+  json += ",";
+
+  json += "\"uptime\":";
+  json += String(
+    (millis() - bootTime) / 1000
+  );
+  json += ",";
+
+  json += "\"lastEvent\":\"";
+  json += jsonEscape(
+    lastEvent
+  );
+  json += "\"";
+
+  json += "}";
+
+  return json;
+}
+
+// ---------------------------------------------------------------
+// WEB API
+// ---------------------------------------------------------------
+
+void handleAPI() {
+
+  server.sendHeader(
+    "Access-Control-Allow-Origin",
+    "*"
+  );
+
+  server.send(
+    200,
+    "application/json",
+    createSensorJSON()
+  );
+}
+
+// ---------------------------------------------------------------
+// RESET CALIBRATION API
+// ---------------------------------------------------------------
+
+void handleCalibration() {
+
+  startCalibration();
+
+  server.send(
+    200,
+    "application/json",
+    "{\"status\":\"calibration_started\"}"
+  );
+}
+
+// ---------------------------------------------------------------
+// SET SENSITIVITY API
+// ---------------------------------------------------------------
+
+void handleSensitivity() {
+
+  if (!server.hasArg("value")) {
+
+    server.send(
+      400,
+      "application/json",
+      "{\"error\":\"missing value\"}"
+    );
+
+    return;
+  }
+
+  float value =
+      server.arg("value")
+      .toFloat();
+
+  /*
+    Keep safe limits.
+  */
+
+  if (value < 0.5) {
+    value = 0.5;
+  }
+
+  if (value > 20.0) {
+    value = 20.0;
+  }
+
+  detectionThreshold =
+      value;
+
+  String response =
+      "{\"threshold\":" +
+      String(
+        detectionThreshold,
+        2
+      ) +
+      "}";
+
+  server.send(
+    200,
+    "application/json",
+    response
+  );
+}
+
+// ---------------------------------------------------------------
+// HISTORY API
+// ---------------------------------------------------------------
+
+void handleHistory() {
+
+  String json = "[";
+
+  int start =
+      historyCount < HISTORY_SIZE
+      ? 0
+      : historyIndex;
+
+  for (
+    int i = 0;
+    i < historyCount;
+    i++
+  ) {
+
+    int index =
+        (start + i) %
+        HISTORY_SIZE;
+
+    if (i > 0) {
+      json += ",";
+    }
+
+    json += "{";
+
+    json += "\"activity\":";
+    json += String(
+      activityHistory[index],
+      2
+    );
+
+    json += ",";
+
+    json += "\"rssi\":";
+    json += String(
+      rssiHistory[index],
+      2
+    );
+
+    json += ",";
+
+    json += "\"time\":";
+    json += String(
+      timeHistory[index] / 1000
+    );
+
+    json += "}";
+  }
+
+  json += "]";
+
+  server.send(
+    200,
+    "application/json",
+    json
+  );
+}
+
+// ---------------------------------------------------------------
+// HTML DASHBOARD
+// ---------------------------------------------------------------
+
+const char MAIN_PAGE[] PROGMEM = R"HTML(
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1.0">
+
+<title>ESP32 Wi-Fi Sensor</title>
+
+<style>
+
+* {
+  box-sizing:border-box;
 }
 
 body {
-    margin: 0;
-    background:
-        radial-gradient(circle at 20% 10%, #132033 0, transparent 30%),
-        radial-gradient(circle at 90% 80%, #1a1028 0, transparent 30%),
-        var(--bg);
-    color: var(--text);
-    font-family: Inter, Arial, sans-serif;
-    min-height: 100vh;
-}
-
-button,
-select,
-input {
-    font: inherit;
-}
-
-button {
-    cursor: pointer;
-}
-
-.app {
-    display: grid;
-    grid-template-columns: 245px 1fr;
-    min-height: 100vh;
-}
-
-/* SIDEBAR */
-
-.sidebar {
-    background: rgba(7,10,15,.94);
-    border-right: 1px solid var(--border);
-    padding: 22px 15px;
-    position: sticky;
-    top: 0;
-    height: 100vh;
-}
-
-.brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px;
-    margin-bottom: 25px;
-}
-
-.brand-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    display: grid;
-    place-items: center;
-    background: linear-gradient(135deg,#ff4655,#8d2030);
-    font-size: 22px;
-}
-
-.brand h2 {
-    margin: 0;
-    font-size: 17px;
-}
-
-.brand small {
-    color: var(--muted);
-}
-
-.nav-title {
-    color: #566477;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    padding: 10px;
-}
-
-.nav button {
-    width: 100%;
-    background: transparent;
-    color: #9aa8ba;
-    border: 0;
-    text-align: left;
-    padding: 13px 12px;
-    border-radius: 9px;
-    margin-bottom: 4px;
-}
-
-.nav button:hover,
-.nav button.active {
-    background: #151e29;
-    color: white;
-}
-
-.lab-status {
-    position: absolute;
-    bottom: 20px;
-    left: 15px;
-    right: 15px;
-    border: 1px solid var(--border);
-    background: var(--panel);
-    padding: 14px;
-    border-radius: 12px;
-}
-
-.dot {
-    width: 8px;
-    height: 8px;
-    display: inline-block;
-    border-radius: 50%;
-    background: var(--green);
-    box-shadow: 0 0 10px var(--green);
-    margin-right: 7px;
-}
-
-/* MAIN */
-
-.main {
-    padding: 25px;
-    overflow: hidden;
-}
-
-.topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 15px;
-    margin-bottom: 25px;
-}
-
-.topbar h1 {
-    margin: 0;
-    font-size: 25px;
-}
-
-.topbar p {
-    color: var(--muted);
-    margin: 5px 0 0;
-}
-
-.clock {
-    border: 1px solid var(--border);
-    background: var(--panel);
-    border-radius: 10px;
-    padding: 11px 15px;
-    color: #aab6c6;
-    font-family: monospace;
-}
-
-/* ALERT */
-
-.alert {
-    border: 1px solid #5d2630;
-    background: linear-gradient(90deg,#211116,#100d12);
-    padding: 16px;
-    border-radius: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.alert strong {
-    color: var(--red);
-}
-
-.alert button {
-    background: #34151b;
-    border: 1px solid #71303a;
-    color: #ff8992;
-    padding: 8px 12px;
-    border-radius: 7px;
-}
-
-/* CARDS */
-
-.grid {
-    display: grid;
-    gap: 15px;
-}
-
-.stats {
-    grid-template-columns: repeat(4,1fr);
-}
-
-.card {
-    background: rgba(13,18,26,.92);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 18px;
-}
-
-.stat-label {
-    color: var(--muted);
-    font-size: 12px;
-}
-
-.stat-value {
-    font-size: 27px;
-    margin-top: 9px;
-    font-weight: 700;
-}
-
-.stat-change {
-    font-size: 11px;
-    margin-top: 6px;
-}
-
-.good {
-    color: var(--green);
-}
-
-.bad {
-    color: var(--red);
-}
-
-.warning-text {
-    color: var(--yellow);
-}
-
-/* DASHBOARD */
-
-.dashboard {
-    grid-template-columns: 1.4fr 1fr;
-    margin-top: 15px;
-}
-
-.card-title {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.card-title h3 {
-    margin: 0;
-    font-size: 15px;
-}
-
-.badge {
-    padding: 5px 8px;
-    border-radius: 20px;
-    background: #17212d;
-    color: #9facbd;
-    font-size: 10px;
-}
-
-/* GRAPH */
-
-canvas {
-    width: 100%;
-    height: 230px;
-    display: block;
-}
-
-/* THREAT */
-
-.threat-score {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 15px auto;
-    width: 160px;
-    height: 160px;
-    border-radius: 50%;
-    background:
-        radial-gradient(circle, #0b1017 58%, transparent 59%),
-        conic-gradient(var(--green) var(--score), #202b38 0);
-}
-
-.score-number {
-    text-align: center;
-}
-
-.score-number strong {
-    display: block;
-    font-size: 36px;
-}
-
-.score-number span {
-    color: var(--muted);
-    font-size: 11px;
-}
-
-/* CONTROLS */
 
-.controls {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.btn {
-    padding: 10px 14px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: #151e29;
-    color: white;
-}
-
-.btn:hover {
-    filter: brightness(1.2);
-}
-
-.btn-danger {
-    background: #471821;
-    border-color: #7c2d38;
-}
+  margin:0;
 
-.btn-green {
-    background: #123c2a;
-    border-color: #246c4c;
-}
+  background:
+    radial-gradient(
+      circle at top,
+      #102030 0%,
+      #05080c 45%,
+      #020407 100%
+    );
 
-.btn-blue {
-    background: #102d4a;
-    border-color: #245888;
-}
+  color:#e8f2f8;
 
-/* TABLE */
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
 
-.table-wrap {
-    overflow-x: auto;
+  min-height:100vh;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
+header {
 
-th,
-td {
-    text-align: left;
-    padding: 11px 9px;
-    border-bottom: 1px solid #1d2732;
-    font-size: 12px;
-}
+  padding:20px;
 
-th {
-    color: #647285;
-    font-weight: 500;
-}
+  border-bottom:
+    1px solid #1d3546;
 
-td {
-    color: #b9c4d1;
-}
+  background:
+    rgba(5,12,19,.92);
 
-.status-pill {
-    display: inline-block;
-    padding: 4px 7px;
-    border-radius: 5px;
-    font-size: 10px;
-}
+  position:sticky;
 
-.pill-safe {
-    background: #123527;
-    color: var(--green);
-}
+  top:0;
 
-.pill-threat {
-    background: #401923;
-    color: #ff7480;
-}
+  z-index:20;
 
-.pill-sim {
-    background: #30291a;
-    color: var(--yellow);
+  backdrop-filter:
+    blur(10px);
 }
 
-/* LOG */
-
-.log {
-    height: 260px;
-    overflow-y: auto;
-    background: #05080c;
-    border: 1px solid #1b2430;
-    border-radius: 9px;
-    padding: 12px;
-    font-family: "Courier New", monospace;
-    font-size: 11px;
-}
+.headerFlex {
 
-.log-line {
-    padding: 4px 0;
-    border-bottom: 1px solid #10161e;
-}
+  max-width:1400px;
 
-.log-time {
-    color: #58687a;
-}
+  margin:auto;
 
-.log-info {
-    color: #80bfff;
-}
+  display:flex;
 
-.log-danger {
-    color: #ff6874;
-}
+  justify-content:
+    space-between;
 
-.log-success {
-    color: #5be69b;
-}
+  align-items:center;
 
-.log-warning {
-    color: #ffd36a;
+  gap:20px;
 }
-
-/* FILE SYSTEM */
 
-.file-grid {
-    display: grid;
-    grid-template-columns: repeat(3,1fr);
-    gap: 9px;
-}
+.title {
 
-.file {
-    background: #101720;
-    border: 1px solid #202b37;
-    border-radius: 8px;
-    padding: 10px;
-}
+  font-size:25px;
 
-.file-icon {
-    font-size: 20px;
-}
+  font-weight:800;
 
-.file-name {
-    margin-top: 7px;
-    font-size: 11px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  letter-spacing:1px;
 }
 
-.file-state {
-    margin-top: 5px;
-    font-size: 9px;
-}
+.subtitle {
 
-/* NETWORK */
-
-.network {
-    position: relative;
-    height: 300px;
-    background:
-        linear-gradient(#17202b 1px, transparent 1px),
-        linear-gradient(90deg,#17202b 1px, transparent 1px);
-    background-size: 30px 30px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-}
+  color:#7590a4;
 
-.node {
-    position: absolute;
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    background: #142033;
-    border: 2px solid var(--blue);
-    box-shadow: 0 0 15px rgba(77,163,255,.25);
-    font-size: 19px;
-}
+  font-size:13px;
 
-.node.infected {
-    border-color: var(--red);
-    box-shadow: 0 0 20px rgba(255,70,85,.5);
-    animation: pulse 1s infinite;
+  margin-top:5px;
 }
 
 .connection {
-    position: absolute;
-    height: 2px;
-    background: #28506f;
-    transform-origin: left center;
-    opacity: .7;
+
+  display:flex;
+
+  align-items:center;
+
+  gap:8px;
+
+  font-size:13px;
+
+  color:#6fd89c;
 }
 
-@keyframes pulse {
-    50% {
-        transform: scale(1.12);
-    }
+.dot {
+
+  width:10px;
+
+  height:10px;
+
+  border-radius:50%;
+
+  background:#50e18b;
+
+  box-shadow:
+    0 0 15px #50e18b;
 }
 
-/* SCANNER */
+.container {
 
-.scan-box {
-    border: 1px solid var(--border);
-    background: #090d13;
-    border-radius: 10px;
-    padding: 18px;
+  max-width:1400px;
+
+  margin:auto;
+
+  padding:20px;
 }
 
-.scan-progress {
-    height: 13px;
-    background: #202a35;
-    border-radius: 20px;
-    overflow: hidden;
-    margin: 15px 0;
+.cards {
+
+  display:grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(190px,1fr)
+    );
+
+  gap:15px;
 }
 
-.scan-progress div {
-    height: 100%;
-    width: 0;
-    background: var(--blue);
-    transition: width .25s;
+.card {
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(15,28,40,.96),
+      rgba(7,14,21,.96)
+    );
+
+  border:
+    1px solid #1d374a;
+
+  border-radius:15px;
+
+  padding:20px;
+
+  box-shadow:
+    0 10px 35px
+    rgba(0,0,0,.25);
 }
 
-/* SECTIONS */
+.cardLabel {
 
-.section {
-    display: none;
+  color:#6e899c;
+
+  font-size:11px;
+
+  letter-spacing:1.5px;
+
+  text-transform:
+    uppercase;
 }
 
-.section.active {
-    display: block;
+.cardValue {
+
+  font-size:29px;
+
+  font-weight:800;
+
+  margin-top:10px;
 }
 
-.full {
-    margin-top: 15px;
+.green {
+
+  color:#54e68e;
+
+  text-shadow:
+    0 0 15px
+    rgba(84,230,142,.35);
 }
 
-/* MOBILE */
+.red {
 
-@media(max-width:1000px) {
-    .stats {
-        grid-template-columns: repeat(2,1fr);
-    }
+  color:#ff5f62;
 
-    .dashboard {
-        grid-template-columns: 1fr;
-    }
+  text-shadow:
+    0 0 15px
+    rgba(255,95,98,.35);
 }
 
-@media(max-width:700px) {
+.yellow {
 
-    .app {
-        grid-template-columns: 1fr;
-    }
+  color:#e8ca58;
+}
 
-    .sidebar {
-        position: relative;
-        height: auto;
-        border-right: 0;
-        border-bottom: 1px solid var(--border);
-    }
+.grid {
 
-    .lab-status {
-        display: none;
-    }
+  display:grid;
 
-    .nav {
-        display: grid;
-        grid-template-columns: repeat(3,1fr);
-        gap: 5px;
-    }
+  grid-template-columns:
+    minmax(0,1.5fr)
+    minmax(300px,1fr);
 
-    .nav button {
-        font-size: 11px;
-    }
+  gap:18px;
 
-    .main {
-        padding: 15px;
-    }
+  margin-top:18px;
+}
 
-    .stats {
-        grid-template-columns: 1fr 1fr;
-    }
+.panel {
 
-    .file-grid {
-        grid-template-columns: 1fr 1fr;
-    }
+  background:
+    rgba(7,15,23,.94);
 
-    .topbar {
-        align-items: flex-start;
-    }
+  border:
+    1px solid #1b3447;
 
-    .clock {
-        display: none;
-    }
+  border-radius:16px;
+
+  padding:20px;
+}
+
+.panelTitle {
+
+  font-size:17px;
+
+  font-weight:700;
+
+  margin-bottom:15px;
+}
+
+.radarContainer {
+
+  width:100%;
+
+  display:flex;
+
+  justify-content:center;
+
+  align-items:center;
+}
+
+#radar {
+
+  width:min(
+    100%,
+    620px
+  );
+
+  height:auto;
+
+  border-radius:50%;
+}
+
+canvas {
+
+  display:block;
+}
+
+.chart {
+
+  width:100%;
+
+  height:220px;
+}
+
+.controls {
+
+  display:flex;
+
+  flex-wrap:wrap;
+
+  gap:10px;
+
+  margin-top:15px;
+}
+
+button {
+
+  border:1px solid #2c536b;
+
+  background:#0d2030;
+
+  color:#dbeaf3;
+
+  padding:
+    11px 16px;
+
+  border-radius:9px;
+
+  cursor:pointer;
+
+  font-weight:700;
+}
+
+button:hover {
+
+  background:#153249;
+}
+
+input {
+
+  width:80px;
+
+  background:#050b11;
+
+  border:
+    1px solid #2a4759;
+
+  color:white;
+
+  padding:10px;
+
+  border-radius:8px;
+}
+
+.info {
+
+  display:grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap:10px;
+}
+
+.infoBox {
+
+  padding:14px;
+
+  background:#09131d;
+
+  border-radius:10px;
+
+  border:
+    1px solid #172e3e;
+}
+
+.infoLabel {
+
+  font-size:11px;
+
+  color:#678196;
+}
+
+.infoValue {
+
+  margin-top:5px;
+
+  font-weight:700;
+}
+
+.warning {
+
+  margin-top:18px;
+
+  padding:13px;
+
+  background:
+    rgba(120,85,20,.15);
+
+  border:
+    1px solid #55441e;
+
+  color:#c7b87b;
+
+  border-radius:10px;
+
+  font-size:12px;
+
+  line-height:1.5;
+}
+
+@media(max-width:900px) {
+
+  .grid {
+
+    grid-template-columns:1fr;
+  }
+
+  .headerFlex {
+
+    align-items:
+      flex-start;
+
+    flex-direction:
+      column;
+  }
 }
 
 </style>
+
 </head>
 
 <body>
 
-<div class="app">
+<header>
 
-<!-- SIDEBAR -->
+<div class="headerFlex">
 
-<aside class="sidebar">
+<div>
 
-    <div class="brand">
-        <div class="brand-icon">🛡️</div>
-        <div>
-            <h2>CyberShield</h2>
-            <small>Security Lab</small>
-        </div>
-    </div>
+<div class="title">
+ESP32 WI-FI ACTIVITY SENSOR
+</div>
 
-    <div class="nav-title">Navigation</div>
-
-    <div class="nav">
-
-        <button class="active" onclick="showSection('overview',this)">
-            🖥️ Overview
-        </button>
-
-        <button onclick="showSection('files',this)">
-            📁 Files
-        </button>
-
-        <button onclick="showSection('network',this)">
-            🌐 Network
-        </button>
-
-        <button onclick="showSection('scanner',this)">
-            🔍 Scanner
-        </button>
-
-        <button onclick="showSection('events',this)">
-            📜 Events
-        </button>
-
-        <button onclick="showSection('about',this)">
-            ℹ️ About
-        </button>
-
-    </div>
-
-    <div class="lab-status">
-        <span class="dot"></span>
-        Simulation Environment
-        <br>
-        <small style="color:#647285">
-            Isolated / Safe
-        </small>
-    </div>
-
-</aside>
-
-<!-- MAIN -->
-
-<main class="main">
-
-<div class="topbar">
-
-    <div>
-        <h1>Security Operations Center</h1>
-        <p>Educational malware behavior simulation</p>
-    </div>
-
-    <div class="clock" id="clock">
-        00:00:00
-    </div>
+<div class="subtitle">
+Experimental real-time sensing dashboard
+</div>
 
 </div>
 
-<!-- OVERVIEW -->
+<div class="connection">
 
-<section id="overview" class="section active">
+<div
+class="dot"
+id="connectionDot">
+</div>
 
-<div class="alert">
-
-    <div>
-        <strong>⚠ SIMULATION MODE</strong>
-        <br>
-        <small>
-            All activity shown on this dashboard is artificial.
-            Your computer is not being scanned or modified.
-        </small>
-    </div>
-
-    <button onclick="showSection('about')">
-        Safety Info
-    </button>
+<span id="connectionText">
+CONNECTING
+</span>
 
 </div>
 
-<div class="grid stats">
-
-    <div class="card">
-        <div class="stat-label">SIMULATED PROCESSES</div>
-        <div class="stat-value" id="processes">18</div>
-        <div class="stat-change good">Normal</div>
-    </div>
-
-    <div class="card">
-        <div class="stat-label">SIMULATED CPU</div>
-        <div class="stat-value" id="cpu">23%</div>
-        <div class="stat-change good">Within limits</div>
-    </div>
-
-    <div class="card">
-        <div class="stat-label">SIMULATED RAM</div>
-        <div class="stat-value" id="ram">42%</div>
-        <div class="stat-change good">Stable</div>
-    </div>
-
-    <div class="card">
-        <div class="stat-label">THREATS DETECTED</div>
-        <div class="stat-value bad" id="threats">0</div>
-        <div class="stat-change" id="threatStatus">No threats</div>
-    </div>
-
 </div>
 
-<div class="grid dashboard">
+</header>
 
-    <div class="card">
+<div class="container">
 
-        <div class="card-title">
-
-            <h3>System Activity</h3>
-
-            <span class="badge">
-                LIVE SIMULATION
-            </span>
-
-        </div>
-
-        <canvas id="activityChart"></canvas>
-
-    </div>
-
-    <div class="card">
-
-        <div class="card-title">
-            <h3>Threat Score</h3>
-            <span class="badge">ANALYSIS</span>
-        </div>
-
-        <div class="threat-score" id="threatCircle">
-
-            <div class="score-number">
-                <strong id="score">0</strong>
-                <span>RISK SCORE</span>
-            </div>
-
-        </div>
-
-        <div style="text-align:center;color:#738196;font-size:12px" id="riskText">
-            System appears safe
-        </div>
-
-    </div>
-
-</div>
-
-<div class="card full">
-
-    <div class="card-title">
-
-        <h3>Simulation Controls</h3>
-
-        <span class="badge">
-            SAFE MODE
-        </span>
-
-    </div>
-
-    <div class="controls">
-
-        <button class="btn btn-danger" onclick="startAttackSimulation()">
-            ☣ Start Threat Simulation
-        </button>
-
-        <button class="btn" onclick="pauseSimulation()">
-            ⏸ Pause
-        </button>
-
-        <button class="btn btn-green" onclick="runCleanup()">
-            🧹 Emergency Cleanup
-        </button>
-
-        <button class="btn btn-blue" onclick="resetSimulation()">
-            ↻ Reset
-        </button>
-
-    </div>
-
-</div>
-
-<div class="card full">
-
-    <div class="card-title">
-        <h3>Live Event Stream</h3>
-        <span class="badge" id="eventCount">0 EVENTS</span>
-    </div>
-
-    <div class="log" id="liveLog"></div>
-
-</div>
-
-</section>
-
-<!-- FILES -->
-
-<section id="files" class="section">
+<div class="cards">
 
 <div class="card">
 
-    <div class="card-title">
-
-        <h3>Simulated File System</h3>
-
-        <span class="badge">
-            FAKE DATA ONLY
-        </span>
-
-    </div>
-
-    <p style="color:#718096;font-size:12px">
-        These files are generated only inside this webpage.
-        No real computer files are accessed.
-    </p>
-
-    <div class="file-grid" id="fileGrid"></div>
-
+<div class="cardLabel">
+Person / Activity
 </div>
 
-</section>
+<div
+class="cardValue green"
+id="status">
+NO ACTIVITY
+</div>
 
-<!-- NETWORK -->
-
-<section id="network" class="section">
+</div>
 
 <div class="card">
 
-    <div class="card-title">
-
-        <h3>Simulated Network Topology</h3>
-
-        <span class="badge">
-            NO REAL NETWORK ACCESS
-        </span>
-
-    </div>
-
-    <div class="network" id="networkMap"></div>
-
+<div class="cardLabel">
+Wi-Fi RSSI
 </div>
 
-</section>
+<div
+class="cardValue"
+id="rssi">
+-- dBm
+</div>
 
-<!-- SCANNER -->
-
-<section id="scanner" class="section">
+</div>
 
 <div class="card">
 
-    <div class="card-title">
-
-        <h3>Educational Threat Scanner</h3>
-
-        <span class="badge">
-            SIMULATION
-        </span>
-
-    </div>
-
-    <div class="scan-box">
-
-        <div id="scanStatus">
-            Scanner ready.
-        </div>
-
-        <div class="scan-progress">
-            <div id="scanBar"></div>
-        </div>
-
-        <div class="controls">
-
-            <button class="btn btn-blue"
-                    onclick="startScanner()">
-                🔍 Start Scan
-            </button>
-
-            <button class="btn"
-                    onclick="stopScanner()">
-                ⏹ Stop
-            </button>
-
-        </div>
-
-    </div>
-
-    <div class="log" id="scanLog" style="margin-top:15px"></div>
-
+<div class="cardLabel">
+Activity Level
 </div>
 
-</section>
+<div
+class="cardValue yellow"
+id="activity">
+0.00
+</div>
 
-<!-- EVENTS -->
-
-<section id="events" class="section">
+</div>
 
 <div class="card">
 
-    <div class="card-title">
+<div class="cardLabel">
+Confidence
+</div>
 
-        <h3>Security Event Database</h3>
-
-        <button class="btn" onclick="clearLogs()">
-            Clear
-        </button>
-
-    </div>
-
-    <div class="log" id="eventLog"></div>
+<div
+class="cardValue"
+id="confidence">
+0%
+</div>
 
 </div>
 
-</section>
+</div>
 
-<!-- ABOUT -->
+<div class="grid">
 
-<section id="about" class="section">
+<div class="panel">
 
-<div class="card">
+<div class="panelTitle">
+LIVE ACTIVITY RADAR
+</div>
 
-    <h2>🛡️ About CyberShield Lab</h2>
+<div class="radarContainer">
 
-    <p style="color:#9aa8ba;line-height:1.7">
-
-        CyberShield Lab is an educational cybersecurity simulation.
-        It demonstrates concepts such as threat detection, simulated
-        file infection, network visualization, system monitoring,
-        event logging, and incident cleanup.
-
-    </p>
-
-    <h3>What this application DOES</h3>
-
-    <ul style="color:#9aa8ba;line-height:2">
-
-        <li>Creates fake data inside the webpage</li>
-        <li>Simulates malware behavior</li>
-        <li>Displays artificial network nodes</li>
-        <li>Generates simulated system statistics</li>
-        <li>Demonstrates threat detection concepts</li>
-
-    </ul>
-
-    <h3>What this application DOES NOT DO</h3>
-
-    <ul style="color:#9aa8ba;line-height:2">
-
-        <li>It does not access your files</li>
-        <li>It does not delete files</li>
-        <li>It does not encrypt files</li>
-        <li>It does not scan Wi-Fi networks</li>
-        <li>It does not attack devices</li>
-        <li>It does not spread to other computers</li>
-        <li>It does not install software</li>
-        <li>It does not bypass antivirus software</li>
-
-    </ul>
+<canvas
+id="radar"
+width="650"
+height="650">
+</canvas>
 
 </div>
 
-</section>
+</div>
 
-</main>
+<div class="panel">
+
+<div class="panelTitle">
+SENSOR INFORMATION
+</div>
+
+<div class="info">
+
+<div class="infoBox">
+
+<div class="infoLabel">
+BASELINE
+</div>
+
+<div
+class="infoValue"
+id="baseline">
+--
+</div>
+
+</div>
+
+<div class="infoBox">
+
+<div class="infoLabel">
+FILTERED RSSI
+</div>
+
+<div
+class="infoValue"
+id="filtered">
+--
+</div>
+
+</div>
+
+<div class="infoBox">
+
+<div class="infoLabel">
+DIFFERENCE
+</div>
+
+<div
+class="infoValue"
+id="difference">
+--
+</div>
+
+</div>
+
+<div class="infoBox">
+
+<div class="infoLabel">
+EVENTS
+</div>
+
+<div
+class="infoValue"
+id="events">
+0
+</div>
+
+</div>
+
+<div class="infoBox">
+
+<div class="infoLabel">
+SAMPLES
+</div>
+
+<div
+class="infoValue"
+id="samples">
+0
+</div>
+
+</div>
+
+<div class="infoBox">
+
+<div class="infoLabel">
+UPTIME
+</div>
+
+<div
+class="infoValue"
+id="uptime">
+--
+</div>
+
+</div>
+
+</div>
+
+<div class="controls">
+
+<button onclick="calibrate()">
+CALIBRATE
+</button>
+
+<input
+id="sensitivity"
+type="number"
+step="0.1"
+min="0.5"
+max="20"
+value="3.5">
+
+<button onclick="setSensitivity()">
+SET SENSITIVITY
+</button>
+
+</div>
+
+<div class="warning">
+
+<strong>IMPORTANT:</strong>
+
+This system estimates environmental
+activity from Wi-Fi signal changes.
+It does not provide reliable person
+identification or precise location.
+
+</div>
+
+</div>
+
+</div>
+
+<div class="panel">
+
+<div class="panelTitle">
+LIVE SIGNAL HISTORY
+</div>
+
+<canvas
+class="chart"
+id="chart"
+width="1200"
+height="220">
+</canvas>
+
+</div>
 
 </div>
 
 <script>
 
-/* ============================
-   GLOBAL STATE
-============================ */
+/* ============================================================
+   CLIENT DASHBOARD ENGINE
+   ============================================================ */
 
-let simulationRunning = false;
-let simulationPaused = false;
+const radar =
+document.getElementById(
+  "radar"
+);
 
-let simulationTimer = null;
-let systemTimer = null;
+const radarCtx =
+radar.getContext("2d");
 
-let threatCount = 0;
-let riskScore = 0;
-let eventCount = 0;
+const chart =
+document.getElementById(
+  "chart"
+);
 
-let chartValues = [];
+const chartCtx =
+chart.getContext("2d");
 
-const fakeFiles = [
+let currentActivity = 0;
 
-    "School_Notes.docx",
-    "Mathematics.pdf",
-    "Science_Project.pptx",
-    "Research.docx",
-    "Photos.jpg",
-    "Budget.xlsx",
-    "Assignment.txt",
-    "Presentation.pptx",
-    "Schedule.pdf",
-    "Website.html",
-    "Arduino_Project.ino",
-    "4H_Project.docx",
-    "English_Essay.docx",
-    "Exam_Reviewer.pdf",
-    "Class_Schedule.xlsx",
-    "Project_Data.csv",
-    "Student_ID.png",
-    "Homework.docx"
+let detected = false;
 
-];
+let sweepAngle = 0;
 
-/* ============================
-   CLOCK
-============================ */
+let history = [];
 
-function updateClock() {
+let connected = false;
 
-    const now = new Date();
 
-    document.getElementById("clock").textContent =
-        now.toLocaleTimeString();
+/* ============================================================
+   FORMAT
+   ============================================================ */
 
-}
+function formatUptime(seconds) {
 
-setInterval(updateClock,1000);
-
-updateClock();
-
-/* ============================
-   NAVIGATION
-============================ */
-
-function showSection(id, button) {
-
-    document.querySelectorAll(".section")
-        .forEach(section => section.classList.remove("active"));
-
-    const target = document.getElementById(id);
-
-    if (target) {
-        target.classList.add("active");
-    }
-
-    document.querySelectorAll(".nav button")
-        .forEach(btn => btn.classList.remove("active"));
-
-    if (button) {
-        button.classList.add("active");
-    }
-
-}
-
-/* ============================
-   LOGGING
-============================ */
-
-function addEvent(message,type="info") {
-
-    const time = new Date().toLocaleTimeString();
-
-    eventCount++;
-
-    const line =
-        `<div class="log-line">
-            <span class="log-time">[${time}]</span>
-            <span class="log-${type}">${escapeHTML(message)}</span>
-        </div>`;
-
-    document.getElementById("liveLog")
-        .insertAdjacentHTML("afterbegin",line);
-
-    document.getElementById("eventLog")
-        .insertAdjacentHTML("afterbegin",line);
-
-    document.getElementById("eventCount").textContent =
-        eventCount + " EVENTS";
-
-}
-
-function addScanLog(message,type="info") {
-
-    const time = new Date().toLocaleTimeString();
-
-    document.getElementById("scanLog")
-        .insertAdjacentHTML(
-            "afterbegin",
-            `<div class="log-line">
-                <span class="log-time">[${time}]</span>
-                <span class="log-${type}">
-                ${escapeHTML(message)}
-                </span>
-            </div>`
-        );
-
-}
-
-function escapeHTML(text) {
-
-    return text
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-
-}
-
-/* ============================
-   FILE SYSTEM
-============================ */
-
-function createFiles() {
-
-    const grid = document.getElementById("fileGrid");
-
-    grid.innerHTML = "";
-
-    fakeFiles.forEach((file,index) => {
-
-        const extension =
-            file.split(".").pop();
-
-        const icons = {
-            docx:"📄",
-            pdf:"📕",
-            pptx:"📊",
-            jpg:"🖼️",
-            xlsx:"📗",
-            txt:"📝",
-            html:"🌐",
-            ino:"🔌",
-            csv:"📑",
-            png:"🖼️"
-        };
-
-        const icon =
-            icons[extension] || "📄";
-
-        grid.innerHTML += `
-
-            <div class="file" id="file-${index}">
-
-                <div class="file-icon">
-                    ${icon}
-                </div>
-
-                <div class="file-name">
-                    ${file}
-                </div>
-
-                <div
-                    class="file-state good"
-                    id="file-state-${index}">
-                    ● CLEAN
-                </div>
-
-            </div>
-
-        `;
-
-    });
-
-}
-
-createFiles();
-
-/* ============================
-   SIMULATED FILE INFECTION
-============================ */
-
-function infectRandomFile() {
-
-    const index =
-        Math.floor(Math.random() * fakeFiles.length);
-
-    const state =
-        document.getElementById(
-            "file-state-" + index
-        );
-
-    if (!state) return;
-
-    state.className =
-        "file-state bad";
-
-    state.textContent =
-        "● SIMULATED THREAT";
-
-    addEvent(
-        "Simulation: " +
-        fakeFiles[index] +
-        " marked as threatened.",
-        "danger"
+  let d =
+    Math.floor(
+      seconds / 86400
     );
 
+  seconds %= 86400;
+
+  let h =
+    Math.floor(
+      seconds / 3600
+    );
+
+  seconds %= 3600;
+
+  let m =
+    Math.floor(
+      seconds / 60
+    );
+
+  let s =
+    Math.floor(
+      seconds % 60
+    );
+
+  return (
+    d + "d " +
+    h + "h " +
+    m + "m " +
+    s + "s"
+  );
 }
 
-/* ============================
-   THREAT SIMULATION
-============================ */
 
-function startAttackSimulation() {
+/* ============================================================
+   UPDATE DASHBOARD
+   ============================================================ */
 
-    if (simulationRunning) return;
+function updateDashboard(data) {
 
-    simulationRunning = true;
-    simulationPaused = false;
+  currentActivity =
+    Number(data.activity) || 0;
 
-    addEvent(
-        "Threat simulation initialized.",
-        "warning"
+  detected =
+    data.detected === true;
+
+  document.getElementById(
+    "rssi"
+  ).textContent =
+    data.rssi + " dBm";
+
+  document.getElementById(
+    "filtered"
+  ).textContent =
+    Number(
+      data.filteredRSSI
+    ).toFixed(2);
+
+  document.getElementById(
+    "baseline"
+  ).textContent =
+    Number(
+      data.baselineRSSI
+    ).toFixed(2);
+
+  document.getElementById(
+    "difference"
+  ).textContent =
+    Number(
+      data.difference
+    ).toFixed(2);
+
+  document.getElementById(
+    "activity"
+  ).textContent =
+    Number(
+      data.activity
+    ).toFixed(2);
+
+  document.getElementById(
+    "confidence"
+  ).textContent =
+    Number(
+      data.confidence
+    ).toFixed(0)
+    + "%";
+
+  document.getElementById(
+    "events"
+  ).textContent =
+    data.events;
+
+  document.getElementById(
+    "samples"
+  ).textContent =
+    data.samples;
+
+  document.getElementById(
+    "uptime"
+  ).textContent =
+    formatUptime(
+      data.uptime
     );
 
-    addEvent(
-        "Safe-mode isolation confirmed.",
-        "success"
+  const status =
+    document.getElementById(
+      "status"
     );
 
-    simulationTimer =
-        setInterval(() => {
+  if (detected) {
 
-            if (simulationPaused) return;
+    status.textContent =
+      "ACTIVITY DETECTED";
 
-            threatCount++;
+    status.className =
+      "cardValue red";
 
-            riskScore =
-                Math.min(
-                    100,
-                    riskScore + Math.floor(Math.random()*7)+2
-                );
+  } else {
 
-            document.getElementById("threats")
-                .textContent = threatCount;
+    status.textContent =
+      "NO ACTIVITY";
 
-            updateRisk();
+    status.className =
+      "cardValue green";
+  }
 
-            infectRandomFile();
+  history.push({
+    activity:
+      Number(data.activity),
 
-            const activities = [
+    rssi:
+      Number(data.rssi),
 
-                "Simulated process behavior detected.",
-                "Artificial file-access pattern observed.",
-                "Simulated persistence attempt blocked.",
-                "Behavioral analysis triggered.",
-                "Simulated suspicious activity detected.",
-                "Sandbox containment remains active."
+    time:
+      Date.now()
+  });
 
-            ];
+  if (
+    history.length >
+    100
+  ) {
 
-            addEvent(
-                activities[
-                    Math.floor(
-                        Math.random()*activities.length
-                    )
-                ],
-                "danger"
-            );
-
-            if (riskScore >= 100) {
-
-                pauseSimulation();
-
-                addEvent(
-                    "Simulation reached maximum risk score.",
-                    "warning"
-                );
-
-            }
-
-        },1200);
-
+    history.shift();
+  }
 }
 
-function pauseSimulation() {
 
-    if (!simulationRunning) return;
+/* ============================================================
+   RADAR
+   ============================================================ */
 
-    simulationPaused =
-        !simulationPaused;
+function drawRadar() {
 
-    addEvent(
-        simulationPaused
-            ? "Simulation paused."
-            : "Simulation resumed.",
-        "warning"
+  const w =
+    radar.width;
+
+  const h =
+    radar.height;
+
+  const cx =
+    w / 2;
+
+  const cy =
+    h / 2;
+
+  radarCtx.clearRect(
+    0,
+    0,
+    w,
+    h
+  );
+
+  /*
+    Background
+  */
+
+  radarCtx.fillStyle =
+    "#02070b";
+
+  radarCtx.fillRect(
+    0,
+    0,
+    w,
+    h
+  );
+
+  /*
+    Radar circles
+  */
+
+  radarCtx.strokeStyle =
+    "#143c31";
+
+  radarCtx.lineWidth = 2;
+
+  for (
+    let r = 70;
+    r <= 280;
+    r += 70
+  ) {
+
+    radarCtx.beginPath();
+
+    radarCtx.arc(
+      cx,
+      cy,
+      r,
+      0,
+      Math.PI * 2
     );
 
+    radarCtx.stroke();
+  }
+
+  /*
+    Crosshair
+  */
+
+  radarCtx.beginPath();
+
+  radarCtx.moveTo(
+    cx - 280,
+    cy
+  );
+
+  radarCtx.lineTo(
+    cx + 280,
+    cy
+  );
+
+  radarCtx.moveTo(
+    cx,
+    cy - 280
+  );
+
+  radarCtx.lineTo(
+    cx,
+    cy + 280
+  );
+
+  radarCtx.stroke();
+
+
+  /*
+    Outer boundary
+  */
+
+  radarCtx.beginPath();
+
+  radarCtx.arc(
+    cx,
+    cy,
+    280,
+    0,
+    Math.PI * 2
+  );
+
+  radarCtx.stroke();
+
+
+  /*
+    Sweep
+  */
+
+  sweepAngle +=
+    0.035;
+
+  const sx =
+    cx +
+    Math.cos(
+      sweepAngle
+    ) * 280;
+
+  const sy =
+    cy +
+    Math.sin(
+      sweepAngle
+    ) * 280;
+
+  radarCtx.strokeStyle =
+    "#43e68c";
+
+  radarCtx.lineWidth = 3;
+
+  radarCtx.beginPath();
+
+  radarCtx.moveTo(
+    cx,
+    cy
+  );
+
+  radarCtx.lineTo(
+    sx,
+    sy
+  );
+
+  radarCtx.stroke();
+
+
+  /*
+    Activity visualization
+  */
+
+  if (detected) {
+
+    let intensity =
+      Math.min(
+        currentActivity /
+        15,
+        1
+      );
+
+    /*
+      This position is deliberately
+      an activity visualization,
+      not an actual person's location.
+    */
+
+    let radius =
+      60 +
+      (1 - intensity) *
+      160;
+
+    let px =
+      cx +
+      Math.cos(
+        sweepAngle + 1.1
+      ) *
+      radius;
+
+    let py =
+      cy +
+      Math.sin(
+        sweepAngle + 1.1
+      ) *
+      radius;
+
+    /*
+      Glow
+    */
+
+    radarCtx.shadowBlur =
+      35;
+
+    radarCtx.shadowColor =
+      "#ff4f55";
+
+    radarCtx.fillStyle =
+      "#ff555b";
+
+    radarCtx.beginPath();
+
+    radarCtx.arc(
+      px,
+      py,
+      10 +
+      intensity * 20,
+      0,
+      Math.PI * 2
+    );
+
+    radarCtx.fill();
+
+    radarCtx.shadowBlur =
+      0;
+
+    /*
+      Label
+    */
+
+    radarCtx.fillStyle =
+      "#ff7777";
+
+    radarCtx.font =
+      "bold 16px Arial";
+
+    radarCtx.fillText(
+      "ACTIVITY",
+      px + 25,
+      py
+    );
+  }
+
+
+  /*
+    Center sensor
+  */
+
+  radarCtx.fillStyle =
+    "#4ce18c";
+
+  radarCtx.shadowBlur =
+    15;
+
+  radarCtx.shadowColor =
+    "#4ce18c";
+
+  radarCtx.beginPath();
+
+  radarCtx.arc(
+    cx,
+    cy,
+    6,
+    0,
+    Math.PI * 2
+  );
+
+  radarCtx.fill();
+
+  radarCtx.shadowBlur =
+    0;
+
+
+  requestAnimationFrame(
+    drawRadar
+  );
 }
 
-/* ============================
-   RISK
-============================ */
 
-function updateRisk() {
-
-    const circle =
-        document.getElementById("threatCircle");
-
-    circle.style.setProperty(
-        "--score",
-        riskScore + "%"
-    );
-
-    document.getElementById("score")
-        .textContent = riskScore;
-
-    const text =
-        document.getElementById("riskText");
-
-    if (riskScore < 25) {
-
-        text.textContent =
-            "System appears safe";
-
-        text.style.color =
-            "var(--green)";
-
-    } else if (riskScore < 60) {
-
-        text.textContent =
-            "Suspicious activity simulated";
-
-        text.style.color =
-            "var(--yellow)";
-
-    } else {
-
-        text.textContent =
-            "High simulated risk";
-
-        text.style.color =
-            "var(--red)";
-
-    }
-
-}
-
-/* ============================
-   CLEANUP
-============================ */
-
-function runCleanup() {
-
-    clearInterval(simulationTimer);
-
-    simulationRunning = false;
-    simulationPaused = false;
-
-    document.querySelectorAll(".file-state")
-        .forEach(state => {
-
-            state.className =
-                "file-state good";
-
-            state.textContent =
-                "● CLEAN";
-
-        });
-
-    threatCount = 0;
-    riskScore = 0;
-
-    document.getElementById("threats")
-        .textContent = "0";
-
-    updateRisk();
-
-    addEvent(
-        "Emergency cleanup completed.",
-        "success"
-    );
-
-    addEvent(
-        "All simulated threats removed.",
-        "success"
-    );
-
-}
-
-/* ============================
-   RESET
-============================ */
-
-function resetSimulation() {
-
-    clearInterval(simulationTimer);
-
-    simulationRunning = false;
-    simulationPaused = false;
-
-    threatCount = 0;
-    riskScore = 0;
-
-    document.getElementById("threats")
-        .textContent = "0";
-
-    createFiles();
-
-    updateRisk();
-
-    addEvent(
-        "Simulation environment reset.",
-        "success"
-    );
-
-}
-
-/* ============================
-   SYSTEM STATISTICS
-============================ */
-
-function updateSystemStats() {
-
-    const cpu =
-        Math.floor(
-            15 + Math.random()*55
-        );
-
-    const ram =
-        Math.floor(
-            30 + Math.random()*40
-        );
-
-    const processes =
-        Math.floor(
-            14 + Math.random()*18
-        );
-
-    document.getElementById("cpu")
-        .textContent = cpu + "%";
-
-    document.getElementById("ram")
-        .textContent = ram + "%";
-
-    document.getElementById("processes")
-        .textContent = processes;
-
-    chartValues.push(cpu);
-
-    if (chartValues.length > 40) {
-        chartValues.shift();
-    }
-
-    drawChart();
-
-}
-
-systemTimer =
-    setInterval(
-        updateSystemStats,
-        1000
-    );
-
-/* ============================
-   CANVAS GRAPH
-============================ */
+/* ============================================================
+   CHART
+   ============================================================ */
 
 function drawChart() {
 
-    const canvas =
-        document.getElementById("activityChart");
+  const w =
+    chart.width;
 
-    const ctx =
-        canvas.getContext("2d");
+  const h =
+    chart.height;
 
-    const width =
-        canvas.clientWidth;
+  chartCtx.clearRect(
+    0,
+    0,
+    w,
+    h
+  );
 
-    const height =
-        canvas.clientHeight;
+  chartCtx.fillStyle =
+    "#050b10";
 
-    const ratio =
-        window.devicePixelRatio || 1;
+  chartCtx.fillRect(
+    0,
+    0,
+    w,
+    h
+  );
 
-    canvas.width =
-        width * ratio;
+  /*
+    Grid
+  */
 
-    canvas.height =
-        height * ratio;
+  chartCtx.strokeStyle =
+    "#132936";
 
-    ctx.scale(ratio,ratio);
+  chartCtx.lineWidth = 1;
 
-    ctx.clearRect(
-        0,
-        0,
-        width,
-        height
+  for (
+    let y = 20;
+    y < h;
+    y += 40
+  ) {
+
+    chartCtx.beginPath();
+
+    chartCtx.moveTo(
+      0,
+      y
     );
 
-    /* grid */
-
-    ctx.strokeStyle =
-        "#1c2733";
-
-    ctx.lineWidth = 1;
-
-    for(let i=0;i<5;i++) {
-
-        const y =
-            20 +
-            i *
-            ((height-40)/4);
-
-        ctx.beginPath();
-
-        ctx.moveTo(0,y);
-
-        ctx.lineTo(width,y);
-
-        ctx.stroke();
-
-    }
-
-    if(chartValues.length < 2)
-        return;
-
-    ctx.beginPath();
-
-    chartValues.forEach(
-        (value,index) => {
-
-            const x =
-                index *
-                (width /
-                (chartValues.length-1));
-
-            const y =
-                height -
-                20 -
-                (value/100) *
-                (height-40);
-
-            if(index===0)
-                ctx.moveTo(x,y);
-            else
-                ctx.lineTo(x,y);
-
-        }
+    chartCtx.lineTo(
+      w,
+      y
     );
 
-    ctx.strokeStyle =
-        "#4da3ff";
+    chartCtx.stroke();
+  }
 
-    ctx.lineWidth = 2;
 
-    ctx.stroke();
+  if (
+    history.length < 2
+  ) {
 
-}
-
-window.addEventListener(
-    "resize",
-    drawChart
-);
-
-for(let i=0;i<25;i++) {
-
-    chartValues.push(
-        20 + Math.random()*30
+    requestAnimationFrame(
+      drawChart
     );
 
-}
+    return;
+  }
 
-drawChart();
 
-/* ============================
-   NETWORK MAP
-============================ */
+  /*
+    Activity line
+  */
 
-function createNetwork() {
+  chartCtx.strokeStyle =
+    "#4ee38d";
 
-    const map =
-        document.getElementById("networkMap");
+  chartCtx.lineWidth = 3;
 
-    map.innerHTML = "";
+  chartCtx.beginPath();
 
-    const nodes = [
+  history.forEach(
+    (point, index) => {
 
-        {x:45,y:44,icon:"🖥️"},
-        {x:20,y:20,icon:"📱"},
-        {x:75,y:18,icon:"💻"},
-        {x:15,y:72,icon:"🖥️"},
-        {x:78,y:70,icon:"📱"},
-        {x:50,y:78,icon:"☁️"}
+      const x =
+        index /
+        (history.length - 1) *
+        w;
 
-    ];
-
-    nodes.forEach(
-        (node,index) => {
-
-            const el =
-                document.createElement("div");
-
-            el.className = "node";
-
-            el.id =
-                "network-node-" + index;
-
-            el.textContent =
-                node.icon;
-
-            el.style.left =
-                node.x + "%";
-
-            el.style.top =
-                node.y + "%";
-
-            map.appendChild(el);
-
-        }
-    );
-
-    for(let i=1;i<nodes.length;i++) {
-
-        const a =
-            nodes[0];
-
-        const b =
-            nodes[i];
-
-        const x1 =
-            a.x / 100 *
-            map.clientWidth + 23;
-
-        const y1 =
-            a.y / 100 *
-            map.clientHeight + 23;
-
-        const x2 =
-            b.x / 100 *
-            map.clientWidth + 23;
-
-        const y2 =
-            b.y / 100 *
-            map.clientHeight + 23;
-
-        const dx =
-            x2-x1;
-
-        const dy =
-            y2-y1;
-
-        const distance =
-            Math.sqrt(
-                dx*dx + dy*dy
-            );
-
-        const angle =
-            Math.atan2(dy,dx) *
-            180 /
-            Math.PI;
-
-        const line =
-            document.createElement("div");
-
-        line.className =
-            "connection";
-
-        line.style.width =
-            distance + "px";
-
-        line.style.left =
-            x1 + "px";
-
-        line.style.top =
-            y1 + "px";
-
-        line.style.transform =
-            `rotate(${angle}deg)`;
-
-        map.appendChild(line);
-
-    }
-
-}
-
-createNetwork();
-
-window.addEventListener(
-    "resize",
-    createNetwork
-);
-
-/* ============================
-   SIMULATED NETWORK ACTIVITY
-============================ */
-
-setInterval(() => {
-
-    const nodes =
-        document.querySelectorAll(".node");
-
-    if(nodes.length === 0)
-        return;
-
-    nodes.forEach(
-        node => node.classList.remove("infected")
-    );
-
-    if(simulationRunning) {
-
-        const index =
-            Math.floor(
-                Math.random()*nodes.length
-            );
-
-        nodes[index]
-            .classList.add("infected");
-
-        addEvent(
-            "Simulated network event detected on node " +
-            (index+1) + ".",
-            "warning"
+      const normalized =
+        Math.min(
+          point.activity / 15,
+          1
         );
 
+      const y =
+        h -
+        normalized *
+        (h - 20) -
+        10;
+
+      if (index === 0) {
+
+        chartCtx.moveTo(
+          x,
+          y
+        );
+
+      } else {
+
+        chartCtx.lineTo(
+          x,
+          y
+        );
+      }
     }
+  );
 
-},2000);
+  chartCtx.stroke();
 
-/* ============================
-   SCANNER
-============================ */
 
-let scannerRunning = false;
-let scannerTimer = null;
-let scanProgress = 0;
+  /*
+    Activity points
+  */
 
-function startScanner() {
+  history.forEach(
+    (point,index) => {
 
-    if(scannerRunning)
+      if (
+        point.activity <
+        3
+      ) {
         return;
+      }
 
-    scannerRunning = true;
-    scanProgress = 0;
+      const x =
+        index /
+        (history.length - 1) *
+        w;
 
-    document.getElementById("scanBar")
-        .style.width = "0%";
+      const normalized =
+        Math.min(
+          point.activity / 15,
+          1
+        );
 
-    document.getElementById("scanStatus")
-        .textContent =
-        "Educational scanner running...";
+      const y =
+        h -
+        normalized *
+        (h - 20) -
+        10;
 
-    addScanLog(
-        "Initializing simulated scan.",
-        "info"
+      chartCtx.fillStyle =
+        "#ff555b";
+
+      chartCtx.beginPath();
+
+      chartCtx.arc(
+        x,
+        y,
+        3,
+        0,
+        Math.PI * 2
+      );
+
+      chartCtx.fill();
+    }
+  );
+
+
+  requestAnimationFrame(
+    drawChart
+  );
+}
+
+
+/* ============================================================
+   CONNECTION
+   ============================================================ */
+
+function setConnection(
+  state
+) {
+
+  connected =
+    state;
+
+  const text =
+    document.getElementById(
+      "connectionText"
     );
 
-    scannerTimer =
-        setInterval(() => {
-
-            scanProgress +=
-                Math.floor(
-                    Math.random()*10
-                ) + 5;
-
-            if(scanProgress > 100)
-                scanProgress = 100;
-
-            document.getElementById("scanBar")
-                .style.width =
-                scanProgress + "%";
-
-            const scanMessages = [
-
-                "Checking simulated processes...",
-                "Analyzing artificial file metadata...",
-                "Checking simulated memory patterns...",
-                "Analyzing sandbox events...",
-                "Comparing simulated signatures...",
-                "Evaluating behavioral indicators..."
-
-            ];
-
-            addScanLog(
-                scanMessages[
-                    Math.floor(
-                        Math.random()*
-                        scanMessages.length
-                    )
-                ],
-                "info"
-            );
-
-            if(scanProgress >= 100) {
-
-                clearInterval(scannerTimer);
-
-                scannerRunning = false;
-
-                document.getElementById("scanStatus")
-                    .textContent =
-                    "Scan complete — no real system was accessed.";
-
-                addScanLog(
-                    "Scan complete.",
-                    "success"
-                );
-
-                addScanLog(
-                    "Educational simulation only.",
-                    "success"
-                );
-
-            }
-
-        },500);
-
-}
-
-function stopScanner() {
-
-    clearInterval(scannerTimer);
-
-    scannerRunning = false;
-
-    document.getElementById("scanStatus")
-        .textContent =
-        "Scanner stopped.";
-
-    addScanLog(
-        "Scanner stopped safely.",
-        "warning"
+  const dot =
+    document.getElementById(
+      "connectionDot"
     );
 
+  if (state) {
+
+    text.textContent =
+      "CONNECTED";
+
+    dot.style.background =
+      "#50e18b";
+
+    dot.style.boxShadow =
+      "0 0 15px #50e18b";
+
+  } else {
+
+    text.textContent =
+      "DISCONNECTED";
+
+    dot.style.background =
+      "#ff555b";
+
+    dot.style.boxShadow =
+      "0 0 15px #ff555b";
+  }
 }
 
-/* ============================
-   CLEAR LOGS
-============================ */
 
-function clearLogs() {
+/* ============================================================
+   HTTP FALLBACK
+   ============================================================ */
 
-    document.getElementById("liveLog")
-        .innerHTML = "";
+async function pollAPI() {
 
-    document.getElementById("eventLog")
-        .innerHTML = "";
+  try {
 
-    eventCount = 0;
+    const response =
+      await fetch(
+        "/api"
+      );
 
-    document.getElementById("eventCount")
-        .textContent = "0 EVENTS";
+    const data =
+      await response.json();
 
+    updateDashboard(
+      data
+    );
+
+    setConnection(
+      true
+    );
+
+  } catch (error) {
+
+    setConnection(
+      false
+    );
+  }
 }
 
-/* ============================
-   STARTUP EVENTS
-============================ */
 
-addEvent(
-    "CyberShield Lab initialized.",
-    "success"
+/* ============================================================
+   CALIBRATION
+   ============================================================ */
+
+async function calibrate() {
+
+  try {
+
+    await fetch(
+      "/calibrate"
+    );
+
+    alert(
+      "Calibration started. Keep the environment still for about 10 seconds."
+    );
+
+  } catch(error) {
+
+    alert(
+      "Unable to start calibration."
+    );
+  }
+}
+
+
+/* ============================================================
+   SENSITIVITY
+   ============================================================ */
+
+async function setSensitivity() {
+
+  const input =
+    document.getElementById(
+      "sensitivity"
+    );
+
+  const value =
+    Number(
+      input.value
+    );
+
+  if (
+    !Number.isFinite(value)
+  ) {
+
+    return;
+  }
+
+  try {
+
+    await fetch(
+      "/sensitivity?value=" +
+      encodeURIComponent(
+        value
+      )
+    );
+
+    alert(
+      "Sensitivity updated."
+    );
+
+  } catch(error) {
+
+    alert(
+      "Could not update sensitivity."
+    );
+  }
+}
+
+
+/* ============================================================
+   START
+   ============================================================ */
+
+setInterval(
+  pollAPI,
+  700
 );
 
-addEvent(
-    "Sandbox environment ready.",
-    "success"
-);
+pollAPI();
 
-addEvent(
-    "Real-system access: DISABLED.",
-    "success"
-);
+drawRadar();
 
-addEvent(
-    "Network access: SIMULATED ONLY.",
-    "success"
-);
+drawChart();
 
 </script>
 
 </body>
+
 </html>
+
+)HTML";
+
+// ---------------------------------------------------------------
+// ROOT PAGE
+// ---------------------------------------------------------------
+
+void handleRoot() {
+
+  server.send(
+    200,
+    "text/html",
+    MAIN_PAGE
+  );
+}
+
+// ---------------------------------------------------------------
+// 404
+// ---------------------------------------------------------------
+
+void handleNotFound() {
+
+  String message =
+    "ESP32 Wi-Fi Sensor\n\n";
+
+  message +=
+    "Available endpoints:\n";
+
+  message +=
+    "/\n";
+
+  message +=
+    "/api\n";
+
+  message +=
+    "/history\n";
+
+  message +=
+    "/calibrate\n";
+
+  message +=
+    "/sensitivity?value=3.5\n";
+
+  server.send(
+    404,
+    "text/plain",
+    message
+  );
+}
+
+// ---------------------------------------------------------------
+// SETUP
+// ---------------------------------------------------------------
+
+void setup() {
+
+  Serial.begin(
+    115200
+  );
+
+  delay(1000);
+
+  bootTime =
+      millis();
+
+  /*
+    Initialize history
+  */
+
+  for (
+    int i = 0;
+    i < HISTORY_SIZE;
+    i++
+  ) {
+
+    activityHistory[i] =
+      0;
+
+    rssiHistory[i] =
+      -100;
+
+    timeHistory[i] =
+      0;
+  }
+
+  Serial.println();
+
+  Serial.println(
+    "=========================================="
+  );
+
+  Serial.println(
+    " ESP32 WI-FI ACTIVITY SENSOR"
+  );
+
+  Serial.println(
+    " VERSION 1.0"
+  );
+
+  Serial.println(
+    "=========================================="
+  );
+
+  Serial.println();
+
+  /*
+    Wi-Fi configuration
+  */
+
+  WiFi.mode(
+    WIFI_STA
+  );
+
+  WiFi.setAutoReconnect(
+    true
+  );
+
+  WiFi.persistent(
+    false
+  );
+
+  Serial.print(
+    "Connecting to: "
+  );
+
+  Serial.println(
+    WIFI_SSID
+  );
+
+  WiFi.begin(
+    WIFI_SSID,
+    WIFI_PASSWORD
+  );
+
+  int attempts = 0;
+
+  while (
+    WiFi.status() !=
+    WL_CONNECTED
+    &&
+    attempts < 60
+  ) {
+
+    delay(500);
+
+    Serial.print(
+      "."
+    );
+
+    attempts++;
+  }
+
+  Serial.println();
+
+  if (
+    WiFi.status() !=
+    WL_CONNECTED
+  ) {
+
+    Serial.println(
+      "Wi-Fi connection failed."
+    );
+
+    Serial.println(
+      "Check SSID and password."
+    );
+
+  } else {
+
+    Serial.println(
+      "Wi-Fi connected."
+    );
+
+    Serial.print(
+      "IP address: "
+    );
+
+    Serial.println(
+      WiFi.localIP()
+    );
+
+    Serial.print(
+      "Initial RSSI: "
+    );
+
+    Serial.println(
+      WiFi.RSSI()
+    );
+  }
+
+  /*
+    HTTP routes
+  */
+
+  server.on(
+    "/",
+    HTTP_GET,
+    handleRoot
+  );
+
+  server.on(
+    "/api",
+    HTTP_GET,
+    handleAPI
+  );
+
+  server.on(
+    "/history",
+    HTTP_GET,
+    handleHistory
+  );
+
+  server.on(
+    "/calibrate",
+    HTTP_GET,
+    handleCalibration
+  );
+
+  server.on(
+    "/sensitivity",
+    HTTP_GET,
+    handleSensitivity
+  );
+
+  server.onNotFound(
+    handleNotFound
+  );
+
+  /*
+    Start server
+  */
+
+  server.begin();
+
+  Serial.println(
+    "HTTP server started."
+  );
+
+  /*
+    Start calibration
+  */
+
+  startCalibration();
+
+  Serial.println();
+
+  Serial.println(
+    "Open the ESP32 IP address"
+  );
+
+  Serial.println(
+    "from a device connected"
+  );
+
+  Serial.println(
+    "to the same Wi-Fi network."
+  );
+
+  Serial.println();
+
+  Serial.println(
+    "Example:"
+  );
+
+  Serial.println(
+    "http://192.168.1.100"
+  );
+}
+
+// ---------------------------------------------------------------
+// MAIN LOOP
+// ---------------------------------------------------------------
+
+void loop() {
+
+  /*
+    Handle browser requests
+  */
+
+  server.handleClient();
+
+  /*
+    Keep Wi-Fi alive
+  */
+
+  checkWiFi();
+
+  /*
+    Sensor processing
+  */
+
+  updateSensor();
+
+  /*
+    Calibration
+  */
+
+  processCalibration();
+
+  /*
+    Dashboard timing
+    (HTTP polling is handled by browser)
+  */
+
+  if (
+    millis() -
+    lastDashboardUpdate >
+    DASHBOARD_INTERVAL
+  ) {
+
+    lastDashboardUpdate =
+      millis();
+  }
+
+  /*
+    Small cooperative delay.
+    Prevents the loop from consuming
+    unnecessary CPU continuously.
+  */
+
+  delay(2);
+}
