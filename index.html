@@ -2834,6 +2834,2202 @@ document.addEventListener(
 );
 
 </script>
+/* =========================================================
+   CONNECTCHAT - FRIENDS + FACEBOOK STYLE SETTINGS
+   CONTINUATION CODE
+   Paste this BEFORE the final </script>
+   ========================================================= */
 
+
+/* =========================================================
+   1. FRIEND DATA
+   ========================================================= */
+
+const connectChatFriends = {
+
+    friends: [
+        {
+            id: "sofia",
+            name: "Sofia",
+            avatar: "https://i.pravatar.cc/150?img=47",
+            status: "Online",
+            online: true
+        },
+        {
+            id: "daniel",
+            name: "Daniel",
+            avatar: "https://i.pravatar.cc/150?img=11",
+            status: "Active 10 minutes ago",
+            online: false
+        },
+        {
+            id: "emma",
+            name: "Emma",
+            avatar: "https://i.pravatar.cc/150?img=32",
+            status: "Online",
+            online: true
+        },
+        {
+            id: "alex",
+            name: "Alex",
+            avatar: "https://i.pravatar.cc/150?img=68",
+            status: "Active yesterday",
+            online: false
+        }
+    ],
+
+    requests: [
+        {
+            id: "olivia",
+            name: "Olivia",
+            avatar: "https://i.pravatar.cc/150?img=44",
+            mutual: "2 mutual friends"
+        },
+        {
+            id: "james",
+            name: "James",
+            avatar: "https://i.pravatar.cc/150?img=13",
+            mutual: "5 mutual friends"
+        }
+    ],
+
+    suggestions: [
+        {
+            id: "lucas",
+            name: "Lucas",
+            avatar: "https://i.pravatar.cc/150?img=14",
+            mutual: "8 mutual friends"
+        },
+        {
+            id: "mia",
+            name: "Mia",
+            avatar: "https://i.pravatar.cc/150?img=25",
+            mutual: "3 mutual friends"
+        },
+        {
+            id: "noah",
+            name: "Noah",
+            avatar: "https://i.pravatar.cc/150?img=15",
+            mutual: "6 mutual friends"
+        },
+        {
+            id: "sophia",
+            name: "Sophia",
+            avatar: "https://i.pravatar.cc/150?img=26",
+            mutual: "1 mutual friend"
+        }
+    ],
+
+    blocked: []
+};
+
+
+/* =========================================================
+   2. FRIEND PAGE STYLE
+   ========================================================= */
+
+const friendStyle = document.createElement("style");
+
+friendStyle.textContent = `
+
+/* FRIEND PAGE */
+
+#connectFriendsPage {
+    position: fixed;
+    inset: 0;
+    z-index: 6000;
+    display: none;
+    background: var(--bg);
+}
+
+#connectFriendsPage.show {
+    display: flex;
+}
+
+.cc-friend-sidebar {
+    width: 280px;
+    background: var(--card);
+    border-right: 1px solid var(--border);
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.cc-friend-sidebar h2 {
+    font-size: 25px;
+    margin-bottom: 20px;
+}
+
+.cc-friend-nav {
+    padding: 13px 15px;
+    margin-bottom: 5px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: .2s;
+}
+
+.cc-friend-nav:hover {
+    background: var(--hover);
+}
+
+.cc-friend-nav.active {
+    background: var(--blue-light);
+    color: var(--blue);
+}
+
+.cc-friend-badge {
+    float: right;
+    background: var(--danger);
+    color: white;
+    border-radius: 20px;
+    padding: 3px 8px;
+    font-size: 11px;
+}
+
+.cc-friend-main {
+    flex: 1;
+    padding: 28px;
+    overflow-y: auto;
+}
+
+.cc-friend-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.cc-friend-header h1 {
+    font-size: 28px;
+}
+
+.cc-friend-search {
+    width: 320px;
+    max-width: 100%;
+    padding: 13px 18px;
+    border: none;
+    outline: none;
+    border-radius: 25px;
+    background: var(--card);
+    color: var(--text);
+}
+
+.cc-friend-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(auto-fill, minmax(245px, 1fr));
+    gap: 18px;
+}
+
+.cc-friend-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    padding: 20px;
+    transition: .2s;
+}
+
+.cc-friend-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+}
+
+.cc-friend-profile {
+    text-align: center;
+}
+
+.cc-friend-avatar-wrap {
+    display: inline-block;
+    position: relative;
+}
+
+.cc-friend-avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.cc-friend-online {
+    position: absolute;
+    right: 3px;
+    bottom: 5px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--success);
+    border: 3px solid var(--card);
+}
+
+.cc-friend-name {
+    font-size: 17px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.cc-friend-mutual {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+.cc-friend-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.cc-friend-button {
+    flex: 1;
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.cc-friend-primary {
+    background: var(--blue);
+    color: white;
+}
+
+.cc-friend-secondary {
+    background: var(--bg);
+    color: var(--text);
+}
+
+.cc-friend-danger {
+    background: #ffe5e8;
+    color: var(--danger);
+}
+
+.cc-empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 80px 20px;
+}
+
+.cc-empty-icon {
+    font-size: 60px;
+    margin-bottom: 15px;
+}
+
+
+/* SETTINGS */
+
+#connectSettings {
+    position: fixed;
+    inset: 0;
+    z-index: 8000;
+    background: rgba(0,0,0,.55);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+#connectSettings.show {
+    display: flex;
+}
+
+.cc-settings-window {
+    width: 900px;
+    max-width: 100%;
+    height: 650px;
+    max-height: 92vh;
+    background: var(--card);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    box-shadow: 0 20px 70px rgba(0,0,0,.35);
+}
+
+.cc-settings-sidebar {
+    width: 250px;
+    background: var(--bg);
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.cc-settings-sidebar h2 {
+    margin-bottom: 20px;
+}
+
+.cc-settings-nav {
+    padding: 12px;
+    border-radius: 9px;
+    margin-bottom: 4px;
+    cursor: pointer;
+}
+
+.cc-settings-nav:hover {
+    background: var(--hover);
+}
+
+.cc-settings-nav.active {
+    background: var(--blue-light);
+    color: var(--blue);
+    font-weight: bold;
+}
+
+.cc-settings-main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px;
+}
+
+.cc-settings-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+}
+
+.cc-settings-close {
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 50%;
+    background: var(--bg);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.cc-setting-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.cc-setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 17px;
+    border-bottom: 1px solid var(--border);
+}
+
+.cc-setting-row:last-child {
+    border-bottom: none;
+}
+
+.cc-setting-name {
+    font-weight: bold;
+}
+
+.cc-setting-description {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+.cc-toggle {
+    width: 48px;
+    height: 27px;
+    border-radius: 20px;
+    background: #aaa;
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.cc-toggle.active {
+    background: var(--blue);
+}
+
+.cc-toggle::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    width: 21px;
+    height: 21px;
+    border-radius: 50%;
+    background: white;
+    transition: .2s;
+}
+
+.cc-toggle.active::after {
+    left: 23px;
+}
+
+.cc-profile-box {
+    text-align: center;
+}
+
+.cc-profile-box img {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.cc-profile-box h2 {
+    margin-top: 10px;
+}
+
+.cc-profile-box p {
+    color: var(--muted);
+    margin-top: 5px;
+}
+
+.cc-profile-input {
+    width: 100%;
+    margin-top: 15px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+}
+
+.cc-save {
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: var(--blue);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.cc-select {
+    padding: 9px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+}
+
+@media(max-width:700px) {
+
+    .cc-friend-sidebar {
+        display: none;
+    }
+
+    .cc-friend-main {
+        padding: 18px;
+    }
+
+    .cc-friend-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .cc-friend-search {
+        width: 100%;
+    }
+
+    .cc-settings-sidebar {
+        display: none;
+    }
+
+    .cc-settings-main {
+        padding: 20px;
+    }
+
+}
+
+`;
+
+document.head.appendChild(friendStyle);
+
+
+/* =========================================================
+   3. CREATE FRIEND PAGE
+   ========================================================= */
+
+const friendPage = document.createElement("div");
+
+friendPage.id = "connectFriendsPage";
+
+friendPage.innerHTML = `
+
+    <aside class="cc-friend-sidebar">
+
+        <h2>People</h2>
+
+        <div
+            class="cc-friend-nav active"
+            data-section="friends"
+            onclick="ccOpenFriendSection('friends')"
+        >
+            👥 Friends
+        </div>
+
+        <div
+            class="cc-friend-nav"
+            data-section="requests"
+            onclick="ccOpenFriendSection('requests')"
+        >
+            🤝 Friend Requests
+            <span
+                class="cc-friend-badge"
+                id="ccRequestBadge"
+            >
+                2
+            </span>
+        </div>
+
+        <div
+            class="cc-friend-nav"
+            data-section="suggestions"
+            onclick="ccOpenFriendSection('suggestions')"
+        >
+            💡 People You May Know
+        </div>
+
+        <div
+            class="cc-friend-nav"
+            data-section="blocked"
+            onclick="ccOpenFriendSection('blocked')"
+        >
+            🚫 Blocked
+        </div>
+
+        <div
+            class="cc-friend-nav"
+            onclick="ccCloseFriends()"
+        >
+            ← Back to Chats
+        </div>
+
+    </aside>
+
+
+    <main class="cc-friend-main">
+
+        <div class="cc-friend-header">
+
+            <h1 id="ccFriendTitle">
+                Friends
+            </h1>
+
+            <input
+                id="ccFriendSearch"
+                class="cc-friend-search"
+                placeholder="Search friends..."
+                oninput="ccSearchFriends()"
+            >
+
+        </div>
+
+        <div
+            id="ccFriendGrid"
+            class="cc-friend-grid"
+        ></div>
+
+    </main>
+
+`;
+
+document.body.appendChild(friendPage);
+
+
+/* =========================================================
+   4. CREATE SETTINGS WINDOW
+   ========================================================= */
+
+const settingsPage = document.createElement("div");
+
+settingsPage.id = "connectSettings";
+
+settingsPage.innerHTML = `
+
+    <div class="cc-settings-window">
+
+        <aside class="cc-settings-sidebar">
+
+            <h2>Settings</h2>
+
+            <div
+                class="cc-settings-nav active"
+                data-settings="account"
+                onclick="ccOpenSettings('account')"
+            >
+                👤 Account
+            </div>
+
+            <div
+                class="cc-settings-nav"
+                data-settings="privacy"
+                onclick="ccOpenSettings('privacy')"
+            >
+                🔒 Privacy
+            </div>
+
+            <div
+                class="cc-settings-nav"
+                data-settings="notifications"
+                onclick="ccOpenSettings('notifications')"
+            >
+                🔔 Notifications
+            </div>
+
+            <div
+                class="cc-settings-nav"
+                data-settings="appearance"
+                onclick="ccOpenSettings('appearance')"
+            >
+                🎨 Appearance
+            </div>
+
+            <div
+                class="cc-settings-nav"
+                data-settings="chat"
+                onclick="ccOpenSettings('chat')"
+            >
+                💬 Chat
+            </div>
+
+            <div
+                class="cc-settings-nav"
+                data-settings="security"
+                onclick="ccOpenSettings('security')"
+            >
+                🛡️ Security
+            </div>
+
+            <div
+                class="cc-settings-nav"
+                data-settings="blocking"
+                onclick="ccOpenSettings('blocking')"
+            >
+                🚫 Blocking
+            </div>
+
+        </aside>
+
+
+        <main class="cc-settings-main">
+
+            <div class="cc-settings-title">
+
+                <h2 id="ccSettingsTitle">
+                    Account
+                </h2>
+
+                <button
+                    class="cc-settings-close"
+                    onclick="ccCloseSettings()"
+                >
+                    ✕
+                </button>
+
+            </div>
+
+            <div id="ccSettingsContent"></div>
+
+        </main>
+
+    </div>
+
+`;
+
+document.body.appendChild(settingsPage);
+
+
+/* =========================================================
+   5. OPEN FRIEND PAGE
+   ========================================================= */
+
+function ccOpenFriends() {
+
+    document
+        .getElementById("connectFriendsPage")
+        .classList.add("show");
+
+    ccOpenFriendSection("friends");
+
+}
+
+
+/* =========================================================
+   6. CLOSE FRIEND PAGE
+   ========================================================= */
+
+function ccCloseFriends() {
+
+    document
+        .getElementById("connectFriendsPage")
+        .classList.remove("show");
+
+}
+
+
+/* =========================================================
+   7. FRIEND SECTION
+   ========================================================= */
+
+function ccOpenFriendSection(section) {
+
+    document
+        .querySelectorAll(".cc-friend-nav")
+        .forEach(item => {
+
+            item.classList.remove("active");
+
+        });
+
+    const active =
+        document.querySelector(
+            `.cc-friend-nav[data-section="${section}"]`
+        );
+
+    if (active) {
+        active.classList.add("active");
+    }
+
+
+    const title =
+        document.getElementById("ccFriendTitle");
+
+    if (section === "friends") {
+
+        title.textContent = "Friends";
+
+        ccRenderFriends(
+            connectChatFriends.friends
+        );
+
+    }
+
+    else if (section === "requests") {
+
+        title.textContent = "Friend Requests";
+
+        ccRenderRequests(
+            connectChatFriends.requests
+        );
+
+    }
+
+    else if (section === "suggestions") {
+
+        title.textContent =
+            "People You May Know";
+
+        ccRenderSuggestions(
+            connectChatFriends.suggestions
+        );
+
+    }
+
+    else if (section === "blocked") {
+
+        title.textContent = "Blocked";
+
+        ccRenderBlocked();
+
+    }
+
+}
+
+
+/* =========================================================
+   8. FRIEND CARDS
+   ========================================================= */
+
+function ccRenderFriends(list) {
+
+    const grid =
+        document.getElementById(
+            "ccFriendGrid"
+        );
+
+    if (!list.length) {
+
+        grid.innerHTML = `
+
+            <div class="cc-empty">
+
+                <div class="cc-empty-icon">
+                    👥
+                </div>
+
+                <h2>
+                    No friends found
+                </h2>
+
+                <p>
+                    Search for people to connect with.
+                </p>
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    grid.innerHTML = list.map(friend => `
+
+        <div class="cc-friend-card">
+
+            <div class="cc-friend-profile">
+
+                <div class="cc-friend-avatar-wrap">
+
+                    <img
+                        class="cc-friend-avatar"
+                        src="${friend.avatar}"
+                    >
+
+                    ${
+                        friend.online
+                        ? `<span class="cc-friend-online"></span>`
+                        : ""
+                    }
+
+                </div>
+
+                <div class="cc-friend-name">
+                    ${friend.name}
+                </div>
+
+                <div class="cc-friend-mutual">
+                    ${friend.status}
+                </div>
+
+            </div>
+
+
+            <div class="cc-friend-buttons">
+
+                <button
+                    class="cc-friend-button cc-friend-primary"
+                    onclick="ccMessageFriend('${friend.id}')"
+                >
+                    💬 Message
+                </button>
+
+                <button
+                    class="cc-friend-button cc-friend-secondary"
+                    onclick="ccFriendOptions('${friend.id}')"
+                >
+                    ⋯
+                </button>
+
+            </div>
+
+        </div>
+
+    `).join("");
+
+}
+
+
+/* =========================================================
+   9. FRIEND REQUESTS
+   ========================================================= */
+
+function ccRenderRequests(list) {
+
+    const grid =
+        document.getElementById(
+            "ccFriendGrid"
+        );
+
+    if (!list.length) {
+
+        grid.innerHTML = `
+
+            <div class="cc-empty">
+
+                <div class="cc-empty-icon">
+                    🤝
+                </div>
+
+                <h2>
+                    No friend requests
+                </h2>
+
+                <p>
+                    You're all caught up.
+                </p>
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    grid.innerHTML = list.map(
+        (person, index) => `
+
+        <div class="cc-friend-card">
+
+            <div class="cc-friend-profile">
+
+                <img
+                    class="cc-friend-avatar"
+                    src="${person.avatar}"
+                >
+
+                <div class="cc-friend-name">
+                    ${person.name}
+                </div>
+
+                <div class="cc-friend-mutual">
+                    ${person.mutual}
+                </div>
+
+            </div>
+
+
+            <div class="cc-friend-buttons">
+
+                <button
+                    class="cc-friend-button cc-friend-primary"
+                    onclick="ccAcceptRequest(${index})"
+                >
+                    Confirm
+                </button>
+
+                <button
+                    class="cc-friend-button cc-friend-danger"
+                    onclick="ccDeleteRequest(${index})"
+                >
+                    Delete
+                </button>
+
+            </div>
+
+        </div>
+
+    `
+    ).join("");
+
+}
+
+
+/* =========================================================
+   10. FRIEND SUGGESTIONS
+   ========================================================= */
+
+function ccRenderSuggestions(list) {
+
+    const grid =
+        document.getElementById(
+            "ccFriendGrid"
+        );
+
+    if (!list.length) {
+
+        grid.innerHTML = `
+
+            <div class="cc-empty">
+
+                <div class="cc-empty-icon">
+                    💡
+                </div>
+
+                <h2>
+                    No suggestions
+                </h2>
+
+                <p>
+                    Check back later for people you may know.
+                </p>
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    grid.innerHTML = list.map(
+        (person, index) => `
+
+        <div class="cc-friend-card">
+
+            <div class="cc-friend-profile">
+
+                <img
+                    class="cc-friend-avatar"
+                    src="${person.avatar}"
+                >
+
+                <div class="cc-friend-name">
+                    ${person.name}
+                </div>
+
+                <div class="cc-friend-mutual">
+                    ${person.mutual}
+                </div>
+
+            </div>
+
+
+            <div class="cc-friend-buttons">
+
+                <button
+                    class="cc-friend-button cc-friend-primary"
+                    onclick="ccSendRequest(${index})"
+                >
+                    ➕ Add Friend
+                </button>
+
+            </div>
+
+        </div>
+
+    `
+    ).join("");
+
+}
+
+
+/* =========================================================
+   11. BLOCKED USERS
+   ========================================================= */
+
+function ccRenderBlocked() {
+
+    const grid =
+        document.getElementById(
+            "ccFriendGrid"
+        );
+
+    const list =
+        connectChatFriends.blocked;
+
+
+    if (!list.length) {
+
+        grid.innerHTML = `
+
+            <div class="cc-empty">
+
+                <div class="cc-empty-icon">
+                    🚫
+                </div>
+
+                <h2>
+                    No blocked people
+                </h2>
+
+                <p>
+                    Users you block will appear here.
+                </p>
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    grid.innerHTML = list.map(person => `
+
+        <div class="cc-friend-card">
+
+            <div class="cc-friend-profile">
+
+                <img
+                    class="cc-friend-avatar"
+                    src="${person.avatar}"
+                >
+
+                <div class="cc-friend-name">
+                    ${person.name}
+                </div>
+
+            </div>
+
+
+            <div class="cc-friend-buttons">
+
+                <button
+                    class="cc-friend-button cc-friend-secondary"
+                    onclick="ccUnblock('${person.id}')"
+                >
+                    Unblock
+                </button>
+
+            </div>
+
+        </div>
+
+    `).join("");
+
+}
+
+
+/* =========================================================
+   12. ACCEPT REQUEST
+   ========================================================= */
+
+function ccAcceptRequest(index) {
+
+    const person =
+        connectChatFriends.requests[index];
+
+    if (!person) return;
+
+
+    connectChatFriends.friends.push({
+
+        id: person.id,
+
+        name: person.name,
+
+        avatar: person.avatar,
+
+        status: "Active recently",
+
+        online: false
+
+    });
+
+
+    connectChatFriends.requests.splice(
+        index,
+        1
+    );
+
+
+    ccUpdateRequestBadge();
+
+    showToast(
+        person.name +
+        " is now your friend!"
+    );
+
+
+    ccOpenFriendSection(
+        "friends"
+    );
+
+}
+
+
+/* =========================================================
+   13. DELETE REQUEST
+   ========================================================= */
+
+function ccDeleteRequest(index) {
+
+    const person =
+        connectChatFriends.requests[index];
+
+    if (!person) return;
+
+
+    connectChatFriends.requests.splice(
+        index,
+        1
+    );
+
+
+    ccUpdateRequestBadge();
+
+    showToast(
+        "Friend request deleted."
+    );
+
+
+    ccOpenFriendSection(
+        "requests"
+    );
+
+}
+
+
+/* =========================================================
+   14. SEND FRIEND REQUEST
+   ========================================================= */
+
+function ccSendRequest(index) {
+
+    const person =
+        connectChatFriends.suggestions[index];
+
+    if (!person) return;
+
+
+    connectChatFriends.suggestions.splice(
+        index,
+        1
+    );
+
+
+    showToast(
+        "Friend request sent to " +
+        person.name
+    );
+
+
+    ccOpenFriendSection(
+        "suggestions"
+    );
+
+}
+
+
+/* =========================================================
+   15. UPDATE REQUEST BADGE
+   ========================================================= */
+
+function ccUpdateRequestBadge() {
+
+    const badge =
+        document.getElementById(
+            "ccRequestBadge"
+        );
+
+    const count =
+        connectChatFriends.requests.length;
+
+
+    badge.textContent =
+        count;
+
+
+    badge.style.display =
+        count > 0
+        ? "block"
+        : "none";
+
+}
+
+
+/* =========================================================
+   16. SEARCH FRIENDS
+   ========================================================= */
+
+function ccSearchFriends() {
+
+    const query =
+        document
+            .getElementById(
+                "ccFriendSearch"
+            )
+            .value
+            .toLowerCase()
+            .trim();
+
+
+    const results =
+        connectChatFriends.friends.filter(
+            friend =>
+                friend.name
+                    .toLowerCase()
+                    .includes(query)
+        );
+
+
+    ccRenderFriends(results);
+
+}
+
+
+/* =========================================================
+   17. MESSAGE FRIEND
+   ========================================================= */
+
+function ccMessageFriend(id) {
+
+    const friend =
+        connectChatFriends.friends.find(
+            item => item.id === id
+        );
+
+
+    if (!friend) return;
+
+
+    ccCloseFriends();
+
+
+    openChat(
+        friend.name,
+        friend.avatar,
+        friend.online
+            ? "Online"
+            : "Active recently"
+    );
+
+}
+
+
+/* =========================================================
+   18. FRIEND OPTIONS
+   ========================================================= */
+
+function ccFriendOptions(id) {
+
+    const friend =
+        connectChatFriends.friends.find(
+            item => item.id === id
+        );
+
+
+    if (!friend) return;
+
+
+    const action =
+        prompt(
+            "Choose an action:\n\n" +
+            "1 = Remove friend\n" +
+            "2 = Block user\n" +
+            "3 = Cancel"
+        );
+
+
+    if (action === "1") {
+
+        connectChatFriends.friends =
+            connectChatFriends.friends.filter(
+                item => item.id !== id
+            );
+
+
+        showToast(
+            friend.name +
+            " removed from friends."
+        );
+
+
+        ccOpenFriendSection(
+            "friends"
+        );
+
+    }
+
+
+    if (action === "2") {
+
+        connectChatFriends.friends =
+            connectChatFriends.friends.filter(
+                item => item.id !== id
+            );
+
+
+        connectChatFriends.blocked.push(
+            friend
+        );
+
+
+        showToast(
+            friend.name +
+            " has been blocked."
+        );
+
+
+        ccOpenFriendSection(
+            "blocked"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   19. UNBLOCK
+   ========================================================= */
+
+function ccUnblock(id) {
+
+    const person =
+        connectChatFriends.blocked.find(
+            item => item.id === id
+        );
+
+
+    if (!person) return;
+
+
+    connectChatFriends.blocked =
+        connectChatFriends.blocked.filter(
+            item => item.id !== id
+        );
+
+
+    connectChatFriends.friends.push({
+
+        ...person,
+
+        online: false,
+
+        status: "Active recently"
+
+    });
+
+
+    showToast(
+        person.name +
+        " has been unblocked."
+    );
+
+
+    ccOpenFriendSection(
+        "blocked"
+    );
+
+}
+
+
+/* =========================================================
+   20. OPEN SETTINGS
+   ========================================================= */
+
+function ccOpenSettings(section = "account") {
+
+    document
+        .getElementById("connectSettings")
+        .classList.add("show");
+
+
+    document
+        .querySelectorAll(".cc-settings-nav")
+        .forEach(item => {
+
+            item.classList.remove(
+                "active"
+            );
+
+        });
+
+
+    const active =
+        document.querySelector(
+            `.cc-settings-nav[data-settings="${section}"]`
+        );
+
+
+    if (active) {
+        active.classList.add("active");
+    }
+
+
+    const title =
+        document.getElementById(
+            "ccSettingsTitle"
+        );
+
+
+    const content =
+        document.getElementById(
+            "ccSettingsContent"
+        );
+
+
+    if (section === "account") {
+
+        title.textContent =
+            "Account";
+
+
+        content.innerHTML = `
+
+            <div class="cc-profile-box">
+
+                <img
+                    src="${state.currentUser.avatar}"
+                >
+
+                <h2>
+                    ${state.currentUser.name}
+                </h2>
+
+                <p>
+                    ${state.currentUser.email}
+                </p>
+
+                <input
+                    class="cc-profile-input"
+                    id="ccProfileName"
+                    value="${state.currentUser.name}"
+                    placeholder="Your name"
+                >
+
+                <button
+                    class="cc-save"
+                    onclick="ccSaveProfile()"
+                >
+                    Save Changes
+                </button>
+
+            </div>
+
+        `;
+
+    }
+
+
+    if (section === "privacy") {
+
+        title.textContent =
+            "Privacy";
+
+
+        content.innerHTML = `
+
+            <div class="cc-setting-card">
+
+                <div class="cc-setting-row">
+
+                    <div>
+
+                        <div class="cc-setting-name">
+                            Active Status
+                        </div>
+
+                        <div class="cc-setting-description">
+                            Let people see when you are active.
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="cc-toggle active"
+                        onclick="ccToggle(this,'activeStatus')"
+                    ></div>
+
+                </div>
+
+
+                <div class="cc-setting-row">
+
+                    <div>
+
+                        <div class="cc-setting-name">
+                            Friend Requests
+                        </div>
+
+                        <div class="cc-setting-description">
+                            Allow people to send you friend requests.
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="cc-toggle active"
+                        onclick="ccToggle(this,'friendRequests')"
+                    ></div>
+
+                </div>
+
+
+                <div class="cc-setting-row">
+
+                    <div>
+
+                        <div class="cc-setting-name">
+                            Profile Visibility
+                        </div>
+
+                        <div class="cc-setting-description">
+                            Who can find your profile?
+                        </div>
+
+                    </div>
+
+                    <select
+                        class="cc-select"
+                        onchange="ccSaveSetting('profileVisibility',this.value)"
+                    >
+
+                        <option>Everyone</option>
+                        <option>Friends</option>
+                        <option>Only me</option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    if (section === "notifications") {
+
+        title.textContent =
+            "Notifications";
+
+
+        content.innerHTML = `
+
+            <div class="cc-setting-card">
+
+                <div class="cc-setting-row">
+
+                    <div>
+
+                        <div class="cc-setting-name">
+                            Messages
+                        </div>
+
+                        <div class="cc-setting-description">
+                            Notifications for new messages.
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="cc-toggle active"
+                        onclick="ccToggle(this,'messageNotifications')"
+                    ></div>
+
+                </div>
+
+
+                <div class="cc-setting-row">
+
+                    <div>
+
+                        <div class="cc-setting-name">
+                            Friend Requests
+                        </div>
+
+                        <div class="cc-setting-description">
+                            Notifications when someone adds you.
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="cc-toggle active"
+                        onclick="ccToggle(this,'friendNotifications')"
+                    ></div>
+
+                </div>
+
+
+                <div class="cc-setting-row">
+
+                    <div>
+
+                        <div class="cc-setting-name">
+                            Sounds
+                        </div>
+
+                        <div class="cc-setting-description">
+                            Play notification sounds.
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="cc-toggle active"
+                        onclick="ccToggle(this,'notificationSounds')"
+                    ></div>
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    if (section === "appearance") {
+
+        title.textContent =
+            "Appearance";
+
+
+        content.innerHTML = `
+
+            <div class="cc-setting-card">
+
+                <div class="cc-setting-row">
+
+                    <div>
+
+                        <div class="cc-setting-name">
+                            Dark Mode
+                        </div>
+
+                        <div class="cc-setting-description">
+                            Change ConnectChat's appearance.
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="cc-toggle ${
+                            state.darkMode
+                            ? "active"
+                            : ""
+                        }"
+                        onclick="ccDarkToggle(this)"
+                    ></div>
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    if (section === "chat") {
+
+        title.textContent =
+            "Chat";
+
+
+        content.innerHTML = `
+
+            <div class="cc-setting-card">
+
+                <div class="cc-setting-row">
+
+                    <div>
+
+                        <div class="cc-setting-name">
+                            Enter to Send
+                        </div>
+
+                        <div class="cc-setting-description">
+                            Press Enter to send a message.
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="cc-toggle active"
+                        onclick="ccToggle(this,'enterToSend')"
+                    ></div>
+
+                </div>
+
+
+                <div class="cc-setting-row">
+
+                    <div>
+
+                        <div class="cc-setting-name">
+                            Message Previews
+                        </div>
+
+                        <div class="cc-setting-description">
+                            Show message previews in your chat list.
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="cc-toggle active"
+                        onclick="ccToggle(this,'messagePreviews')"
+                    ></div>
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    if (section === "security") {
+
+        title.textContent =
+            "Security";
+
+
+        content.innerHTML = `
+
+            <div class="cc-setting-card">
+
+                <div class="cc-setting-row">
+
+                    <div>
+
+                        <div class="cc-setting-name">
+                            Firebase Authentication
+                        </div>
+
+                        <div class="cc-setting-description">
+                            Your ConnectChat account is authenticated by Firebase.
+                        </div>
+
+                    </div>
+
+                    <strong>
+                        ✓
+                    </strong>
+
+                </div>
+
+
+                <div class="cc-setting-row">
+
+                    <div>
+
+                        <div class="cc-setting-name">
+                            Signed-in email
+                        </div>
+
+                        <div class="cc-setting-description">
+                            ${state.currentUser.email}
+                        </div>
+
+                    </div>
+
+                    <span>
+                        🔐
+                    </span>
+
+                </div>
+
+
+                <div class="cc-setting-row">
+
+                    <div>
+
+                        <div class="cc-setting-name">
+                            Sign out
+                        </div>
+
+                        <div class="cc-setting-description">
+                            Sign out of this device.
+                        </div>
+
+                    </div>
+
+                    <button
+                        class="cc-friend-button cc-friend-danger"
+                        onclick="logout();ccCloseSettings();"
+                    >
+                        Log Out
+                    </button>
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    if (section === "blocking") {
+
+        title.textContent =
+            "Blocking";
+
+
+        content.innerHTML = `
+
+            <div class="cc-setting-card">
+
+                <div class="cc-setting-row">
+
+                    <div>
+
+                        <div class="cc-setting-name">
+                            Blocked people
+                        </div>
+
+                        <div class="cc-setting-description">
+                            People you have blocked.
+                        </div>
+
+                    </div>
+
+                    <strong>
+                        ${connectChatFriends.blocked.length}
+                    </strong>
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/* =========================================================
+   21. CLOSE SETTINGS
+   ========================================================= */
+
+function ccCloseSettings() {
+
+    document
+        .getElementById("connectSettings")
+        .classList.remove("show");
+
+}
+
+
+/* =========================================================
+   22. SAVE PROFILE
+   ========================================================= */
+
+function ccSaveProfile() {
+
+    const input =
+        document.getElementById(
+            "ccProfileName"
+        );
+
+
+    if (!input) return;
+
+
+    const name =
+        input.value.trim();
+
+
+    if (!name) {
+
+        showToast(
+            "Please enter your name."
+        );
+
+        return;
+
+    }
+
+
+    state.currentUser.name =
+        name;
+
+
+    localStorage.setItem(
+        "connectchat_profile_name",
+        name
+    );
+
+
+    const profileName =
+        document.querySelector(
+            ".profile-menu-header strong"
+        );
+
+
+    if (profileName) {
+
+        profileName.textContent =
+            name;
+
+    }
+
+
+    showToast(
+        "Profile updated successfully."
+    );
+
+}
+
+
+/* =========================================================
+   23. SETTINGS STORAGE
+   ========================================================= */
+
+function ccSaveSetting(key, value) {
+
+    localStorage.setItem(
+        "connectchat_setting_" + key,
+        value
+    );
+
+}
+
+
+/* =========================================================
+   24. SETTINGS TOGGLE
+   ========================================================= */
+
+function ccToggle(element, key) {
+
+    element.classList.toggle(
+        "active"
+    );
+
+
+    const enabled =
+        element.classList.contains(
+            "active"
+        );
+
+
+    ccSaveSetting(
+        key,
+        enabled
+    );
+
+
+    showToast(
+        "Setting updated."
+    );
+
+}
+
+
+/* =========================================================
+   25. DARK MODE SETTING
+   ========================================================= */
+
+function ccDarkToggle(element) {
+
+    toggleDarkMode();
+
+
+    element.classList.toggle(
+        "active",
+        state.darkMode
+    );
+
+
+    showToast(
+        state.darkMode
+        ? "Dark mode enabled."
+        : "Dark mode disabled."
+    );
+
+}
+
+
+/* =========================================================
+   26. CONNECT PEOPLE SIDEBAR BUTTON
+   ========================================================= */
+
+document
+    .querySelectorAll(".sidebar-item")
+    .forEach(item => {
+
+        const text =
+            item.textContent
+                .trim()
+                .toLowerCase();
+
+
+        if (text.includes("people")) {
+
+            item.onclick =
+                ccOpenFriends;
+
+        }
+
+    });
+
+
+/* =========================================================
+   27. CONNECT SETTINGS BUTTON
+   ========================================================= */
+
+document
+    .querySelectorAll(".top-actions .icon-button")
+    .forEach(button => {
+
+        if (
+            button.title === "Settings"
+        ) {
+
+            button.onclick =
+                function() {
+
+                    ccOpenSettings(
+                        "account"
+                    );
+
+                };
+
+        }
+
+    });
+
+
+/* =========================================================
+   28. RESTORE PROFILE NAME
+   ========================================================= */
+
+(function() {
+
+    const saved =
+        localStorage.getItem(
+            "connectchat_profile_name"
+        );
+
+
+    if (saved) {
+
+        state.currentUser.name =
+            saved;
+
+    }
+
+})();
+
+
+/* =========================================================
+   29. CLOSE SETTINGS WHEN CLICKING OUTSIDE
+   ========================================================= */
+
+document
+    .getElementById("connectSettings")
+    .addEventListener(
+        "click",
+        function(event) {
+
+            if (
+                event.target === this
+            ) {
+
+                ccCloseSettings();
+
+            }
+
+        }
+    );
+
+
+/* =========================================================
+   30. ESC KEY
+   ========================================================= */
+
+document.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (event.key === "Escape") {
+
+            ccCloseSettings();
+            ccCloseFriends();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   31. INITIALIZE
+   ========================================================= */
+
+ccUpdateRequestBadge();
+
+console.log(
+    "ConnectChat Friends & Settings loaded."
+);
 </body>
 </html>
