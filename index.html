@@ -3,225 +3,1033 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LearnSphere AI</title>
+<meta name="theme-color" content="#1877f2">
+<title>ConnectChat</title>
 
 <style>
+/* =========================================================
+   CONNECTCHAT - ADVANCED FACEBOOK-STYLE CHAT UI
+   Single-file HTML / CSS / JavaScript
+   ========================================================= */
+
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
+:root {
+    --blue: #1877f2;
+    --blue-dark: #0d65d9;
+    --blue-light: #e7f3ff;
+    --white: #ffffff;
+    --bg: #f0f2f5;
+    --card: #ffffff;
+    --text: #050505;
+    --muted: #65676b;
+    --border: #dddfe2;
+    --hover: #f2f2f2;
+    --message: #e4e6eb;
+    --success: #31a24c;
+    --danger: #e41e3f;
+    --shadow: 0 2px 8px rgba(0,0,0,.12);
+}
+
+body.dark {
+    --bg: #18191a;
+    --card: #242526;
+    --white: #242526;
+    --text: #e4e6eb;
+    --muted: #b0b3b8;
+    --border: #3a3b3c;
+    --hover: #3a3b3c;
+    --message: #3a3b3c;
+    --blue-light: #263c5b;
+}
+
+html,
 body {
-    font-family: Arial, sans-serif;
-    background: #07111f;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+
+/* =========================================================
+   LOGIN SCREEN
+   ========================================================= */
+
+#loginScreen {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #e7f3ff, #f0f2f5);
+}
+
+.login-container {
+    width: 420px;
+    max-width: calc(100% - 30px);
+    background: var(--card);
+    border-radius: 16px;
+    padding: 35px;
+    box-shadow: 0 10px 40px rgba(0,0,0,.15);
+}
+
+.logo-large {
+    text-align: center;
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--blue);
+    margin-bottom: 8px;
+}
+
+.login-subtitle {
+    text-align: center;
+    color: var(--muted);
+    margin-bottom: 28px;
+}
+
+.input-group {
+    margin-bottom: 14px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 6px;
+    color: var(--muted);
+}
+
+.input-group input {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--text);
+    outline: none;
+    font-size: 15px;
+}
+
+.input-group input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 2px rgba(24,119,242,.15);
+}
+
+.login-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    background: var(--blue);
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.login-btn:hover {
+    background: var(--blue-dark);
+}
+
+.google-btn {
+    width: 100%;
+    padding: 13px;
+    margin-top: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--text);
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.google-btn:hover {
+    background: var(--hover);
+}
+
+.google-icon {
+    margin-right: 8px;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 20px 0;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.divider::before,
+.divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+.login-message {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+/* =========================================================
+   MAIN APPLICATION
+   ========================================================= */
+
+#app {
+    display: none;
+    height: 100vh;
+    width: 100%;
+}
+
+/* =========================================================
+   TOP NAVIGATION
+   ========================================================= */
+
+.topbar {
+    height: 64px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    position: relative;
+    z-index: 50;
+}
+
+.brand {
+    width: 250px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.brand-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--blue);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 22px;
+}
+
+.brand-name {
+    font-size: 21px;
+    font-weight: 800;
+    color: var(--blue);
+}
+
+.global-search {
+    flex: 1;
+    max-width: 500px;
+    position: relative;
+}
+
+.global-search input {
+    width: 100%;
+    height: 42px;
+    border: none;
+    outline: none;
+    background: var(--bg);
+    color: var(--text);
+    border-radius: 22px;
+    padding: 0 18px 0 42px;
+    font-size: 15px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    top: 12px;
+    color: var(--muted);
+}
+
+.top-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.icon-button {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    background: var(--bg);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.icon-button:hover {
+    background: var(--hover);
+}
+
+.user-mini {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 8px;
+    cursor: pointer;
+}
+
+.user-mini img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+/* =========================================================
+   APP LAYOUT
+   ========================================================= */
+
+.app-body {
+    height: calc(100vh - 64px);
+    display: flex;
+}
+
+/* =========================================================
+   LEFT SIDEBAR
+   ========================================================= */
+
+.sidebar {
+    width: 280px;
+    background: var(--card);
+    border-right: 1px solid var(--border);
+    padding: 16px;
+    overflow-y: auto;
+}
+
+.sidebar-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 12px;
+    border-radius: 9px;
+    cursor: pointer;
+    margin-bottom: 3px;
+}
+
+.sidebar-item:hover,
+.sidebar-item.active {
+    background: var(--blue-light);
+}
+
+.sidebar-item-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--blue);
     color: white;
 }
 
-header {
-    background: #0d1b2d;
-    padding: 20px;
+.sidebar-item-text {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.sidebar-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 15px 0;
+}
+
+.section-title {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: bold;
+    margin: 12px 5px;
+}
+
+/* =========================================================
+   CHAT LIST
+   ========================================================= */
+
+.chat-list {
+    width: 330px;
+    background: var(--card);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+}
+
+.chat-list-header {
+    padding: 18px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.logo {
-    font-size: 25px;
-    font-weight: bold;
-    color: #5ee7ff;
+.chat-list-header h2 {
+    font-size: 23px;
 }
 
-nav button {
-    background: none;
-    border: none;
-    color: white;
-    margin: 5px;
-    padding: 10px;
-    cursor: pointer;
+.chat-search {
+    padding: 0 14px 14px;
 }
 
-nav button:hover {
-    background: #1b334d;
-    border-radius: 8px;
-}
-
-.page {
-    display: none;
-    padding: 40px;
-    max-width: 1200px;
-    margin: auto;
-}
-
-.active {
-    display: block;
-}
-
-.hero {
-    text-align: center;
-    padding: 80px 20px;
-}
-
-.hero h1 {
-    font-size: 60px;
-    margin-bottom: 20px;
-}
-
-.hero span {
-    color: #5ee7ff;
-}
-
-.card-container {
-    display: grid;
-    grid-template-columns:
-        repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
-}
-
-.card {
-    background: #0d1b2d;
-    padding: 25px;
-    border-radius: 15px;
-    border: 1px solid #ffffff15;
-}
-
-button {
-    cursor: pointer;
-}
-
-.primary {
-    background: #5ee7ff;
-    color: #06111d;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-weight: bold;
-}
-
-.subject {
+.chat-search input {
     width: 100%;
-    padding: 25px;
-    background: #10243a;
-    color: white;
-    border: 1px solid #ffffff15;
-    border-radius: 12px;
-    text-align: left;
-}
-
-.subject:hover {
-    border-color: #5ee7ff;
-}
-
-.quiz {
-    background: #0d1b2d;
-    padding: 25px;
-    border-radius: 15px;
-}
-
-.option {
-    display: block;
-    width: 100%;
-    margin: 10px 0;
-    padding: 15px;
-    background: #162d46;
-    color: white;
+    padding: 11px 15px;
     border: none;
-    border-radius: 8px;
-    text-align: left;
+    border-radius: 20px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
 }
 
-.option:hover {
-    background: #204566;
+.chat-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: .15s;
 }
 
-.chat {
-    background: #0d1b2d;
-    border-radius: 15px;
+.chat-item:hover {
+    background: var(--hover);
+}
+
+.chat-item.active {
+    background: var(--blue-light);
+}
+
+.avatar-container {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.online-dot {
+    position: absolute;
+    width: 13px;
+    height: 13px;
+    background: var(--success);
+    border: 2px solid var(--card);
+    border-radius: 50%;
+    bottom: 1px;
+    right: 1px;
+}
+
+.chat-info {
+    min-width: 0;
+    flex: 1;
+}
+
+.chat-name {
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.chat-preview {
+    color: var(--muted);
+    font-size: 13px;
+    white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
 }
+
+.chat-time {
+    color: var(--muted);
+    font-size: 11px;
+}
+
+/* =========================================================
+   CHAT AREA
+   ========================================================= */
+
+.chat-window {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background: var(--bg);
+}
+
+.chat-header {
+    height: 72px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 10px 18px;
+}
+
+.chat-header-info {
+    margin-left: 12px;
+}
+
+.chat-header-name {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.chat-status {
+    color: var(--success);
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+.chat-header-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 6px;
+}
+
+/* =========================================================
+   MESSAGES
+   ========================================================= */
 
 .messages {
-    height: 400px;
-    overflow-y: auto;
-    padding: 20px;
-}
-
-.message {
-    padding: 12px;
-    margin: 10px;
-    border-radius: 10px;
-    max-width: 80%;
-}
-
-.ai {
-    background: #172c43;
-}
-
-.user {
-    background: #12546a;
-    margin-left: auto;
-}
-
-.chat-input {
-    display: flex;
-    padding: 15px;
-    gap: 10px;
-}
-
-.chat-input input {
     flex: 1;
-    padding: 14px;
-    background: #07111f;
-    color: white;
-    border: 1px solid #ffffff22;
-    border-radius: 8px;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
 
-/* CHESS */
+.date-divider {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    margin: 10px 0 15px;
+}
 
-#board {
-    width: min(90vw, 600px);
-    height: min(90vw, 600px);
+.message-row {
+    display: flex;
+    max-width: 75%;
+}
+
+.message-row.me {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.message-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin: 0 8px;
+    object-fit: cover;
+    align-self: flex-end;
+}
+
+.message-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.message-bubble {
+    background: var(--message);
+    padding: 10px 14px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.message-row.me .message-bubble {
+    background: var(--blue);
+    color: white;
+}
+
+.message-time {
+    font-size: 10px;
+    color: var(--muted);
+    margin: 3px 10px;
+}
+
+.message-row.me .message-time {
+    text-align: right;
+}
+
+.message-reactions {
+    margin-top: -7px;
+    margin-left: 8px;
+    display: inline-flex;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2px 5px;
+    font-size: 12px;
+}
+
+/* =========================================================
+   TYPING INDICATOR
+   ========================================================= */
+
+.typing {
+    display: none;
+    align-items: center;
+    gap: 7px;
+    margin: 0 20px 8px;
+}
+
+.typing-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+}
+
+.typing-bubble {
+    padding: 9px 12px;
+    background: var(--message);
+    border-radius: 18px;
+}
+
+.typing-dot {
+    width: 6px;
+    height: 6px;
+    display: inline-block;
+    background: var(--muted);
+    border-radius: 50%;
+    animation: typingAnimation 1.3s infinite;
+    margin: 0 2px;
+}
+
+.typing-dot:nth-child(2) {
+    animation-delay: .2s;
+}
+
+.typing-dot:nth-child(3) {
+    animation-delay: .4s;
+}
+
+@keyframes typingAnimation {
+    0%, 60%, 100% {
+        transform: translateY(0);
+    }
+    30% {
+        transform: translateY(-5px);
+    }
+}
+
+/* =========================================================
+   MESSAGE COMPOSER
+   ========================================================= */
+
+.composer {
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    padding: 12px 16px;
+}
+
+.composer-tools {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.composer-tool {
+    border: none;
+    background: transparent;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    color: var(--blue);
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.composer-tool:hover {
+    background: var(--blue-light);
+}
+
+.message-input-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: var(--bg);
+    border-radius: 22px;
+    padding: 0 5px 0 15px;
+}
+
+.message-input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text);
+    font-size: 14px;
+    padding: 11px 5px;
+}
+
+.send-button {
+    border: none;
+    background: var(--blue);
+    color: white;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.send-button:hover {
+    background: var(--blue-dark);
+}
+
+/* =========================================================
+   RIGHT INFO PANEL
+   ========================================================= */
+
+.info-panel {
+    width: 260px;
+    background: var(--card);
+    border-left: 1px solid var(--border);
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.profile-center {
+    text-align: center;
+}
+
+.profile-center img {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+}
+
+.profile-center h3 {
+    font-size: 17px;
+}
+
+.profile-center p {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+.info-section {
+    border-top: 1px solid var(--border);
+    margin-top: 20px;
+    padding-top: 15px;
+}
+
+.info-section-title {
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.info-option {
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.info-option:hover {
+    background: var(--hover);
+}
+
+/* =========================================================
+   EMOJI PANEL
+   ========================================================= */
+
+.emoji-panel {
+    display: none;
+    position: absolute;
+    bottom: 75px;
+    left: 20px;
+    width: 280px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    border-radius: 12px;
+    padding: 12px;
+    z-index: 100;
+}
+
+.emoji-grid {
     display: grid;
     grid-template-columns: repeat(8, 1fr);
-    margin: 30px auto;
-    border: 5px solid #263b50;
+    gap: 7px;
 }
 
-.square {
+.emoji {
+    border: none;
+    background: transparent;
+    font-size: 22px;
+    cursor: pointer;
+    border-radius: 5px;
+    padding: 4px;
+}
+
+.emoji:hover {
+    background: var(--hover);
+}
+
+/* =========================================================
+   PROFILE DROPDOWN
+   ========================================================= */
+
+.profile-menu {
+    display: none;
+    position: absolute;
+    top: 57px;
+    right: 15px;
+    width: 260px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 10px;
+}
+
+.profile-menu.show {
+    display: block;
+}
+
+.profile-menu-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+}
+
+.profile-menu-header img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+}
+
+.profile-menu-item {
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.profile-menu-item:hover {
+    background: var(--hover);
+}
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+
+.toast {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    background: #333;
+    color: white;
+    padding: 13px 18px;
+    border-radius: 8px;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: .3s;
+    z-index: 99999;
+}
+
+.toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+.mobile-menu {
+    display: none;
+}
+
+@media(max-width: 1100px) {
+    .info-panel {
+        display: none;
+    }
+}
+
+@media(max-width: 850px) {
+    .sidebar {
+        display: none;
+    }
+
+    .chat-list {
+        width: 280px;
+    }
+
+    .brand {
+        width: auto;
+    }
+
+    .brand-name {
+        display: none;
+    }
+}
+
+@media(max-width: 650px) {
+    .chat-list {
+        width: 100%;
+    }
+
+    .chat-window {
+        display: none;
+    }
+
+    body.mobile-chat-open .chat-list {
+        display: none;
+    }
+
+    body.mobile-chat-open .chat-window {
+        display: flex;
+        width: 100%;
+    }
+
+    .mobile-menu {
+        display: block;
+    }
+
+    .global-search {
+        display: none;
+    }
+
+    .topbar {
+        height: 58px;
+    }
+
+    .app-body {
+        height: calc(100vh - 58px);
+    }
+
+    .top-actions .icon-button {
+        width: 36px;
+        height: 36px;
+    }
+
+    .user-mini {
+        display: none;
+    }
+}
+
+/* =========================================================
+   SCROLLBARS
+   ========================================================= */
+
+::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #b8b8b8;
+    border-radius: 20px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* =========================================================
+   NOTIFICATION BADGE
+   ========================================================= */
+
+.badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 10px;
+    background: var(--danger);
+    color: white;
+    font-size: 10px;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: clamp(25px, 7vw, 55px);
-    cursor: pointer;
 }
 
-.white {
-    background: #dce6ef;
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.empty-state {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    color: var(--muted);
 }
 
-.black {
-    background: #54708a;
+.empty-state-icon {
+    font-size: 60px;
+    margin-bottom: 15px;
 }
 
-.selected {
-    outline: 5px solid #5ee7ff;
-    outline-offset: -5px;
+.empty-state h2 {
+    color: var(--text);
+    margin-bottom: 7px;
 }
 
-@media(max-width:700px) {
+/* =========================================================
+   LOADING
+   ========================================================= */
 
-    .hero h1 {
-        font-size: 40px;
-    }
+.loading {
+    position: fixed;
+    inset: 0;
+    background: var(--card);
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
 
-    .page {
-        padding: 20px;
-    }
+.spinner {
+    width: 45px;
+    height: 45px;
+    border: 4px solid var(--border);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+}
 
-    header {
-        flex-direction: column;
-        gap: 15px;
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
     }
 }
 </style>
@@ -229,653 +1037,1755 @@ button {
 
 <body>
 
-<header>
+<!-- =======================================================
+     LOGIN SCREEN
+     ======================================================= -->
 
-<div class="logo">
-LearnSphere AI
-</div>
+<div id="loginScreen">
 
-<nav>
-<button onclick="showPage('home')">Home</button>
-<button onclick="showPage('learn')">Learn</button>
-<button onclick="showPage('quiz')">Quiz</button>
-<button onclick="showPage('ai')">AI Tutor</button>
-<button onclick="showPage('chess')">Chess</button>
-</nav>
+    <div class="login-container">
 
-</header>
+        <div class="logo-large">
+            ConnectChat
+        </div>
 
-<!-- HOME -->
+        <div class="login-subtitle">
+            Connect with people and chat instantly.
+        </div>
 
-<section id="home" class="page active">
+        <div class="input-group">
+            <label>Email address</label>
+            <input
+                type="email"
+                id="loginEmail"
+                placeholder="Enter your email"
+            >
+        </div>
 
-<div class="hero">
+        <div class="input-group">
+            <label>Password</label>
+            <input
+                type="password"
+                id="loginPassword"
+                placeholder="Enter your password"
+            >
+        </div>
 
-<h1>
-Learn.
-<span>Think.</span>
-Create.
-</h1>
+        <button class="login-btn" onclick="loginWithEmail()">
+            Log In
+        </button>
 
-<p>
-An advanced free learning platform powered by AI.
-</p>
+        <div class="divider">
+            OR
+        </div>
 
-<br>
+        <button class="google-btn" onclick="googleLogin()">
+            <span class="google-icon">G</span>
+            Continue with Google
+        </button>
 
-<button class="primary"
-onclick="showPage('learn')">
-Start Learning
-</button>
+        <div class="login-message" id="loginMessage">
+            Demo authentication mode
+        </div>
 
-</div>
-
-<div class="card-container">
-
-<div class="card">
-<h2>AI Tutor</h2>
-<p>
-Ask questions and receive explanations.
-</p>
-</div>
-
-<div class="card">
-<h2>Advanced Quizzes</h2>
-<p>
-Test your knowledge across multiple subjects.
-</p>
-</div>
-
-<div class="card">
-<h2>Chess</h2>
-<p>
-Practice your strategy against another player.
-</p>
-</div>
-
-<div class="card">
-<h2>Games</h2>
-<p>
-Learn through interactive educational games.
-</p>
-</div>
+    </div>
 
 </div>
 
-</section>
 
-<!-- LEARNING -->
+<!-- =======================================================
+     MAIN APPLICATION
+     ======================================================= -->
 
-<section id="learn" class="page">
+<div id="app">
 
-<h1>Learning Center</h1>
+    <!-- TOP BAR -->
 
-<br>
+    <header class="topbar">
 
-<div class="card-container">
+        <div class="brand">
 
-<button class="subject"
-onclick="lesson('Mathematics')">
+            <div class="brand-logo">
+                C
+            </div>
 
-<h2>Mathematics</h2>
-<p>Algebra • Geometry • Calculus</p>
+            <div class="brand-name">
+                ConnectChat
+            </div>
 
-</button>
+        </div>
 
-<button class="subject"
-onclick="lesson('Science')">
+        <div class="global-search">
 
-<h2>Science</h2>
-<p>Physics • Biology • Chemistry</p>
+            <span class="search-icon">
+                🔍
+            </span>
 
-</button>
+            <input
+                type="text"
+                placeholder="Search ConnectChat"
+                id="globalSearch"
+                oninput="globalSearchUsers()"
+            >
 
-<button class="subject"
-onclick="lesson('Computer Science')">
+        </div>
 
-<h2>Computer Science</h2>
-<p>Programming • Algorithms • AI</p>
+        <div class="top-actions">
 
-</button>
+            <button
+                class="icon-button"
+                onclick="toggleDarkMode()"
+                title="Dark mode"
+            >
+                🌙
+            </button>
 
-<button class="subject"
-onclick="lesson('English')">
+            <button
+                class="icon-button"
+                onclick="showNotification()"
+                title="Notifications"
+                style="position:relative"
+            >
+                🔔
+                <span class="badge">3</span>
+            </button>
 
-<h2>English</h2>
-<p>Grammar • Writing • Vocabulary</p>
+            <button
+                class="icon-button"
+                onclick="showToast('Messenger settings opened')"
+                title="Settings"
+            >
+                ⚙️
+            </button>
 
-</button>
+            <div
+                class="user-mini"
+                onclick="toggleProfileMenu()"
+            >
+
+                <img
+                    src="https://i.pravatar.cc/100?img=12"
+                    alt="Profile"
+                >
+
+            </div>
+
+        </div>
+
+        <div
+            class="profile-menu"
+            id="profileMenu"
+        >
+
+            <div class="profile-menu-header">
+
+                <img
+                    src="https://i.pravatar.cc/100?img=12"
+                    alt="Profile"
+                >
+
+                <div>
+                    <strong>Michael</strong>
+                    <div style="font-size:12px;color:var(--muted)">
+                        Active now
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="profile-menu-item">
+                👤 My Profile
+            </div>
+
+            <div class="profile-menu-item">
+                ⚙️ Settings
+            </div>
+
+            <div
+                class="profile-menu-item"
+                onclick="logout()"
+            >
+                🚪 Log Out
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- APPLICATION BODY -->
+
+    <div class="app-body">
+
+
+        <!-- LEFT SIDEBAR -->
+
+        <aside class="sidebar">
+
+            <div class="sidebar-title">
+                Menu
+            </div>
+
+            <div class="sidebar-item active">
+
+                <div class="sidebar-item-icon">
+                    💬
+                </div>
+
+                <div class="sidebar-item-text">
+                    Chats
+                </div>
+
+            </div>
+
+            <div class="sidebar-item">
+
+                <div class="sidebar-item-icon">
+                    👥
+                </div>
+
+                <div class="sidebar-item-text">
+                    People
+                </div>
+
+            </div>
+
+            <div class="sidebar-item">
+
+                <div class="sidebar-item-icon">
+                    👨‍👩‍👧‍👦
+                </div>
+
+                <div class="sidebar-item-text">
+                    Groups
+                </div>
+
+            </div>
+
+            <div class="sidebar-item">
+
+                <div class="sidebar-item-icon">
+                    ⭐
+                </div>
+
+                <div class="sidebar-item-text">
+                    Favorites
+                </div>
+
+            </div>
+
+            <div class="sidebar-divider"></div>
+
+            <div class="section-title">
+                SHORTCUTS
+            </div>
+
+            <div class="sidebar-item">
+                <div class="sidebar-item-icon">📸</div>
+                <div class="sidebar-item-text">Stories</div>
+            </div>
+
+            <div class="sidebar-item">
+                <div class="sidebar-item-icon">📁</div>
+                <div class="sidebar-item-text">Files</div>
+            </div>
+
+            <div class="sidebar-item">
+                <div class="sidebar-item-icon">🔔</div>
+                <div class="sidebar-item-text">Notifications</div>
+            </div>
+
+        </aside>
+
+
+        <!-- CHAT LIST -->
+
+        <section class="chat-list">
+
+            <div class="chat-list-header">
+
+                <h2>
+                    Chats
+                </h2>
+
+                <button
+                    class="icon-button"
+                    onclick="newChat()"
+                >
+                    ✏️
+                </button>
+
+            </div>
+
+            <div class="chat-search">
+
+                <input
+                    type="text"
+                    id="chatSearch"
+                    placeholder="Search chats"
+                    oninput="filterChats()"
+                >
+
+            </div>
+
+
+            <div id="chatItems">
+
+                <!-- CHAT 1 -->
+
+                <div
+                    class="chat-item active"
+                    data-name="Sofia"
+                    onclick="openChat('Sofia','https://i.pravatar.cc/100?img=47','Online')"
+                >
+
+                    <div class="avatar-container">
+
+                        <img
+                            class="avatar"
+                            src="https://i.pravatar.cc/100?img=47"
+                        >
+
+                        <span class="online-dot"></span>
+
+                    </div>
+
+                    <div class="chat-info">
+
+                        <div class="chat-name">
+                            Sofia
+                        </div>
+
+                        <div class="chat-preview">
+                            See you tomorrow!
+                        </div>
+
+                    </div>
+
+                    <div class="chat-time">
+                        8:12 PM
+                    </div>
+
+                </div>
+
+
+                <!-- CHAT 2 -->
+
+                <div
+                    class="chat-item"
+                    data-name="Daniel"
+                    onclick="openChat('Daniel','https://i.pravatar.cc/100?img=11','Active now')"
+                >
+
+                    <div class="avatar-container">
+
+                        <img
+                            class="avatar"
+                            src="https://i.pravatar.cc/100?img=11"
+                        >
+
+                    </div>
+
+                    <div class="chat-info">
+
+                        <div class="chat-name">
+                            Daniel
+                        </div>
+
+                        <div class="chat-preview">
+                            Did you finish the project?
+                        </div>
+
+                    </div>
+
+                    <div class="chat-time">
+                        7:40 PM
+                    </div>
+
+                </div>
+
+
+                <!-- CHAT 3 -->
+
+                <div
+                    class="chat-item"
+                    data-name="Emma"
+                    onclick="openChat('Emma','https://i.pravatar.cc/100?img=32','Online')"
+                >
+
+                    <div class="avatar-container">
+
+                        <img
+                            class="avatar"
+                            src="https://i.pravatar.cc/100?img=32"
+                        >
+
+                        <span class="online-dot"></span>
+
+                    </div>
+
+                    <div class="chat-info">
+
+                        <div class="chat-name">
+                            Emma
+                        </div>
+
+                        <div class="chat-preview">
+                            👍
+                        </div>
+
+                    </div>
+
+                    <div class="chat-time">
+                        6:21 PM
+                    </div>
+
+                </div>
+
+
+                <!-- CHAT 4 -->
+
+                <div
+                    class="chat-item"
+                    data-name="Alex"
+                    onclick="openChat('Alex','https://i.pravatar.cc/100?img=68','Offline')"
+                >
+
+                    <div class="avatar-container">
+
+                        <img
+                            class="avatar"
+                            src="https://i.pravatar.cc/100?img=68"
+                        >
+
+                    </div>
+
+                    <div class="chat-info">
+
+                        <div class="chat-name">
+                            Alex
+                        </div>
+
+                        <div class="chat-preview">
+                            Thanks!
+                        </div>
+
+                    </div>
+
+                    <div class="chat-time">
+                        Yesterday
+                    </div>
+
+                </div>
+
+
+                <!-- CHAT 5 -->
+
+                <div
+                    class="chat-item"
+                    data-name="Design Team"
+                    onclick="openChat('Design Team','https://i.pravatar.cc/100?img=5','5 members')"
+                >
+
+                    <div class="avatar-container">
+
+                        <img
+                            class="avatar"
+                            src="https://i.pravatar.cc/100?img=5"
+                        >
+
+                    </div>
+
+                    <div class="chat-info">
+
+                        <div class="chat-name">
+                            Design Team
+                        </div>
+
+                        <div class="chat-preview">
+                            Michael sent a file
+                        </div>
+
+                    </div>
+
+                    <div class="chat-time">
+                        Tue
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- MAIN CHAT -->
+
+        <main class="chat-window">
+
+            <header class="chat-header">
+
+                <button
+                    class="icon-button mobile-menu"
+                    onclick="closeMobileChat()"
+                >
+                    ←
+                </button>
+
+                <div class="avatar-container">
+
+                    <img
+                        class="avatar"
+                        id="headerAvatar"
+                        src="https://i.pravatar.cc/100?img=47"
+                    >
+
+                    <span
+                        class="online-dot"
+                        id="headerOnline"
+                    ></span>
+
+                </div>
+
+                <div class="chat-header-info">
+
+                    <div
+                        class="chat-header-name"
+                        id="headerName"
+                    >
+                        Sofia
+                    </div>
+
+                    <div
+                        class="chat-status"
+                        id="headerStatus"
+                    >
+                        Online
+                    </div>
+
+                </div>
+
+                <div class="chat-header-actions">
+
+                    <button
+                        class="icon-button"
+                        onclick="showToast('Voice call feature ready')"
+                    >
+                        📞
+                    </button>
+
+                    <button
+                        class="icon-button"
+                        onclick="showToast('Video call feature ready')"
+                    >
+                        📹
+                    </button>
+
+                    <button
+                        class="icon-button"
+                        onclick="showToast('Chat information opened')"
+                    >
+                        ℹ️
+                    </button>
+
+                </div>
+
+            </header>
+
+
+            <!-- MESSAGES -->
+
+            <div
+                class="messages"
+                id="messages"
+            >
+
+                <div class="date-divider">
+                    Today
+                </div>
+
+
+                <div class="message-row">
+
+                    <img
+                        class="message-avatar"
+                        src="https://i.pravatar.cc/100?img=47"
+                    >
+
+                    <div class="message-content">
+
+                        <div class="message-bubble">
+                            Hey! How are you?
+                        </div>
+
+                        <div class="message-time">
+                            7:54 PM
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="message-row me">
+
+                    <img
+                        class="message-avatar"
+                        src="https://i.pravatar.cc/100?img=12"
+                    >
+
+                    <div class="message-content">
+
+                        <div class="message-bubble">
+                            I'm doing great! How about you?
+                        </div>
+
+                        <div class="message-time">
+                            7:55 PM ✓✓
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="message-row">
+
+                    <img
+                        class="message-avatar"
+                        src="https://i.pravatar.cc/100?img=47"
+                    >
+
+                    <div class="message-content">
+
+                        <div class="message-bubble">
+                            I'm good! I'm working on a new website.
+                        </div>
+
+                        <div class="message-time">
+                            7:56 PM
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="message-row me">
+
+                    <img
+                        class="message-avatar"
+                        src="https://i.pravatar.cc/100?img=12"
+                    >
+
+                    <div class="message-content">
+
+                        <div class="message-bubble">
+                            Nice! I'm building a chat application too. 🚀
+                        </div>
+
+                        <div class="message-time">
+                            8:01 PM ✓✓
+                        </div>
+
+                        <div class="message-reactions">
+                            ❤️ 1
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="message-row">
+
+                    <img
+                        class="message-avatar"
+                        src="https://i.pravatar.cc/100?img=47"
+                    >
+
+                    <div class="message-content">
+
+                        <div class="message-bubble">
+                            That sounds awesome! 😄
+                        </div>
+
+                        <div class="message-time">
+                            8:03 PM
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- TYPING -->
+
+            <div
+                class="typing"
+                id="typingIndicator"
+            >
+
+                <img
+                    class="typing-avatar"
+                    src="https://i.pravatar.cc/100?img=47"
+                >
+
+                <div class="typing-bubble">
+
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+
+                </div>
+
+            </div>
+
+
+            <!-- COMPOSER -->
+
+            <div class="composer">
+
+                <div class="composer-tools">
+
+                    <button
+                        class="composer-tool"
+                        onclick="showToast('File attachment selected')"
+                    >
+                        📎
+                    </button>
+
+                    <button
+                        class="composer-tool"
+                        onclick="showToast('Camera opened')"
+                    >
+                        📷
+                    </button>
+
+                    <button
+                        class="composer-tool"
+                        onclick="toggleEmojiPanel()"
+                    >
+                        😀
+                    </button>
+
+                    <div class="message-input-wrapper">
+
+                        <input
+                            type="text"
+                            class="message-input"
+                            id="messageInput"
+                            placeholder="Type a message..."
+                            autocomplete="off"
+                            onkeydown="handleMessageKey(event)"
+                            oninput="handleTyping()"
+                        >
+
+                        <button
+                            class="send-button"
+                            onclick="sendMessage()"
+                        >
+                            ➤
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- EMOJI PANEL -->
+
+            <div
+                class="emoji-panel"
+                id="emojiPanel"
+            >
+
+                <div class="emoji-grid">
+
+                    <button class="emoji" onclick="addEmoji('😀')">😀</button>
+                    <button class="emoji" onclick="addEmoji('😂')">😂</button>
+                    <button class="emoji" onclick="addEmoji('🤣')">🤣</button>
+                    <button class="emoji" onclick="addEmoji('😊')">😊</button>
+                    <button class="emoji" onclick="addEmoji('😍')">😍</button>
+                    <button class="emoji" onclick="addEmoji('🥰')">🥰</button>
+                    <button class="emoji" onclick="addEmoji('😎')">😎</button>
+                    <button class="emoji" onclick="addEmoji('🤔')">🤔</button>
+                    <button class="emoji" onclick="addEmoji('😭')">😭</button>
+                    <button class="emoji" onclick="addEmoji('😡')">😡</button>
+                    <button class="emoji" onclick="addEmoji('👍')">👍</button>
+                    <button class="emoji" onclick="addEmoji('👎')">👎</button>
+                    <button class="emoji" onclick="addEmoji('❤️')">❤️</button>
+                    <button class="emoji" onclick="addEmoji('🔥')">🔥</button>
+                    <button class="emoji" onclick="addEmoji('🎉')">🎉</button>
+                    <button class="emoji" onclick="addEmoji('🚀')">🚀</button>
+                    <button class="emoji" onclick="addEmoji('💯')">💯</button>
+                    <button class="emoji" onclick="addEmoji('✨')">✨</button>
+                    <button class="emoji" onclick="addEmoji('👏')">👏</button>
+                    <button class="emoji" onclick="addEmoji('🙏')">🙏</button>
+                    <button class="emoji" onclick="addEmoji('💪')">💪</button>
+                    <button class="emoji" onclick="addEmoji('🎯')">🎯</button>
+                    <button class="emoji" onclick="addEmoji('⭐')">⭐</button>
+                    <button class="emoji" onclick="addEmoji('💙')">💙</button>
+
+                </div>
+
+            </div>
+
+        </main>
+
+
+        <!-- RIGHT PANEL -->
+
+        <aside class="info-panel">
+
+            <div class="profile-center">
+
+                <img
+                    id="infoAvatar"
+                    src="https://i.pravatar.cc/100?img=47"
+                >
+
+                <h3 id="infoName">
+                    Sofia
+                </h3>
+
+                <p>
+                    Active now
+                </p>
+
+            </div>
+
+
+            <div class="info-section">
+
+                <div class="info-section-title">
+                    Chat settings
+                </div>
+
+                <div
+                    class="info-option"
+                    onclick="showToast('Notifications toggled')"
+                >
+                    🔔 Notifications
+                </div>
+
+                <div
+                    class="info-option"
+                    onclick="toggleDarkMode()"
+                >
+                    🌙 Dark mode
+                </div>
+
+                <div
+                    class="info-option"
+                    onclick="showToast('Search messages')"
+                >
+                    🔎 Search messages
+                </div>
+
+            </div>
+
+
+            <div class="info-section">
+
+                <div class="info-section-title">
+                    Shared content
+                </div>
+
+                <div class="info-option">
+                    🖼️ Photos
+                </div>
+
+                <div class="info-option">
+                    📁 Files
+                </div>
+
+                <div class="info-option">
+                    🔗 Links
+                </div>
+
+            </div>
+
+
+            <div class="info-section">
+
+                <div class="info-section-title">
+                    Privacy
+                </div>
+
+                <div class="info-option">
+                    🔒 Encryption
+                </div>
+
+                <div class="info-option">
+                    🚫 Block user
+                </div>
+
+                <div class="info-option">
+                    ⚠️ Report
+                </div>
+
+            </div>
+
+        </aside>
+
+    </div>
 
 </div>
 
-<br>
 
-<div class="card" id="lesson">
+<!-- TOAST -->
 
-<h2>Select a subject</h2>
+<div
+    class="toast"
+    id="toast"
+></div>
 
-<p>
-Choose a subject to begin learning.
-</p>
 
-</div>
+<!-- LOADING -->
 
-</section>
-
-<!-- QUIZ -->
-
-<section id="quiz" class="page">
-
-<h1>Advanced Quiz</h1>
-
-<br>
-
-<div class="quiz">
-
-<h2 id="question"></h2>
-
-<div id="options"></div>
-
-<p id="score"></p>
-
-</div>
-
-</section>
-
-<!-- AI -->
-
-<section id="ai" class="page">
-
-<h1>AI Tutor</h1>
-
-<br>
-
-<div class="chat">
-
-<div id="messages" class="messages">
-
-<div class="message ai">
-Hello! I'm your AI tutor.
-Ask me anything about your lessons.
-</div>
-
-</div>
-
-<div class="chat-input">
-
-<input
-id="userInput"
-placeholder="Ask your question..."
+<div
+    class="loading"
+    id="loading"
 >
 
-<button
-class="primary"
-onclick="sendMessage()">
-
-Send
-
-</button>
+    <div class="spinner"></div>
 
 </div>
 
-</div>
-
-</section>
-
-<!-- CHESS -->
-
-<section id="chess" class="page">
-
-<h1>Chess Arena</h1>
-
-<p>Two-player local chess board.</p>
-
-<div id="board"></div>
-
-<button
-class="primary"
-onclick="createBoard()">
-
-Reset Chess
-
-</button>
-
-</section>
 
 <script>
 
-/* =========================
-PAGE SYSTEM
-========================= */
+/* =========================================================
+   CONNECTCHAT APPLICATION JAVASCRIPT
+   ========================================================= */
 
-function showPage(page) {
+/* ---------------------------------------------------------
+   APPLICATION STATE
+   --------------------------------------------------------- */
 
-    document
-    .querySelectorAll(".page")
-    .forEach(p => {
+const state = {
 
-        p.classList.remove("active");
+    loggedIn: false,
 
-    });
+    currentUser: {
+        name: "Michael",
+        email: "",
+        avatar: "https://i.pravatar.cc/100?img=12"
+    },
 
-    document
-    .getElementById(page)
-    .classList.add("active");
-}
+    currentChat: {
+        name: "Sofia",
+        avatar: "https://i.pravatar.cc/100?img=47",
+        status: "Online"
+    },
 
+    darkMode: false,
 
-/* =========================
-LESSONS
-========================= */
+    typingTimer: null,
 
-const lessons = {
-
-Mathematics:
-`
-<h2>Mathematics</h2>
-
-<p>
-Mathematics studies numbers, structures,
-patterns and relationships.
-</p>
-
-<br>
-
-<h3>Advanced Topics</h3>
-
-<ul>
-<li>Algebra</li>
-<li>Geometry</li>
-<li>Calculus</li>
-<li>Probability</li>
-<li>Statistics</li>
-</ul>
-`,
-
-Science:
-`
-<h2>Science</h2>
-
-<p>
-Science uses observation, experiments and
-evidence to understand the natural world.
-</p>
-
-<br>
-
-<ul>
-<li>Physics</li>
-<li>Chemistry</li>
-<li>Biology</li>
-<li>Astronomy</li>
-</ul>
-`,
-
-"Computer Science":
-`
-<h2>Computer Science</h2>
-
-<p>
-Computer science studies computation,
-algorithms and information systems.
-</p>
-
-<br>
-
-<ul>
-<li>Programming</li>
-<li>Algorithms</li>
-<li>Artificial Intelligence</li>
-<li>Cybersecurity</li>
-<li>Databases</li>
-</ul>
-`,
-
-English:
-`
-<h2>English</h2>
-
-<p>
-Improve grammar, vocabulary, reading and
-academic writing.
-</p>
-`
+    chats: {}
 
 };
 
-function lesson(subject) {
 
-    document
-    .getElementById("lesson")
-    .innerHTML = lessons[subject];
+/* ---------------------------------------------------------
+   LOGIN
+   --------------------------------------------------------- */
 
-}
+function loginWithEmail() {
+
+    const email =
+        document.getElementById("loginEmail").value.trim();
+
+    const password =
+        document.getElementById("loginPassword").value;
+
+    const message =
+        document.getElementById("loginMessage");
 
 
-/* =========================
-QUIZ ENGINE
-========================= */
+    if (!email) {
 
-const questions = [
+        message.textContent =
+            "Please enter your email address.";
 
-{
-question:
-"What is the derivative of x³?",
-
-options:
-[
-"3x²",
-"x²",
-"3x",
-"x³"
-],
-
-answer:0
-},
-
-{
-question:
-"Which structure follows FIFO?",
-
-options:
-[
-"Stack",
-"Queue",
-"Tree",
-"Graph"
-],
-
-answer:1
-},
-
-{
-question:
-"What molecule stores genetic information?",
-
-options:
-[
-"ATP",
-"DNA",
-"Glucose",
-"Lipid"
-],
-
-answer:1
-}
-
-];
-
-let currentQuestion = 0;
-let points = 0;
-
-function loadQuiz() {
-
-    let q =
-    questions[currentQuestion];
-
-    document
-    .getElementById("question")
-    .textContent = q.question;
-
-    let container =
-    document.getElementById("options");
-
-    container.innerHTML = "";
-
-    q.options.forEach(
-    (option,index) => {
-
-        let button =
-        document.createElement("button");
-
-        button.className = "option";
-
-        button.textContent =
-        option;
-
-        button.onclick = () =>
-        answer(index);
-
-        container.appendChild(button);
-
-    });
-
-    document
-    .getElementById("score")
-    .textContent =
-    "Score: " + points;
-}
-
-function answer(index) {
-
-    if(
-        index ===
-        questions[currentQuestion].answer
-    ) {
-
-        points++;
+        return;
 
     }
 
-    currentQuestion++;
 
-    if(
-        currentQuestion >=
-        questions.length
-    ) {
+    if (!password) {
 
-        currentQuestion = 0;
+        message.textContent =
+            "Please enter your password.";
+
+        return;
 
     }
 
-    loadQuiz();
-}
 
-loadQuiz();
+    message.textContent =
+        "Signing you in...";
 
-
-/* =========================
-AI TUTOR
-========================= */
-
-function sendMessage() {
-
-    let input =
-    document.getElementById("userInput");
-
-    let text =
-    input.value.trim();
-
-    if(!text) return;
-
-    addMessage(text,"user");
-
-    input.value = "";
 
     setTimeout(() => {
 
-        let response =
-        localAI(text);
+        state.loggedIn = true;
 
-        addMessage(
-            response,
-            "ai"
-        );
+        state.currentUser.email = email;
 
-    },500);
+        document.getElementById("loginScreen").style.display =
+            "none";
+
+        document.getElementById("app").style.display =
+            "block";
+
+        showToast("Welcome to ConnectChat!");
+
+    }, 700);
+
 }
 
-function addMessage(text,type) {
 
-    let message =
-    document.createElement("div");
+/* ---------------------------------------------------------
+   GOOGLE LOGIN
+   --------------------------------------------------------- */
 
-    message.className =
-    "message " + type;
+function googleLogin() {
 
-    message.textContent =
-    text;
+    /*
+       IMPORTANT:
+
+       This is only a demonstration button.
+
+       Real Google authentication requires
+       Google OAuth / Firebase Authentication
+       / another authentication provider.
+    */
+
+    showToast(
+        "Google OAuth needs to be connected to your backend."
+    );
+
+}
+
+
+/* ---------------------------------------------------------
+   LOGOUT
+   --------------------------------------------------------- */
+
+function logout() {
+
+    state.loggedIn = false;
+
+    document.getElementById("app").style.display =
+        "none";
+
+    document.getElementById("loginScreen").style.display =
+        "flex";
+
+    document.getElementById("loginPassword").value =
+        "";
+
+    showToast("You have been logged out.");
+
+}
+
+
+/* ---------------------------------------------------------
+   PROFILE MENU
+   --------------------------------------------------------- */
+
+function toggleProfileMenu() {
+
+    const menu =
+        document.getElementById("profileMenu");
+
+    menu.classList.toggle("show");
+
+}
+
+
+/* ---------------------------------------------------------
+   DARK MODE
+   --------------------------------------------------------- */
+
+function toggleDarkMode() {
+
+    state.darkMode =
+        !state.darkMode;
+
+    document.body.classList.toggle(
+        "dark",
+        state.darkMode
+    );
+
+    localStorage.setItem(
+        "connectchat_dark",
+        state.darkMode
+    );
+
+}
+
+
+/* ---------------------------------------------------------
+   RESTORE DARK MODE
+   --------------------------------------------------------- */
+
+(function restoreTheme() {
+
+    const saved =
+        localStorage.getItem("connectchat_dark");
+
+    if (saved === "true") {
+
+        state.darkMode = true;
+
+        document.body.classList.add("dark");
+
+    }
+
+})();
+
+
+/* ---------------------------------------------------------
+   OPEN CHAT
+   --------------------------------------------------------- */
+
+function openChat(
+    name,
+    avatar,
+    status
+) {
+
+    state.currentChat = {
+        name,
+        avatar,
+        status
+    };
+
+
+    document.getElementById("headerName")
+        .textContent = name;
+
+    document.getElementById("headerAvatar")
+        .src = avatar;
+
+    document.getElementById("headerStatus")
+        .textContent = status;
+
+    document.getElementById("infoName")
+        .textContent = name;
+
+    document.getElementById("infoAvatar")
+        .src = avatar;
+
 
     document
-    .getElementById("messages")
-    .appendChild(message);
+        .querySelectorAll(".chat-item")
+        .forEach(item => {
 
-}
+            item.classList.remove("active");
 
-function localAI(question) {
+        });
 
-    let q =
-    question.toLowerCase();
 
-    if(
-        q.includes("photosynthesis")
-    ) {
+    event?.currentTarget?.classList.add("active");
 
-        return `
-Photosynthesis is the process
-plants use to convert light energy
-into chemical energy.
 
-The main inputs are:
+    if (window.innerWidth <= 650) {
 
-• Light
-• Carbon dioxide
-• Water
-
-The process produces glucose
-and releases oxygen.
-`;
+        document.body.classList.add(
+            "mobile-chat-open"
+        );
 
     }
 
-    if(
-        q.includes("javascript")
-    ) {
 
-        return `
-JavaScript is a programming language
-commonly used to make websites
-interactive.
-
-For example:
-
-let number = 10;
-
-console.log(number);
-
-This creates a variable and prints
-its value.
-`;
-
-    }
-
-    if(
-        q.includes("math")
-    ) {
-
-        return `
-Send me the exact mathematics
-problem.
-
-I can then break it into:
-
-1. Known information
-2. Formula
-3. Calculation
-4. Final answer
-5. Verification
-`;
-
-    }
-
-    return `
-I can help you learn this.
-
-Try asking me:
-
-"Explain this concept."
-
-"Give me an example."
-
-"Give me a difficult quiz."
-
-"Explain this step by step."
-
-"Find the error in my code."
-`;
+    loadChatMessages(name);
 
 }
 
 
-/* =========================
-CHESS
-========================= */
+/* ---------------------------------------------------------
+   LOAD CHAT MESSAGES
+   --------------------------------------------------------- */
 
-const pieces = {
+function loadChatMessages(name) {
 
-white: [
-"♖","♘","♗","♕",
-"♔","♗","♘","♖"
-],
+    const messages =
+        document.getElementById("messages");
 
-black: [
-"♜","♞","♝","♛",
-"♚","♝","♞","♜"
-]
 
-};
+    if (!state.chats[name]) {
 
-function createBoard() {
+        return;
 
-    const board =
-    document.getElementById("board");
+    }
 
-    board.innerHTML = "";
 
-    for(
-        let row=0;
-        row<8;
-        row++
+    messages.innerHTML =
+        '<div class="date-divider">Today</div>';
+
+
+    state.chats[name].forEach(message => {
+
+        createMessageElement(
+            message.text,
+            message.me,
+            message.time
+        );
+
+    });
+
+}
+
+
+/* ---------------------------------------------------------
+   CREATE MESSAGE
+   --------------------------------------------------------- */
+
+function createMessageElement(
+    text,
+    me,
+    time
+) {
+
+    const messages =
+        document.getElementById("messages");
+
+
+    const row =
+        document.createElement("div");
+
+    row.className =
+        "message-row" +
+        (me ? " me" : "");
+
+
+    const avatar =
+        document.createElement("img");
+
+    avatar.className =
+        "message-avatar";
+
+    avatar.src =
+        me
+        ? state.currentUser.avatar
+        : state.currentChat.avatar;
+
+
+    const content =
+        document.createElement("div");
+
+    content.className =
+        "message-content";
+
+
+    const bubble =
+        document.createElement("div");
+
+    bubble.className =
+        "message-bubble";
+
+    bubble.textContent =
+        text;
+
+
+    const timestamp =
+        document.createElement("div");
+
+    timestamp.className =
+        "message-time";
+
+    timestamp.textContent =
+        time +
+        (me ? " ✓✓" : "");
+
+
+    content.appendChild(bubble);
+
+    content.appendChild(timestamp);
+
+    row.appendChild(avatar);
+
+    row.appendChild(content);
+
+    messages.appendChild(row);
+
+
+    messages.scrollTop =
+        messages.scrollHeight;
+
+}
+
+
+/* ---------------------------------------------------------
+   SEND MESSAGE
+   --------------------------------------------------------- */
+
+function sendMessage() {
+
+    const input =
+        document.getElementById("messageInput");
+
+    const text =
+        input.value.trim();
+
+
+    if (!text) {
+
+        return;
+
+    }
+
+
+    const time =
+        new Date().toLocaleTimeString(
+            [],
+            {
+                hour: "numeric",
+                minute: "2-digit"
+            }
+        );
+
+
+    if (!state.chats[state.currentChat.name]) {
+
+        state.chats[state.currentChat.name] =
+            [];
+
+    }
+
+
+    state.chats[state.currentChat.name].push({
+
+        text,
+        me: true,
+        time
+
+    });
+
+
+    createMessageElement(
+        text,
+        true,
+        time
+    );
+
+
+    input.value =
+        "";
+
+
+    simulateReply();
+
+}
+
+
+/* ---------------------------------------------------------
+   KEYBOARD MESSAGE HANDLER
+   --------------------------------------------------------- */
+
+function handleMessageKey(event) {
+
+    if (
+        event.key === "Enter" &&
+        !event.shiftKey
     ) {
 
-        for(
-            let col=0;
-            col<8;
-            col++
+        event.preventDefault();
+
+        sendMessage();
+
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   TYPING HANDLER
+   --------------------------------------------------------- */
+
+function handleTyping() {
+
+    clearTimeout(
+        state.typingTimer
+    );
+
+
+    state.typingTimer =
+        setTimeout(() => {
+
+            simulateTyping();
+
+        }, 500);
+
+}
+
+
+/* ---------------------------------------------------------
+   SIMULATE TYPING
+   --------------------------------------------------------- */
+
+function simulateTyping() {
+
+    const indicator =
+        document.getElementById(
+            "typingIndicator"
+        );
+
+    indicator.style.display =
+        "flex";
+
+
+    setTimeout(() => {
+
+        indicator.style.display =
+            "none";
+
+    }, 1300);
+
+}
+
+
+/* ---------------------------------------------------------
+   SIMULATE REPLY
+   --------------------------------------------------------- */
+
+function simulateReply() {
+
+    simulateTyping();
+
+
+    setTimeout(() => {
+
+        const replies = [
+
+            "That's awesome! 👍",
+
+            "Sounds good! 😊",
+
+            "Okay! I'll check it.",
+
+            "Nice! 🚀",
+
+            "I agree!",
+
+            "Great idea!",
+
+            "Thanks for letting me know.",
+
+            "Haha 😂",
+
+            "Absolutely!",
+
+            "See you soon!"
+
+        ];
+
+
+        const reply =
+            replies[
+                Math.floor(
+                    Math.random() *
+                    replies.length
+                )
+            ];
+
+
+        const time =
+            new Date().toLocaleTimeString(
+                [],
+                {
+                    hour: "numeric",
+                    minute: "2-digit"
+                }
+            );
+
+
+        if (!state.chats[state.currentChat.name]) {
+
+            state.chats[state.currentChat.name] =
+                [];
+
+        }
+
+
+        state.chats[state.currentChat.name].push({
+
+            text: reply,
+
+            me: false,
+
+            time
+
+        });
+
+
+        createMessageElement(
+            reply,
+            false,
+            time
+        );
+
+
+    }, 1600);
+
+}
+
+
+/* ---------------------------------------------------------
+   EMOJI PANEL
+   --------------------------------------------------------- */
+
+function toggleEmojiPanel() {
+
+    const panel =
+        document.getElementById("emojiPanel");
+
+    panel.style.display =
+        panel.style.display === "block"
+        ? "none"
+        : "block";
+
+}
+
+
+/* ---------------------------------------------------------
+   ADD EMOJI
+   --------------------------------------------------------- */
+
+function addEmoji(emoji) {
+
+    const input =
+        document.getElementById("messageInput");
+
+    input.value +=
+        emoji;
+
+    input.focus();
+
+}
+
+
+/* ---------------------------------------------------------
+   FILTER CHATS
+   --------------------------------------------------------- */
+
+function filterChats() {
+
+    const query =
+        document
+            .getElementById("chatSearch")
+            .value
+            .toLowerCase();
+
+
+    document
+        .querySelectorAll(".chat-item")
+        .forEach(item => {
+
+            const name =
+                item
+                    .dataset
+                    .name
+                    .toLowerCase();
+
+
+            item.style.display =
+                name.includes(query)
+                ? "flex"
+                : "none";
+
+        });
+
+}
+
+
+/* ---------------------------------------------------------
+   GLOBAL SEARCH
+   --------------------------------------------------------- */
+
+function globalSearchUsers() {
+
+    const query =
+        document
+            .getElementById("globalSearch")
+            .value
+            .trim();
+
+
+    if (query.length > 2) {
+
+        showToast(
+            "Searching for: " + query
+        );
+
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   NEW CHAT
+   --------------------------------------------------------- */
+
+function newChat() {
+
+    showToast(
+        "New chat composer opened."
+    );
+
+}
+
+
+/* ---------------------------------------------------------
+   NOTIFICATION
+   --------------------------------------------------------- */
+
+function showNotification() {
+
+    showToast(
+        "You have 3 new notifications."
+    );
+
+}
+
+
+/* ---------------------------------------------------------
+   TOAST
+   --------------------------------------------------------- */
+
+let toastTimer;
+
+
+function showToast(message) {
+
+    const toast =
+        document.getElementById("toast");
+
+
+    toast.textContent =
+        message;
+
+
+    toast.classList.add(
+        "show"
+    );
+
+
+    clearTimeout(
+        toastTimer
+    );
+
+
+    toastTimer =
+        setTimeout(() => {
+
+            toast.classList.remove(
+                "show"
+            );
+
+        }, 2500);
+
+}
+
+
+/* ---------------------------------------------------------
+   MOBILE CHAT
+   --------------------------------------------------------- */
+
+function closeMobileChat() {
+
+    document.body.classList.remove(
+        "mobile-chat-open"
+    );
+
+}
+
+
+/* ---------------------------------------------------------
+   STARTUP
+   --------------------------------------------------------- */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        const input =
+            document.getElementById(
+                "messageInput"
+            );
+
+        input.focus();
+
+    }
+);
+
+
+/* ---------------------------------------------------------
+   CLICK OUTSIDE PROFILE MENU
+   --------------------------------------------------------- */
+
+document.addEventListener(
+    "click",
+    event => {
+
+        const menu =
+            document.getElementById(
+                "profileMenu"
+            );
+
+        const user =
+            document.querySelector(
+                ".user-mini"
+            );
+
+
+        if (
+            menu.classList.contains("show") &&
+            !menu.contains(event.target) &&
+            !user.contains(event.target)
         ) {
 
-            let square =
-            document.createElement("div");
-
-            square.className =
-            "square " +
-            ((row+col)%2===0
-            ?"white"
-            :"black");
-
-            if(row === 0)
-                square.textContent =
-                pieces.black[col];
-
-            if(row === 1)
-                square.textContent = "♟";
-
-            if(row === 6)
-                square.textContent = "♙";
-
-            if(row === 7)
-                square.textContent =
-                pieces.white[col];
-
-            board.appendChild(square);
+            menu.classList.remove(
+                "show"
+            );
 
         }
 
     }
+);
 
-}
 
-createBoard();
+/* ---------------------------------------------------------
+   ENTER KEY ON LOGIN
+   --------------------------------------------------------- */
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "Enter" &&
+            document
+                .getElementById("loginScreen")
+                .style
+                .display !== "none"
+        ) {
+
+            loginWithEmail();
+
+        }
+
+    }
+);
 
 </script>
 
