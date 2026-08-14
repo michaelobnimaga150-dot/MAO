@@ -2,2190 +2,690 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<meta name="theme-color" content="#03070b">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>WiFi Sense Command Center</title>
+<title>For Jayka ❤️</title>
 
 <style>
-
 *{
-    box-sizing:border-box;
     margin:0;
     padding:0;
+    box-sizing:border-box;
 }
 
-:root{
-    --bg:#02060a;
-    --panel:#07121a;
-    --panel2:#0b1923;
-    --border:#193443;
-    --text:#e7f3f8;
-    --muted:#718c9c;
-    --green:#42e88b;
-    --red:#ff525d;
-    --yellow:#e6cb5b;
-    --blue:#48a9ff;
-    --cyan:#46d9e8;
+html,body{
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    font-family:Arial,Helvetica,sans-serif;
 }
 
 body{
-    min-height:100vh;
-    color:var(--text);
     background:
-        radial-gradient(
-            circle at 50% -20%,
-            #123044 0,
-            #061019 38%,
-            #020407 80%
-        );
-    font-family:
-        Inter,
-        Arial,
-        sans-serif;
-    overflow-x:hidden;
+        radial-gradient(circle at 20% 20%, rgba(255,100,170,.25), transparent 30%),
+        radial-gradient(circle at 80% 80%, rgba(150,80,255,.25), transparent 30%),
+        linear-gradient(135deg,#090016,#20001f,#090016);
+    color:white;
 }
 
-/* HEADER */
-
-header{
-    position:sticky;
-    top:0;
-    z-index:100;
-    border-bottom:1px solid var(--border);
-    background:rgba(2,7,11,.94);
-    backdrop-filter:blur(15px);
+/* Background stars */
+.stars{
+    position:fixed;
+    inset:0;
+    overflow:hidden;
+    z-index:0;
 }
 
-.header{
-    max-width:1500px;
-    margin:auto;
-    padding:16px 22px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
-
-.brand{
-    display:flex;
-    gap:13px;
-    align-items:center;
-}
-
-.logo{
-    width:45px;
-    height:45px;
-    border:1px solid #28556b;
-    border-radius:12px;
-    display:grid;
-    place-items:center;
-    background:#0a1c28;
-    font-size:21px;
-}
-
-.title{
-    font-size:20px;
-    font-weight:900;
-    letter-spacing:1px;
-}
-
-.subtitle{
-    margin-top:4px;
-    font-size:10px;
-    color:var(--muted);
-    letter-spacing:1px;
-}
-
-.connection{
-    display:flex;
-    align-items:center;
-    gap:9px;
-    font-size:11px;
-    font-weight:800;
-    color:var(--green);
-}
-
-.dot{
-    width:9px;
-    height:9px;
+.star{
+    position:absolute;
+    width:3px;
+    height:3px;
+    background:white;
     border-radius:50%;
-    background:var(--green);
-    box-shadow:0 0 15px var(--green);
-    animation:pulse 1.6s infinite;
+    box-shadow:0 0 10px white;
+    animation:twinkle 2s infinite alternate;
 }
 
-@keyframes pulse{
-    50%{
-        opacity:.35;
+@keyframes twinkle{
+    from{
+        opacity:.2;
+        transform:scale(.5);
+    }
+    to{
+        opacity:1;
+        transform:scale(1.5);
     }
 }
 
-/* MAIN */
-
-main{
-    max-width:1500px;
-    margin:auto;
-    padding:22px;
-}
-
-/* STATUS */
-
-.status{
-    display:grid;
-    grid-template-columns:
-        repeat(
-            auto-fit,
-            minmax(165px,1fr)
-        );
-    gap:12px;
+/* Main screen */
+.container{
+    position:relative;
+    z-index:2;
+    height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
 }
 
 .card{
-    background:
-        linear-gradient(
-            145deg,
-            rgba(11,28,39,.98),
-            rgba(4,11,17,.98)
-        );
-    border:1px solid var(--border);
-    border-radius:15px;
-    padding:17px;
-    min-height:108px;
+    width:min(900px,95%);
+    min-height:600px;
+    position:relative;
+    padding:55px 30px;
+    text-align:center;
+    border:1px solid rgba(255,255,255,.15);
+    border-radius:35px;
+    background:rgba(255,255,255,.07);
+    backdrop-filter:blur(20px);
     box-shadow:
-        0 12px 35px
-        rgba(0,0,0,.22);
-}
-
-.label{
-    color:var(--muted);
-    font-size:9px;
-    letter-spacing:1.5px;
-    text-transform:uppercase;
-}
-
-.value{
-    margin-top:10px;
-    font-size:26px;
-    font-weight:900;
-}
-
-.green{
-    color:var(--green);
-}
-
-.red{
-    color:var(--red);
-}
-
-.yellow{
-    color:var(--yellow);
-}
-
-.blue{
-    color:var(--blue);
-}
-
-.cyan{
-    color:var(--cyan);
-}
-
-/* GRID */
-
-.dashboard{
-    display:grid;
-    grid-template-columns:
-        minmax(0,1.45fr)
-        minmax(340px,.75fr);
-    gap:17px;
-    margin-top:17px;
-}
-
-.panel{
-    background:rgba(5,14,21,.95);
-    border:1px solid var(--border);
-    border-radius:16px;
+        0 0 60px rgba(255,0,150,.15),
+        inset 0 0 40px rgba(255,255,255,.03);
     overflow:hidden;
-    box-shadow:
-        0 15px 45px
-        rgba(0,0,0,.2);
 }
 
-.panel-head{
-    padding:15px 18px;
-    border-bottom:1px solid #142b39;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+/* Glow */
+.glow{
+    position:absolute;
+    width:250px;
+    height:250px;
+    border-radius:50%;
+    background:#ff238f;
+    filter:blur(100px);
+    opacity:.18;
+    top:-100px;
+    left:-100px;
+    animation:moveGlow 8s infinite alternate;
 }
 
-.panel-title{
-    font-size:13px;
-    font-weight:900;
-    letter-spacing:.8px;
+@keyframes moveGlow{
+    to{
+        transform:translate(700px,500px);
+    }
 }
 
-.tag{
-    font-size:9px;
-    color:var(--muted);
-    border:1px solid #234252;
-    border-radius:6px;
-    padding:5px 8px;
+/* Heart */
+.big-heart{
+    font-size:95px;
+    display:inline-block;
+    filter:drop-shadow(0 0 25px #ff2b91);
+    animation:heartbeat 1.3s infinite;
 }
 
-/* RADAR */
-
-.radar-panel{
-    min-height:700px;
+@keyframes heartbeat{
+    0%,100%{transform:scale(1);}
+    15%{transform:scale(1.18);}
+    30%{transform:scale(1);}
+    45%{transform:scale(1.12);}
+    60%{transform:scale(1);}
 }
 
-.radar-box{
-    padding:15px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-}
-
-#radar{
-    width:min(100%,650px);
-    aspect-ratio:1;
-}
-
-/* SIDE */
-
-.side{
-    display:flex;
-    flex-direction:column;
-    gap:17px;
-}
-
-.metrics{
-    padding:17px;
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-}
-
-.metric{
-    padding:13px;
-    border-radius:10px;
-    background:#061119;
-    border:1px solid #142e3d;
-}
-
-.metric-name{
-    color:var(--muted);
-    font-size:9px;
-    letter-spacing:1px;
-    text-transform:uppercase;
-}
-
-.metric-value{
-    margin-top:7px;
+/* Heading */
+.for{
     font-size:18px;
-    font-weight:900;
-}
-
-/* PEOPLE */
-
-.people-box{
-    padding:20px;
-    text-align:center;
-}
-
-.people-number{
-    font-size:70px;
-    line-height:1;
-    font-weight:1000;
-    color:var(--cyan);
-    text-shadow:
-        0 0 25px
-        rgba(70,217,232,.35);
-}
-
-.people-status{
-    margin-top:12px;
-    color:var(--muted);
-    font-size:10px;
-    letter-spacing:1.5px;
-}
-
-/* DEVICE LIST */
-
-.devices{
-    max-height:280px;
-    overflow:auto;
-    padding:10px 15px;
-}
-
-.device{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:12px 5px;
-    border-bottom:1px solid #102733;
-}
-
-.device-left{
-    display:flex;
-    align-items:center;
-    gap:10px;
-}
-
-.device-icon{
-    width:34px;
-    height:34px;
-    display:grid;
-    place-items:center;
-    border-radius:8px;
-    background:#0b202c;
-}
-
-.device-name{
-    font-size:12px;
-    font-weight:700;
-}
-
-.device-type{
-    margin-top:3px;
-    color:var(--muted);
-    font-size:9px;
-}
-
-.device-state{
-    color:var(--green);
-    font-size:9px;
-}
-
-/* CONTROLS */
-
-.controls{
-    padding:17px;
-}
-
-.control-line{
-    display:flex;
-    gap:9px;
-    align-items:center;
+    letter-spacing:5px;
+    text-transform:uppercase;
+    opacity:.7;
     margin-top:10px;
 }
 
-input[type=range]{
-    width:100%;
-    accent-color:var(--green);
+.name{
+    font-size:clamp(55px,10vw,110px);
+    font-weight:900;
+    margin:5px 0 15px;
+    background:linear-gradient(
+        90deg,
+        #ff5ebc,
+        #fff,
+        #ff72c5,
+        #fff
+    );
+    background-size:300%;
+    -webkit-background-clip:text;
+    color:transparent;
+    animation:shine 4s linear infinite;
+    text-shadow:0 0 30px rgba(255,70,170,.3);
 }
 
-.range{
-    width:50px;
-    text-align:right;
-    color:var(--yellow);
+@keyframes shine{
+    0%{background-position:0%;}
+    100%{background-position:300%;}
+}
+
+.subtitle{
+    font-size:20px;
+    opacity:.8;
+    margin-bottom:25px;
+}
+
+/* Typing */
+.message{
+    min-height:70px;
+    max-width:700px;
+    margin:auto;
+    font-size:19px;
+    line-height:1.7;
+    color:#ffd9ee;
+}
+
+.cursor{
+    display:inline-block;
+    width:2px;
+    height:22px;
+    background:#ff68b7;
+    animation:blink .7s infinite;
+}
+
+@keyframes blink{
+    50%{opacity:0;}
+}
+
+/* Button */
+button{
+    border:none;
+    outline:none;
+    cursor:pointer;
+}
+
+.love-btn{
+    margin-top:30px;
+    padding:15px 30px;
+    border-radius:50px;
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+    background:linear-gradient(135deg,#ff2d91,#9c27ff);
+    box-shadow:0 10px 30px rgba(255,30,150,.3);
+    transition:.3s;
+}
+
+.love-btn:hover{
+    transform:translateY(-4px) scale(1.04);
+    box-shadow:0 15px 40px rgba(255,30,150,.5);
+}
+
+.love-btn:active{
+    transform:scale(.95);
+}
+
+/* Letter */
+.letter{
+    position:fixed;
+    z-index:20;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(0,0,0,.75);
+    backdrop-filter:blur(10px);
+    opacity:0;
+    pointer-events:none;
+    transition:.5s;
+    padding:20px;
+}
+
+.letter.show{
+    opacity:1;
+    pointer-events:auto;
+}
+
+.letter-box{
+    width:min(650px,95%);
+    max-height:90vh;
+    overflow:auto;
+    padding:40px;
+    border-radius:30px;
+    background:linear-gradient(
+        145deg,
+        #35102c,
+        #18091e
+    );
+    border:1px solid rgba(255,255,255,.15);
+    box-shadow:0 0 80px rgba(255,20,150,.25);
+    transform:scale(.7) rotate(-3deg);
+    transition:.6s cubic-bezier(.2,.8,.2,1);
+    text-align:left;
+}
+
+.letter.show .letter-box{
+    transform:scale(1) rotate(0);
+}
+
+.letter-box h2{
+    text-align:center;
+    font-size:35px;
+    color:#ff72bd;
+    margin-bottom:25px;
+}
+
+.letter-box p{
+    color:#ffe4f1;
+    line-height:1.9;
+    font-size:17px;
+    margin-bottom:18px;
+}
+
+.close{
+    display:block;
+    margin:25px auto 0;
+    padding:12px 25px;
+    border-radius:30px;
+    background:#ff3b9d;
+    color:white;
+}
+
+/* Floating hearts */
+.heart{
+    position:fixed;
+    bottom:-50px;
+    z-index:1;
+    pointer-events:none;
+    animation:floatHeart linear forwards;
+    filter:drop-shadow(0 0 10px rgba(255,70,170,.8));
+}
+
+@keyframes floatHeart{
+    0%{
+        transform:translateY(0) scale(.5) rotate(0);
+        opacity:0;
+    }
+    10%{
+        opacity:1;
+    }
+    100%{
+        transform:
+            translateY(-110vh)
+            translateX(var(--drift))
+            scale(1.3)
+            rotate(360deg);
+        opacity:0;
+    }
+}
+
+/* Sparkle burst */
+.spark{
+    position:fixed;
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    background:#fff;
+    pointer-events:none;
+    z-index:50;
+    animation:spark .9s forwards;
+}
+
+@keyframes spark{
+    to{
+        transform:
+            translate(var(--x),var(--y))
+            scale(0);
+        opacity:0;
+    }
+}
+
+/* Bottom */
+.footer{
+    position:absolute;
+    bottom:18px;
+    width:100%;
+    left:0;
+    text-align:center;
+    opacity:.45;
     font-size:12px;
 }
 
-button{
-    border:1px solid #28536a;
-    border-radius:8px;
-    padding:10px 12px;
-    color:var(--text);
-    background:#0b1d29;
-    cursor:pointer;
-    font-weight:800;
-}
-
-button:hover{
-    background:#123047;
-}
-
-.primary{
-    background:#103825;
-    border-color:#28764a;
-}
-
-/* GRAPH */
-
-.graph{
-    margin-top:17px;
-}
-
-.graph-box{
-    padding:15px;
-}
-
-#graph{
-    width:100%;
-    height:240px;
-}
-
-/* LOG */
-
-.log{
-    height:190px;
-    overflow:auto;
-    padding:10px 15px;
-    font-family:
-        "Courier New",
-        monospace;
-    font-size:11px;
-}
-
-.log-entry{
-    padding:7px 0;
-    border-bottom:1px solid #102532;
-    color:#87a2b2;
-}
-
-.log-entry strong{
-    color:var(--green);
-}
-
-/* WARNING */
-
-.warning{
-    margin-top:17px;
-    padding:15px;
-    border:1px solid #574b26;
-    border-radius:12px;
-    background:rgba(90,70,20,.12);
-    color:#c9bc80;
-    font-size:11px;
-    line-height:1.6;
-}
-
-/* FOOTER */
-
-footer{
-    padding:25px;
-    text-align:center;
-    color:#4f6878;
-    font-size:10px;
-}
-
-/* MOBILE */
-
-@media(max-width:1000px){
-
-    .dashboard{
-        grid-template-columns:1fr;
-    }
-
-    .radar-panel{
-        min-height:auto;
-    }
-}
-
+/* Mobile */
 @media(max-width:600px){
-
-    main{
-        padding:12px;
+    .card{
+        min-height:550px;
+        padding:40px 20px;
     }
 
-    .header{
-        padding:13px;
-    }
-
-    .title{
-        font-size:15px;
+    .big-heart{
+        font-size:70px;
     }
 
     .subtitle{
-        font-size:8px;
+        font-size:16px;
     }
 
-    .people-number{
-        font-size:60px;
+    .message{
+        font-size:16px;
+    }
+
+    .letter-box{
+        padding:28px 22px;
     }
 }
-
 </style>
 </head>
 
 <body>
 
-<header>
+<div class="stars" id="stars"></div>
 
-<div class="header">
+<div class="container">
 
-<div class="brand">
+    <div class="card">
 
-<div class="logo">
-📡
-</div>
-
-<div>
-
-<div class="title">
-WIFI SENSE COMMAND CENTER
-</div>
-
-<div class="subtitle">
-LIVE NETWORK ACTIVITY MONITOR
-</div>
-
-</div>
-
-</div>
-
-<div class="connection">
-
-<div
-class="dot"
-id="connectionDot">
-</div>
-
-<span id="connectionText">
-CHECKING
-</span>
-
-</div>
-
-</div>
-
-</header>
-
-
-<main>
-
-
-<!-- ========================================================
-     STATUS
-========================================================= -->
-
-<section class="status">
-
-<div class="card">
-
-<div class="label">
-Network
-</div>
-
-<div
-class="value green"
-id="network">
-ONLINE
-</div>
-
-</div>
-
-
-<div class="card">
-
-<div class="label">
-Connection
-</div>
-
-<div
-class="value blue"
-id="connection">
-UNKNOWN
-</div>
-
-</div>
-
-
-<div class="card">
-
-<div class="label">
-Latency
-</div>
-
-<div
-class="value"
-id="latency">
---
-</div>
-
-</div>
-
-
-<div class="card">
-
-<div class="label">
-Activity
-</div>
-
-<div
-class="value green"
-id="activity">
-STABLE
-</div>
-
-</div>
-
-
-<div class="card">
-
-<div class="label">
-People Detected
-</div>
-
-<div
-class="value cyan"
-id="peopleTop">
-0
-</div>
-
-</div>
-
-
-<div class="card">
-
-<div class="label">
-Devices Detected
-</div>
-
-<div
-class="value yellow"
-id="devicesTop">
-0
-</div>
-
-</div>
-
-</section>
-
-
-<!-- ========================================================
-     DASHBOARD
-========================================================= -->
-
-<section class="dashboard">
-
-
-<!-- RADAR -->
-
-<div class="panel radar-panel">
-
-<div class="panel-head">
-
-<div class="panel-title">
-LIVE ACTIVITY RADAR
-</div>
-
-<div
-class="tag"
-id="radarStatus">
-SCANNING
-</div>
-
-</div>
-
-<div class="radar-box">
-
-<canvas
-id="radar"
-width="650"
-height="650">
-</canvas>
-
-</div>
-
-</div>
-
-
-<!-- SIDE -->
-
-<div class="side">
-
-
-<!-- PEOPLE -->
-
-<div class="panel">
-
-<div class="panel-head">
-
-<div class="panel-title">
-PERSON ACTIVITY ESTIMATE
-</div>
-
-<div class="tag">
-ESTIMATE
-</div>
-
-</div>
-
-<div class="people-box">
-
-<div
-class="people-number"
-id="people">
-0
-</div>
-
-<div
-class="people-status"
-id="peopleStatus">
-NO SIGNIFICANT ACTIVITY
-</div>
-
-</div>
-
-</div>
-
-
-<!-- DEVICES -->
-
-<div class="panel">
-
-<div class="panel-head">
-
-<div class="panel-title">
-VISIBLE DEVICES
-</div>
-
-<div
-class="tag"
-id="deviceTag">
-0 DEVICES
-</div>
-
-</div>
-
-<div
-class="devices"
-id="deviceList">
-</div>
-
-</div>
-
-
-<!-- TELEMETRY -->
-
-<div class="panel">
-
-<div class="panel-head">
-
-<div class="panel-title">
-NETWORK TELEMETRY
-</div>
-
-</div>
-
-<div class="metrics">
-
-<div class="metric">
-
-<div class="metric-name">
-RTT
-</div>
-
-<div
-class="metric-value"
-id="rtt">
---
-</div>
-
-</div>
-
-
-<div class="metric">
-
-<div class="metric-name">
-DOWNLINK
-</div>
-
-<div
-class="metric-value"
-id="downlink">
---
-</div>
-
-</div>
-
-
-<div class="metric">
-
-<div class="metric-name">
-ONLINE
-</div>
-
-<div
-class="metric-value"
-id="online">
-YES
-</div>
-
-</div>
-
-
-<div class="metric">
-
-<div class="metric-name">
-PEAK
-</div>
-
-<div
-class="metric-value"
-id="peak">
-0
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-
-<!-- CONTROLS -->
-
-<div class="panel">
-
-<div class="panel-head">
-
-<div class="panel-title">
-SENSOR CONTROL
-</div>
-
-</div>
-
-<div class="controls">
-
-<div class="label">
-Sensitivity
-</div>
-
-<div class="control-line">
-
-<input
-type="range"
-id="sensitivity"
-min="1"
-max="100"
-value="50">
-
-<div
-class="range"
-id="sensitivityValue">
-50
-</div>
-
-</div>
-
-
-<div class="control-line">
-
-<button
-class="primary"
-onclick="calibrate()">
-CALIBRATE
-</button>
+        <div class="glow"></div>
 
-<button
-onclick="clearLog()">
-CLEAR
-</button>
+        <div class="big-heart">❤️</div>
 
-<button
-onclick="fullScreen()">
-FULL
-</button>
+        <div class="for">
+            This little page is for
+        </div>
 
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</section>
-
+        <div class="name">
+            Jayka
+        </div>
 
-<!-- GRAPH -->
-
-<section class="panel graph">
-
-<div class="panel-head">
-
-<div class="panel-title">
-LIVE ACTIVITY GRAPH
-</div>
+        <div class="subtitle">
+            Someone very special to my heart ✨
+        </div>
 
-<div class="tag">
-REAL TIME
-</div>
+        <div class="message">
+            <span id="typing"></span>
+            <span class="cursor"></span>
+        </div>
 
-</div>
+        <button class="love-btn" onclick="openLetter()">
+            💌 Open My Heart
+        </button>
 
-<div class="graph-box">
+        <div class="footer">
+            Made with ❤️ especially for Jayka
+        </div>
 
-<canvas
-id="graph"
-width="1400"
-height="240">
-</canvas>
+    </div>
 
 </div>
-
-</section>
 
 
-<!-- EVENT LOG -->
+<!-- LOVE LETTER -->
 
-<section class="panel graph">
+<div class="letter" id="letter">
 
-<div class="panel-head">
-
-<div class="panel-title">
-SYSTEM EVENT LOG
-</div>
-
-<div
-class="tag"
-id="events">
-0 EVENTS
-</div>
+    <div class="letter-box">
 
-</div>
+        <h2>💗 Dear Jayka</h2>
 
-<div
-class="log"
-id="log">
-</div>
+        <p>
+            If I could give you one thing in this world,
+            I would give you the ability to see yourself
+            through my eyes.
+        </p>
 
-</section>
+        <p>
+            Then you would finally understand just how
+            special you are to me.
+        </p>
 
+        <p>
+            You are more than just a name on my screen.
+            You are one of those people who can make an
+            ordinary day feel a little brighter just by
+            being there.
+        </p>
 
-<!-- INFO -->
+        <p>
+            I don't need a perfect world. I don't need
+            everything to always go my way. Sometimes,
+            having someone who makes my heart smile is
+            already more than enough.
+        </p>
 
-<div class="warning">
+        <p>
+            And somehow, Jayka, you became that person.
+        </p>
 
-<strong>IMPORTANT:</strong>
+        <p>
+            Thank you for being you. ❤️
+        </p>
 
-This browser-only version cannot directly read your PLDT
-router's complete client list, Wi-Fi RSSI, CSI or radio
-channel data. Therefore the people counter and radar are
-<strong>activity estimates</strong>, not genuine physical
-person tracking.
+        <p style="text-align:center;font-size:22px;">
+            You are precious to me. 💕
+        </p>
 
-The device section shows devices that the webpage can
-identify about the current browser/device environment;
-it cannot secretly scan all phones connected to your
-PLDT router.
+        <button class="close" onclick="closeLetter()">
+            Close ❤️
+        </button>
 
-For genuine Wi-Fi person sensing and accurate device
-discovery, you would need authorized router/API access or
-appropriate sensing hardware.
+    </div>
 
 </div>
-
-</main>
-
-
-<footer>
-
-WiFi Sense Command Center • Browser Edition
-
-</footer>
 
 
 <script>
 
-/* ==========================================================
-   STATE
-========================================================== */
+/* =========================================
+   STAR GENERATOR
+========================================= */
 
-const state = {
+const stars = document.getElementById("stars");
 
-    start:Date.now(),
+for(let i = 0; i < 100; i++){
 
-    latency:0,
+    const star = document.createElement("div");
 
-    previousLatency:0,
+    star.className = "star";
 
-    baseline:null,
+    star.style.left = Math.random() * 100 + "%";
+    star.style.top = Math.random() * 100 + "%";
 
-    activity:0,
+    const size = Math.random() * 3 + 1;
 
-    sensitivity:50,
+    star.style.width = size + "px";
+    star.style.height = size + "px";
 
-    people:0,
+    star.style.animationDelay =
+        Math.random() * 3 + "s";
 
-    devices:0,
+    star.style.animationDuration =
+        Math.random() * 2 + 1 + "s";
 
-    peak:0,
-
-    events:0,
-
-    detected:false,
-
-    samples:[],
-
-    angle:0
-
-};
-
-
-/* ==========================================================
-   CANVAS
-========================================================== */
-
-const radar =
-document.getElementById("radar");
-
-const rctx =
-radar.getContext("2d");
-
-const graph =
-document.getElementById("graph");
-
-const gctx =
-graph.getContext("2d");
-
-
-/* ==========================================================
-   LOG
-========================================================== */
-
-function log(message){
-
-    state.events++;
-
-    const box =
-    document.getElementById("log");
-
-    const time =
-    new Date().toLocaleTimeString();
-
-    const item =
-    document.createElement("div");
-
-    item.className =
-    "log-entry";
-
-    item.innerHTML =
-    "<strong>[" +
-    time +
-    "]</strong> " +
-    message;
-
-    box.prepend(item);
-
-    document.getElementById(
-        "events"
-    ).textContent =
-    state.events +
-    " EVENTS";
-
+    stars.appendChild(star);
 }
 
 
-/* ==========================================================
-   NETWORK INFORMATION
-========================================================== */
+/* =========================================
+   TYPING MESSAGE
+========================================= */
 
-function networkInfo(){
+const text =
+"Jayka, in a world full of billions of people, somehow my heart found you. And honestly... I'm really glad it did. ❤️";
 
-    const c =
-    navigator.connection ||
-    navigator.mozConnection ||
-    navigator.webkitConnection;
+const typing = document.getElementById("typing");
 
-    if(!c){
+let index = 0;
 
-        document.getElementById(
-            "connection"
-        ).textContent =
-        "LIMITED";
+function typeText(){
 
-        return;
+    if(index < text.length){
 
-    }
+        typing.textContent += text.charAt(index);
 
-    document.getElementById(
-        "connection"
-    ).textContent =
-    (
-        c.effectiveType ||
-        c.type ||
-        "UNKNOWN"
-    ).toUpperCase();
+        index++;
 
-
-    if(
-        typeof c.downlink ===
-        "number"
-    ){
-
-        document.getElementById(
-            "downlink"
-        ).textContent =
-        c.downlink.toFixed(1) +
-        " Mbps";
+        setTimeout(typeText,45);
 
     }
 
 }
 
+setTimeout(typeText,1000);
 
-/* ==========================================================
-   LATENCY
-========================================================== */
 
-async function ping(){
+/* =========================================
+   FLOATING HEARTS
+========================================= */
 
-    if(!navigator.onLine){
+const heartSymbols = [
+    "❤️",
+    "💕",
+    "💗",
+    "💖",
+    "💘",
+    "💓",
+    "💞",
+    "✨"
+];
 
-        state.latency =
-        999;
+function createHeart(){
 
-        return;
+    const heart = document.createElement("div");
 
-    }
+    heart.className = "heart";
 
-    const start =
-    performance.now();
+    heart.textContent =
+        heartSymbols[
+            Math.floor(Math.random() * heartSymbols.length)
+        ];
 
-    try{
+    heart.style.left =
+        Math.random() * 100 + "vw";
 
-        await fetch(
-            location.href +
-            "?network_test=" +
-            Date.now(),
-            {
-                method:"HEAD",
-                cache:"no-store"
-            }
-        );
+    heart.style.fontSize =
+        (Math.random() * 25 + 15) + "px";
 
-        const end =
-        performance.now();
+    heart.style.animationDuration =
+        (Math.random() * 5 + 6) + "s";
 
-        state.previousLatency =
-        state.latency;
+    heart.style.setProperty(
+        "--drift",
+        (Math.random() * 200 - 100) + "px"
+    );
 
-        state.latency =
-        Math.round(
-            end-start
-        );
+    document.body.appendChild(heart);
 
-    }catch{
+    setTimeout(()=>{
+        heart.remove();
+    },12000);
+}
 
-        state.latency =
-        999;
+setInterval(createHeart,500);
 
-    }
 
+/* =========================================
+   LOVE LETTER
+========================================= */
+
+function openLetter(){
+
+    document
+        .getElementById("letter")
+        .classList.add("show");
+
+    createExplosion(
+        window.innerWidth / 2,
+        window.innerHeight / 2
+    );
+}
+
+function closeLetter(){
+
+    document
+        .getElementById("letter")
+        .classList.remove("show");
 }
 
 
-/* ==========================================================
-   ACTIVITY
-========================================================== */
+/* =========================================
+   SPARKLE EXPLOSION
+========================================= */
 
-function calculateActivity(){
+function createExplosion(x,y){
 
-    if(state.baseline === null){
+    for(let i=0;i<50;i++){
 
-        state.baseline =
-        state.latency;
+        const spark =
+            document.createElement("div");
 
-        return;
+        spark.className = "spark";
 
-    }
-
-    const difference =
-    Math.abs(
-        state.latency -
-        state.baseline
-    );
-
-    const change =
-    Math.abs(
-        state.latency -
-        state.previousLatency
-    );
-
-    let value =
-    (
-        difference*.7 +
-        change*.3
-    ) *
-    (
-        state.sensitivity /
-        50
-    );
-
-    state.activity =
-    state.activity*.7 +
-    value*.3;
-
-    state.activity =
-    Math.max(
-        0,
-        Math.min(
-            100,
-            state.activity
-        )
-    );
-
-    if(
-        state.activity >
-        state.peak
-    ){
-
-        state.peak =
-        state.activity;
-
-    }
-
-
-    /*
-     * Activity-based estimate.
-     */
-
-    let people = 0;
-
-    if(
-        state.activity >= 70
-    ){
-
-        people = 3;
-
-    }else if(
-        state.activity >= 45
-    ){
-
-        people = 2;
-
-    }else if(
-        state.activity >= 18
-    ){
-
-        people = 1;
-
-    }
-
-
-    if(
-        people !==
-        state.people
-    ){
-
-        if(
-            people >
-            state.people
-        ){
-
-            log(
-                "Estimated activity increased: " +
-                people +
-                " possible active subject(s)"
-            );
-
-        }else{
-
-            log(
-                "Estimated activity decreased"
-            );
-
-        }
-
-    }
-
-
-    state.people =
-    people;
-
-
-    /*
-     * Estimate visible browser-side
-     * device count.
-     *
-     * This is NOT the router client count.
-     */
-
-    state.devices =
-    estimateDevices();
-
-
-    state.detected =
-    state.people > 0;
-
-}
-
-
-/* ==========================================================
-   DEVICE ESTIMATION
-========================================================== */
-
-function estimateDevices(){
-
-    /*
-     * A browser cannot enumerate the
-     * PLDT router's Wi-Fi clients.
-     *
-     * We therefore report the current
-     * browser environment as one visible
-     * endpoint and optionally add
-     * conservative network activity
-     * indicators.
-     */
-
-    let count = 1;
-
-    if(
-        state.activity > 70
-    ){
-
-        count = 2;
-
-    }
-
-    return count;
-
-}
-
-
-/* ==========================================================
-   DEVICE LIST
-========================================================== */
-
-function renderDevices(){
-
-    const list =
-    document.getElementById(
-        "deviceList"
-    );
-
-    list.innerHTML = "";
-
-    const devices = [
-
-        {
-            icon:"💻",
-            name:"This Browser",
-            type:
-            navigator.platform ||
-            "Computer",
-            status:"ONLINE"
-        }
-
-    ];
-
-
-    if(
-        state.devices >= 2
-    ){
-
-        devices.push({
-
-            icon:"📡",
-
-            name:
-            "Network Activity",
-
-            type:
-            "Estimated endpoint",
-
-            status:
-            "ACTIVE"
-
-        });
-
-    }
-
-
-    devices.forEach(
-        device => {
-
-            const row =
-            document.createElement(
-                "div"
-            );
-
-            row.className =
-            "device";
-
-            row.innerHTML = `
-
-                <div class="device-left">
-
-                    <div class="device-icon">
-                        ${device.icon}
-                    </div>
-
-                    <div>
-
-                        <div class="device-name">
-                            ${device.name}
-                        </div>
-
-                        <div class="device-type">
-                            ${device.type}
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div class="device-state">
-                    ${device.status}
-                </div>
-
-            `;
-
-            list.appendChild(row);
-
-        }
-    );
-
-
-    document.getElementById(
-        "deviceTag"
-    ).textContent =
-    state.devices +
-    " DEVICES";
-
-}
-
-
-/* ==========================================================
-   UI
-========================================================== */
-
-function updateUI(){
-
-    const online =
-    navigator.onLine;
-
-
-    document.getElementById(
-        "network"
-    ).textContent =
-    online ?
-    "ONLINE" :
-    "OFFLINE";
-
-
-    document.getElementById(
-        "network"
-    ).className =
-    online ?
-    "value green" :
-    "value red";
-
-
-    document.getElementById(
-        "online"
-    ).textContent =
-    online ?
-    "YES" :
-    "NO";
-
-
-    document.getElementById(
-        "latency"
-    ).textContent =
-    state.latency >= 999 ?
-    "--" :
-    state.latency +
-    " ms";
-
-
-    document.getElementById(
-        "rtt"
-    ).textContent =
-    state.latency >= 999 ?
-    "--" :
-    state.latency +
-    " ms";
-
-
-    document.getElementById(
-        "activity"
-    ).textContent =
-    state.detected ?
-    "ACTIVE" :
-    "STABLE";
-
-
-    document.getElementById(
-        "activity"
-    ).className =
-    state.detected ?
-    "value red" :
-    "value green";
-
-
-    document.getElementById(
-        "people"
-    ).textContent =
-    state.people;
-
-
-    document.getElementById(
-        "peopleTop"
-    ).textContent =
-    state.people;
-
-
-    document.getElementById(
-        "devicesTop"
-    ).textContent =
-    state.devices;
-
-
-    document.getElementById(
-        "peak"
-    ).textContent =
-    state.peak.toFixed(1);
-
-
-    document.getElementById(
-        "peopleStatus"
-    ).textContent =
-    state.people === 0
-    ?
-    "NO SIGNIFICANT ACTIVITY"
-    :
-    state.people +
-    " ESTIMATED ACTIVE SUBJECT" +
-    (
-        state.people === 1
-        ? ""
-        : "S"
-    );
-
-
-    document.getElementById(
-        "connectionText"
-    ).textContent =
-    online ?
-    "NETWORK ONLINE" :
-    "NETWORK OFFLINE";
-
-
-    document.getElementById(
-        "connectionDot"
-    ).style.background =
-    online ?
-    "var(--green)" :
-    "var(--red)";
-
-
-    renderDevices();
-
-}
-
-
-/* ==========================================================
-   RADAR
-========================================================== */
-
-function drawRadar(){
-
-    const w =
-    radar.width;
-
-    const h =
-    radar.height;
-
-    const cx =
-    w/2;
-
-    const cy =
-    h/2;
-
-    const radius =
-    Math.min(
-        cx,
-        cy
-    )-30;
-
-
-    rctx.clearRect(
-        0,
-        0,
-        w,
-        h
-    );
-
-
-    rctx.fillStyle =
-    "#02070b";
-
-    rctx.fillRect(
-        0,
-        0,
-        w,
-        h
-    );
-
-
-    /*
-     * Rings
-     */
-
-    rctx.strokeStyle =
-    "#174335";
-
-    rctx.lineWidth =
-    2;
-
-
-    for(
-        let i=1;
-        i<=4;
-        i++
-    ){
-
-        rctx.beginPath();
-
-        rctx.arc(
-            cx,
-            cy,
-            radius*i/4,
-            0,
-            Math.PI*2
-        );
-
-        rctx.stroke();
-
-    }
-
-
-    /*
-     * Crosshair
-     */
-
-    rctx.beginPath();
-
-    rctx.moveTo(
-        cx-radius,
-        cy
-    );
-
-    rctx.lineTo(
-        cx+radius,
-        cy
-    );
-
-    rctx.moveTo(
-        cx,
-        cy-radius
-    );
-
-    rctx.lineTo(
-        cx,
-        cy+radius
-    );
-
-    rctx.stroke();
-
-
-    /*
-     * Sweep
-     */
-
-    state.angle += .025;
-
-    const x =
-    cx +
-    Math.cos(
-        state.angle
-    ) *
-    radius;
-
-    const y =
-    cy +
-    Math.sin(
-        state.angle
-    ) *
-    radius;
-
-
-    rctx.strokeStyle =
-    "#42e88b";
-
-    rctx.lineWidth =
-    3;
-
-    rctx.shadowBlur =
-    15;
-
-    rctx.shadowColor =
-    "#42e88b";
-
-    rctx.beginPath();
-
-    rctx.moveTo(
-        cx,
-        cy
-    );
-
-    rctx.lineTo(
-        x,
-        y
-    );
-
-    rctx.stroke();
-
-    rctx.shadowBlur =
-    0;
-
-
-    /*
-     * Activity targets
-     *
-     * These are visualization points,
-     * not real physical positions.
-     */
-
-    for(
-        let i=0;
-        i<state.people;
-        i++
-    ){
+        spark.style.left = x + "px";
+        spark.style.top = y + "px";
 
         const angle =
-        state.angle +
-        i*2.1;
+            Math.random() * Math.PI * 2;
 
         const distance =
-        90 +
-        i*95 +
-        state.activity;
+            Math.random() * 250 + 50;
 
-        const px =
-        cx +
-        Math.cos(angle) *
-        Math.min(
-            distance,
-            radius-30
+        const dx =
+            Math.cos(angle) * distance;
+
+        const dy =
+            Math.sin(angle) * distance;
+
+        spark.style.setProperty(
+            "--x",
+            dx + "px"
         );
 
-        const py =
-        cy +
-        Math.sin(angle) *
-        Math.min(
-            distance,
-            radius-30
+        spark.style.setProperty(
+            "--y",
+            dy + "px"
         );
 
+        document.body.appendChild(spark);
 
-        rctx.shadowBlur =
-        25;
-
-        rctx.shadowColor =
-        "#ff525d";
-
-        rctx.fillStyle =
-        "#ff525d";
-
-
-        rctx.beginPath();
-
-        rctx.arc(
-            px,
-            py,
-            9,
-            0,
-            Math.PI*2
-        );
-
-        rctx.fill();
-
-
-        rctx.shadowBlur =
-        0;
-
-
-        rctx.fillStyle =
-        "#ff8b91";
-
-        rctx.font =
-        "bold 13px Arial";
-
-        rctx.fillText(
-            "PERSON " +
-            (i+1),
-            px+15,
-            py
-        );
-
+        setTimeout(()=>{
+            spark.remove();
+        },1000);
     }
-
-
-    /*
-     * Center
-     */
-
-    rctx.fillStyle =
-    "#42e88b";
-
-    rctx.shadowBlur =
-    18;
-
-    rctx.shadowColor =
-    "#42e88b";
-
-
-    rctx.beginPath();
-
-    rctx.arc(
-        cx,
-        cy,
-        7,
-        0,
-        Math.PI*2
-    );
-
-    rctx.fill();
-
-    rctx.shadowBlur =
-    0;
-
-
-    /*
-     * Labels
-     */
-
-    rctx.fillStyle =
-    "#587989";
-
-    rctx.font =
-    "11px Arial";
-
-    rctx.fillText(
-        "ACTIVITY FIELD",
-        20,
-        25
-    );
-
-
-    requestAnimationFrame(
-        drawRadar
-    );
-
 }
 
 
-/* ==========================================================
-   GRAPH
-========================================================== */
+/* =========================================
+   CLICK HEART EFFECT
+========================================= */
 
-function drawGraph(){
-
-    const w =
-    graph.width;
-
-    const h =
-    graph.height;
-
-
-    gctx.clearRect(
-        0,
-        0,
-        w,
-        h
-    );
-
-
-    gctx.fillStyle =
-    "#03080d";
-
-    gctx.fillRect(
-        0,
-        0,
-        w,
-        h
-    );
-
-
-    /*
-     * Grid
-     */
-
-    gctx.strokeStyle =
-    "#122a37";
-
-    for(
-        let y=20;
-        y<h;
-        y+=40
-    ){
-
-        gctx.beginPath();
-
-        gctx.moveTo(
-            0,
-            y
-        );
-
-        gctx.lineTo(
-            w,
-            y
-        );
-
-        gctx.stroke();
-
-    }
-
+document.addEventListener("click",function(e){
 
     if(
-        state.samples.length <
-        2
+        e.target.tagName === "BUTTON" ||
+        e.target.closest(".letter-box")
     ){
-
-        requestAnimationFrame(
-            drawGraph
-        );
-
         return;
-
     }
 
+    createExplosion(e.clientX,e.clientY);
 
-    /*
-     * Line
-     */
-
-    gctx.strokeStyle =
-    "#42e88b";
-
-    gctx.lineWidth =
-    3;
-
-    gctx.beginPath();
+});
 
 
-    state.samples.forEach(
-        (v,i)=>{
+/* =========================================
+   ESCAPE TO CLOSE
+========================================= */
 
-            const x =
-            i/
-            (
-                state.samples.length-1
-            )*
-            w;
+document.addEventListener("keydown",function(e){
 
-            const y =
-            h-
-            (
-                v/100*
-                (h-20)
-            )-
-            10;
+    if(e.key === "Escape"){
+        closeLetter();
+    }
+
+});
 
 
-            if(i===0){
+/* =========================================
+   EXTRA HEART BURST
+========================================= */
 
-                gctx.moveTo(
-                    x,
-                    y
-                );
+function heartBurst(){
 
-            }else{
+    for(let i=0;i<15;i++){
 
-                gctx.lineTo(
-                    x,
-                    y
-                );
-
-            }
-
-        }
-    );
-
-
-    gctx.stroke();
-
-
-    requestAnimationFrame(
-        drawGraph
-    );
-
-}
-
-
-/* ==========================================================
-   SAMPLE
-========================================================== */
-
-function sample(){
-
-    state.samples.push(
-        state.activity
-    );
-
-
-    if(
-        state.samples.length >
-        120
-    ){
-
-        state.samples.shift();
+        setTimeout(()=>{
+            createHeart();
+        },i*100);
 
     }
 
 }
 
-
-/* ==========================================================
-   CALIBRATE
-========================================================== */
-
-function calibrate(){
-
-    state.baseline =
-    null;
-
-    state.activity =
-    0;
-
-    state.people =
-    0;
-
-    log(
-        "CALIBRATION STARTED"
-    );
-
-}
-
-
-/* ==========================================================
-   CLEAR
-========================================================== */
-
-function clearLog(){
-
-    document.getElementById(
-        "log"
-    ).innerHTML =
-    "";
-
-    state.events =
-    0;
-
-    document.getElementById(
-        "events"
-    ).textContent =
-    "0 EVENTS";
-
-}
-
-
-/* ==========================================================
-   FULLSCREEN
-========================================================== */
-
-function fullScreen(){
-
-    if(
-        !document.fullscreenElement
-    ){
-
-        document.documentElement
-        .requestFullscreen();
-
-    }else{
-
-        document.exitFullscreen();
-
-    }
-
-}
-
-
-/* ==========================================================
-   SENSITIVITY
-========================================================== */
-
-document
-.getElementById("sensitivity")
-.addEventListener(
-    "input",
-    e=>{
-
-        state.sensitivity =
-        Number(e.target.value);
-
-        document.getElementById(
-            "sensitivityValue"
-        ).textContent =
-        state.sensitivity;
-
-    }
-);
-
-
-/* ==========================================================
-   NETWORK EVENTS
-========================================================== */
-
-window.addEventListener(
-    "online",
-    ()=>{
-        log(
-            "NETWORK CONNECTION RESTORED"
-        );
-    }
-);
-
-
-window.addEventListener(
-    "offline",
-    ()=>{
-        log(
-            "NETWORK CONNECTION LOST"
-        );
-    }
-);
-
-
-/* ==========================================================
-   MAIN LOOP
-========================================================== */
-
-async function loop(){
-
-    await ping();
-
-    calculateActivity();
-
-    sample();
-
-    updateUI();
-
-    networkInfo();
-
-}
-
-
-/* ==========================================================
-   START
-========================================================== */
-
-function start(){
-
-    log(
-        "WIFI SENSE SYSTEM INITIALIZED"
-    );
-
-    log(
-        "BROWSER NETWORK MONITOR ONLINE"
-    );
-
-    networkInfo();
-
-    drawRadar();
-
-    drawGraph();
-
-    setInterval(
-        loop,
-        1500
-    );
-
-    setInterval(
-        updateUI,
-        500
-    );
-
-}
-
-
-start();
+setTimeout(heartBurst,2500);
+setInterval(heartBurst,15000);
 
 </script>
 
