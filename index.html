@@ -3,574 +3,456 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>For Jayka ❤️</title>
 
-<style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from
+"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+import {
+    getAuth,
+    GoogleAuthProvider,
+    signInWithPopup,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    onAuthStateChanged,
+    signOut
+} from
+"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+/* =========================================================
+   FIREBASE CONFIGURATION
+   REPLACE THESE VALUES WITH YOUR FIREBASE CONFIG
+========================================================= */
+
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.firebasestorage.app",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+
+/* =========================================================
+   FIREBASE INITIALIZATION
+========================================================= */
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+/* =========================================================
+   ELEMENTS
+========================================================= */
+
+const loginScreen = document.getElementById("loginScreen");
+const mainApp = document.getElementById("mainApp");
+
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+
+const loginBtn = document.getElementById("loginBtn");
+const signupBtn = document.getElementById("signupBtn");
+const googleBtn = document.getElementById("googleBtn");
+
+const authMessage = document.getElementById("authMessage");
+const userInfo = document.getElementById("userInfo");
+const logoutBtn = document.getElementById("logoutBtn");
+
+/* =========================================================
+   AUTH MESSAGE
+========================================================= */
+
+function showAuthMessage(message, success = false) {
+
+    authMessage.textContent = message;
+
+    authMessage.className =
+        success
+        ? "auth-message success"
+        : "auth-message error";
 }
 
-html,body{
-    width:100%;
-    height:100%;
-    overflow:hidden;
-    font-family:Arial,Helvetica,sans-serif;
-}
+/* =========================================================
+   EMAIL LOGIN
+========================================================= */
 
-body{
-    background:
-        radial-gradient(circle at 20% 20%, rgba(255,100,170,.25), transparent 30%),
-        radial-gradient(circle at 80% 80%, rgba(150,80,255,.25), transparent 30%),
-        linear-gradient(135deg,#090016,#20001f,#090016);
-    color:white;
-}
+loginBtn.addEventListener("click", async () => {
 
-/* Background stars */
-.stars{
-    position:fixed;
-    inset:0;
-    overflow:hidden;
-    z-index:0;
-}
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
 
-.star{
-    position:absolute;
-    width:3px;
-    height:3px;
-    background:white;
-    border-radius:50%;
-    box-shadow:0 0 10px white;
-    animation:twinkle 2s infinite alternate;
-}
-
-@keyframes twinkle{
-    from{
-        opacity:.2;
-        transform:scale(.5);
-    }
-    to{
-        opacity:1;
-        transform:scale(1.5);
-    }
-}
-
-/* Main screen */
-.container{
-    position:relative;
-    z-index:2;
-    height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-}
-
-.card{
-    width:min(900px,95%);
-    min-height:600px;
-    position:relative;
-    padding:55px 30px;
-    text-align:center;
-    border:1px solid rgba(255,255,255,.15);
-    border-radius:35px;
-    background:rgba(255,255,255,.07);
-    backdrop-filter:blur(20px);
-    box-shadow:
-        0 0 60px rgba(255,0,150,.15),
-        inset 0 0 40px rgba(255,255,255,.03);
-    overflow:hidden;
-}
-
-/* Glow */
-.glow{
-    position:absolute;
-    width:250px;
-    height:250px;
-    border-radius:50%;
-    background:#ff238f;
-    filter:blur(100px);
-    opacity:.18;
-    top:-100px;
-    left:-100px;
-    animation:moveGlow 8s infinite alternate;
-}
-
-@keyframes moveGlow{
-    to{
-        transform:translate(700px,500px);
-    }
-}
-
-/* Heart */
-.big-heart{
-    font-size:95px;
-    display:inline-block;
-    filter:drop-shadow(0 0 25px #ff2b91);
-    animation:heartbeat 1.3s infinite;
-}
-
-@keyframes heartbeat{
-    0%,100%{transform:scale(1);}
-    15%{transform:scale(1.18);}
-    30%{transform:scale(1);}
-    45%{transform:scale(1.12);}
-    60%{transform:scale(1);}
-}
-
-/* Heading */
-.for{
-    font-size:18px;
-    letter-spacing:5px;
-    text-transform:uppercase;
-    opacity:.7;
-    margin-top:10px;
-}
-
-.name{
-    font-size:clamp(55px,10vw,110px);
-    font-weight:900;
-    margin:5px 0 15px;
-    background:linear-gradient(
-        90deg,
-        #ff5ebc,
-        #fff,
-        #ff72c5,
-        #fff
-    );
-    background-size:300%;
-    -webkit-background-clip:text;
-    color:transparent;
-    animation:shine 4s linear infinite;
-    text-shadow:0 0 30px rgba(255,70,170,.3);
-}
-
-@keyframes shine{
-    0%{background-position:0%;}
-    100%{background-position:300%;}
-}
-
-.subtitle{
-    font-size:20px;
-    opacity:.8;
-    margin-bottom:25px;
-}
-
-/* Typing */
-.message{
-    min-height:70px;
-    max-width:700px;
-    margin:auto;
-    font-size:19px;
-    line-height:1.7;
-    color:#ffd9ee;
-}
-
-.cursor{
-    display:inline-block;
-    width:2px;
-    height:22px;
-    background:#ff68b7;
-    animation:blink .7s infinite;
-}
-
-@keyframes blink{
-    50%{opacity:0;}
-}
-
-/* Button */
-button{
-    border:none;
-    outline:none;
-    cursor:pointer;
-}
-
-.love-btn{
-    margin-top:30px;
-    padding:15px 30px;
-    border-radius:50px;
-    color:white;
-    font-size:16px;
-    font-weight:bold;
-    background:linear-gradient(135deg,#ff2d91,#9c27ff);
-    box-shadow:0 10px 30px rgba(255,30,150,.3);
-    transition:.3s;
-}
-
-.love-btn:hover{
-    transform:translateY(-4px) scale(1.04);
-    box-shadow:0 15px 40px rgba(255,30,150,.5);
-}
-
-.love-btn:active{
-    transform:scale(.95);
-}
-
-/* Letter */
-.letter{
-    position:fixed;
-    z-index:20;
-    inset:0;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:rgba(0,0,0,.75);
-    backdrop-filter:blur(10px);
-    opacity:0;
-    pointer-events:none;
-    transition:.5s;
-    padding:20px;
-}
-
-.letter.show{
-    opacity:1;
-    pointer-events:auto;
-}
-
-.letter-box{
-    width:min(650px,95%);
-    max-height:90vh;
-    overflow:auto;
-    padding:40px;
-    border-radius:30px;
-    background:linear-gradient(
-        145deg,
-        #35102c,
-        #18091e
-    );
-    border:1px solid rgba(255,255,255,.15);
-    box-shadow:0 0 80px rgba(255,20,150,.25);
-    transform:scale(.7) rotate(-3deg);
-    transition:.6s cubic-bezier(.2,.8,.2,1);
-    text-align:left;
-}
-
-.letter.show .letter-box{
-    transform:scale(1) rotate(0);
-}
-
-.letter-box h2{
-    text-align:center;
-    font-size:35px;
-    color:#ff72bd;
-    margin-bottom:25px;
-}
-
-.letter-box p{
-    color:#ffe4f1;
-    line-height:1.9;
-    font-size:17px;
-    margin-bottom:18px;
-}
-
-.close{
-    display:block;
-    margin:25px auto 0;
-    padding:12px 25px;
-    border-radius:30px;
-    background:#ff3b9d;
-    color:white;
-}
-
-/* Floating hearts */
-.heart{
-    position:fixed;
-    bottom:-50px;
-    z-index:1;
-    pointer-events:none;
-    animation:floatHeart linear forwards;
-    filter:drop-shadow(0 0 10px rgba(255,70,170,.8));
-}
-
-@keyframes floatHeart{
-    0%{
-        transform:translateY(0) scale(.5) rotate(0);
-        opacity:0;
-    }
-    10%{
-        opacity:1;
-    }
-    100%{
-        transform:
-            translateY(-110vh)
-            translateX(var(--drift))
-            scale(1.3)
-            rotate(360deg);
-        opacity:0;
-    }
-}
-
-/* Sparkle burst */
-.spark{
-    position:fixed;
-    width:8px;
-    height:8px;
-    border-radius:50%;
-    background:#fff;
-    pointer-events:none;
-    z-index:50;
-    animation:spark .9s forwards;
-}
-
-@keyframes spark{
-    to{
-        transform:
-            translate(var(--x),var(--y))
-            scale(0);
-        opacity:0;
-    }
-}
-
-/* Bottom */
-.footer{
-    position:absolute;
-    bottom:18px;
-    width:100%;
-    left:0;
-    text-align:center;
-    opacity:.45;
-    font-size:12px;
-}
-
-/* Mobile */
-@media(max-width:600px){
-    .card{
-        min-height:550px;
-        padding:40px 20px;
+    if (!email || !password) {
+        showAuthMessage("Please enter your email and password.");
+        return;
     }
 
-    .big-heart{
-        font-size:70px;
+    loginBtn.disabled = true;
+    loginBtn.textContent = "Signing in...";
+
+    try {
+
+        await signInWithEmailAndPassword(
+            auth,
+            email,
+            password
+        );
+
+        showAuthMessage(
+            "Welcome back ❤️",
+            true
+        );
+
+    } catch (error) {
+
+        showAuthMessage(
+            getFriendlyError(error)
+        );
+
+    } finally {
+
+        loginBtn.disabled = false;
+        loginBtn.textContent = "Sign In";
+    }
+});
+
+/* =========================================================
+   CREATE ACCOUNT
+========================================================= */
+
+signupBtn.addEventListener("click", async () => {
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!email || !password) {
+        showAuthMessage(
+            "Enter an email and password first."
+        );
+        return;
     }
 
-    .subtitle{
-        font-size:16px;
+    if (password.length < 6) {
+        showAuthMessage(
+            "Password must contain at least 6 characters."
+        );
+        return;
     }
 
-    .message{
-        font-size:16px;
+    signupBtn.disabled = true;
+    signupBtn.textContent = "Creating...";
+
+    try {
+
+        await createUserWithEmailAndPassword(
+            auth,
+            email,
+            password
+        );
+
+        showAuthMessage(
+            "Account created successfully ❤️",
+            true
+        );
+
+    } catch (error) {
+
+        showAuthMessage(
+            getFriendlyError(error)
+        );
+
+    } finally {
+
+        signupBtn.disabled = false;
+        signupBtn.textContent = "Create Account";
     }
+});
 
-    .letter-box{
-        padding:28px 22px;
+/* =========================================================
+   GOOGLE LOGIN
+========================================================= */
+
+googleBtn.addEventListener("click", async () => {
+
+    googleBtn.disabled = true;
+    googleBtn.innerHTML =
+        '<span class="google-icon">G</span> Connecting...';
+
+    try {
+
+        await signInWithPopup(
+            auth,
+            provider
+        );
+
+        showAuthMessage(
+            "Google sign-in successful ❤️",
+            true
+        );
+
+    } catch (error) {
+
+        showAuthMessage(
+            getFriendlyError(error)
+        );
+
+    } finally {
+
+        googleBtn.disabled = false;
+
+        googleBtn.innerHTML =
+            '<span class="google-icon">G</span> Continue with Google';
     }
-}
-</style>
-</head>
+});
 
-<body>
+/* =========================================================
+   LOGOUT
+========================================================= */
 
-<div class="stars" id="stars"></div>
+logoutBtn.addEventListener("click", async () => {
 
-<div class="container">
+    try {
 
-    <div class="card">
+        await signOut(auth);
 
-        <div class="glow"></div>
+    } catch (error) {
 
-        <div class="big-heart">❤️</div>
+        console.error(error);
+    }
+});
 
-        <div class="for">
-            This little page is for
-        </div>
+/* =========================================================
+   AUTH STATE
+========================================================= */
 
-        <div class="name">
-            Jayka
-        </div>
+onAuthStateChanged(auth, user => {
 
-        <div class="subtitle">
-            Someone very special to my heart ✨
-        </div>
+    if (user) {
 
-        <div class="message">
-            <span id="typing"></span>
-            <span class="cursor"></span>
-        </div>
+        loginScreen.classList.add("hidden");
+        mainApp.classList.remove("hidden");
 
-        <button class="love-btn" onclick="openLetter()">
-            💌 Open My Heart
-        </button>
+        let displayName =
+            user.displayName ||
+            user.email ||
+            "Guest";
 
-        <div class="footer">
-            Made with ❤️ especially for Jayka
-        </div>
+        userInfo.textContent =
+            "Signed in as " + displayName;
 
-    </div>
+        startLoveAnimation();
 
-</div>
+    } else {
 
+        loginScreen.classList.remove("hidden");
+        mainApp.classList.add("hidden");
 
-<!-- LOVE LETTER -->
-
-<div class="letter" id="letter">
-
-    <div class="letter-box">
-
-        <h2>💗 Dear Jayka</h2>
-
-        <p>
-            If I could give you one thing in this world,
-            I would give you the ability to see yourself
-            through my eyes.
-        </p>
-
-        <p>
-            Then you would finally understand just how
-            special you are to me.
-        </p>
-
-        <p>
-            You are more than just a name on my screen.
-            You are one of those people who can make an
-            ordinary day feel a little brighter just by
-            being there.
-        </p>
-
-        <p>
-            I don't need a perfect world. I don't need
-            everything to always go my way. Sometimes,
-            having someone who makes my heart smile is
-            already more than enough.
-        </p>
-
-        <p>
-            And somehow, Jayka, you became that person.
-        </p>
-
-        <p>
-            Thank you for being you. ❤️
-        </p>
-
-        <p style="text-align:center;font-size:22px;">
-            You are precious to me. 💕
-        </p>
-
-        <button class="close" onclick="closeLetter()">
-            Close ❤️
-        </button>
-
-    </div>
-
-</div>
-
-
-<script>
-
-/* =========================================
-   STAR GENERATOR
-========================================= */
-
-const stars = document.getElementById("stars");
-
-for(let i = 0; i < 100; i++){
-
-    const star = document.createElement("div");
-
-    star.className = "star";
-
-    star.style.left = Math.random() * 100 + "%";
-    star.style.top = Math.random() * 100 + "%";
-
-    const size = Math.random() * 3 + 1;
-
-    star.style.width = size + "px";
-    star.style.height = size + "px";
-
-    star.style.animationDelay =
-        Math.random() * 3 + "s";
-
-    star.style.animationDuration =
-        Math.random() * 2 + 1 + "s";
-
-    stars.appendChild(star);
-}
-
-
-/* =========================================
-   TYPING MESSAGE
-========================================= */
-
-const text =
-"Jayka, in a world full of billions of people, somehow my heart found you. And honestly... I'm really glad it did. ❤️";
-
-const typing = document.getElementById("typing");
-
-let index = 0;
-
-function typeText(){
-
-    if(index < text.length){
-
-        typing.textContent += text.charAt(index);
-
-        index++;
-
-        setTimeout(typeText,45);
+        userInfo.textContent = "";
 
     }
 
+});
+
+/* =========================================================
+   FRIENDLY FIREBASE ERRORS
+========================================================= */
+
+function getFriendlyError(error) {
+
+    switch (error.code) {
+
+        case "auth/invalid-email":
+            return "Please enter a valid email address.";
+
+        case "auth/user-not-found":
+            return "No account was found with that email.";
+
+        case "auth/wrong-password":
+        case "auth/invalid-credential":
+            return "Incorrect email or password.";
+
+        case "auth/email-already-in-use":
+            return "That email is already registered.";
+
+        case "auth/weak-password":
+            return "Your password is too weak.";
+
+        case "auth/popup-closed-by-user":
+            return "Google sign-in was cancelled.";
+
+        case "auth/popup-blocked":
+            return "Your browser blocked the Google login popup.";
+
+        case "auth/operation-not-allowed":
+            return "This sign-in method is not enabled in Firebase.";
+
+        default:
+            console.error(error);
+            return "Something went wrong. Please try again.";
+    }
 }
 
-setTimeout(typeText,1000);
+/* =========================================================
+   ENTER KEY LOGIN
+========================================================= */
 
+passwordInput.addEventListener("keydown", event => {
 
-/* =========================================
-   FLOATING HEARTS
-========================================= */
+    if (event.key === "Enter") {
+        loginBtn.click();
+    }
 
-const heartSymbols = [
-    "❤️",
-    "💕",
-    "💗",
-    "💖",
-    "💘",
-    "💓",
-    "💞",
-    "✨"
-];
+});
 
-function createHeart(){
+/* =========================================================
+   LOVE ANIMATION
+========================================================= */
 
-    const heart = document.createElement("div");
+function startLoveAnimation() {
 
-    heart.className = "heart";
+    if (window.loveAnimationStarted) return;
 
-    heart.textContent =
-        heartSymbols[
-            Math.floor(Math.random() * heartSymbols.length)
-        ];
+    window.loveAnimationStarted = true;
 
-    heart.style.left =
-        Math.random() * 100 + "vw";
+    const stars =
+        document.getElementById("stars");
 
-    heart.style.fontSize =
-        (Math.random() * 25 + 15) + "px";
+    /* STAR GENERATOR */
 
-    heart.style.animationDuration =
-        (Math.random() * 5 + 6) + "s";
+    for (let i = 0; i < 100; i++) {
 
-    heart.style.setProperty(
-        "--drift",
-        (Math.random() * 200 - 100) + "px"
-    );
+        const star =
+            document.createElement("div");
 
-    document.body.appendChild(heart);
+        star.className = "star";
 
-    setTimeout(()=>{
-        heart.remove();
-    },12000);
+        star.style.left =
+            Math.random() * 100 + "%";
+
+        star.style.top =
+            Math.random() * 100 + "%";
+
+        const size =
+            Math.random() * 3 + 1;
+
+        star.style.width =
+            size + "px";
+
+        star.style.height =
+            size + "px";
+
+        star.style.animationDelay =
+            Math.random() * 3 + "s";
+
+        star.style.animationDuration =
+            Math.random() * 2 + 1 + "s";
+
+        stars.appendChild(star);
+    }
+
+    /* TYPING MESSAGE */
+
+    const text =
+        "Jayka, in a world full of billions of people, somehow my heart found you. And honestly... I'm really glad it did. ❤️";
+
+    const typing =
+        document.getElementById("typing");
+
+    let index = 0;
+
+    function typeText() {
+
+        if (index < text.length) {
+
+            typing.textContent +=
+                text.charAt(index);
+
+            index++;
+
+            setTimeout(typeText, 45);
+        }
+    }
+
+    setTimeout(typeText, 1000);
+
+    /* FLOATING HEARTS */
+
+    const heartSymbols = [
+        "❤️",
+        "💕",
+        "💗",
+        "💖",
+        "💘",
+        "💓",
+        "💞",
+        "✨"
+    ];
+
+    function createHeart() {
+
+        const heart =
+            document.createElement("div");
+
+        heart.className = "heart";
+
+        heart.textContent =
+            heartSymbols[
+                Math.floor(
+                    Math.random() *
+                    heartSymbols.length
+                )
+            ];
+
+        heart.style.left =
+            Math.random() * 100 + "vw";
+
+        heart.style.fontSize =
+            (Math.random() * 25 + 15) + "px";
+
+        heart.style.animationDuration =
+            (Math.random() * 5 + 6) + "s";
+
+        heart.style.setProperty(
+            "--drift",
+            (Math.random() * 200 - 100) + "px"
+        );
+
+        document.body.appendChild(heart);
+
+        setTimeout(() => {
+            heart.remove();
+        }, 12000);
+    }
+
+    window.createHeart = createHeart;
+
+    setInterval(createHeart, 500);
+
+    /* EXTRA HEART BURST */
+
+    function heartBurst() {
+
+        for (let i = 0; i < 15; i++) {
+
+            setTimeout(() => {
+                createHeart();
+            }, i * 100);
+        }
+    }
+
+    window.heartBurst = heartBurst;
+
+    setTimeout(heartBurst, 2500);
+    setInterval(heartBurst, 15000);
 }
 
-setInterval(createHeart,500);
-
-
-/* =========================================
+/* =========================================================
    LOVE LETTER
-========================================= */
+========================================================= */
 
-function openLetter(){
+window.openLetter = function() {
 
     document
         .getElementById("letter")
@@ -580,43 +462,49 @@ function openLetter(){
         window.innerWidth / 2,
         window.innerHeight / 2
     );
-}
+};
 
-function closeLetter(){
+window.closeLetter = function() {
 
     document
         .getElementById("letter")
         .classList.remove("show");
-}
+};
 
-
-/* =========================================
+/* =========================================================
    SPARKLE EXPLOSION
-========================================= */
+========================================================= */
 
-function createExplosion(x,y){
+function createExplosion(x, y) {
 
-    for(let i=0;i<50;i++){
+    for (let i = 0; i < 50; i++) {
 
         const spark =
             document.createElement("div");
 
         spark.className = "spark";
 
-        spark.style.left = x + "px";
-        spark.style.top = y + "px";
+        spark.style.left =
+            x + "px";
+
+        spark.style.top =
+            y + "px";
 
         const angle =
-            Math.random() * Math.PI * 2;
+            Math.random() *
+            Math.PI *
+            2;
 
         const distance =
             Math.random() * 250 + 50;
 
         const dx =
-            Math.cos(angle) * distance;
+            Math.cos(angle) *
+            distance;
 
         const dy =
-            Math.sin(angle) * distance;
+            Math.sin(angle) *
+            distance;
 
         spark.style.setProperty(
             "--x",
@@ -630,64 +518,1399 @@ function createExplosion(x,y){
 
         document.body.appendChild(spark);
 
-        setTimeout(()=>{
+        setTimeout(() => {
             spark.remove();
-        },1000);
+        }, 1000);
     }
 }
 
+/* =========================================================
+   CLICK EFFECT
+========================================================= */
 
-/* =========================================
-   CLICK HEART EFFECT
-========================================= */
+document.addEventListener(
+    "click",
+    function(e) {
 
-document.addEventListener("click",function(e){
+        if (
+            e.target.tagName === "BUTTON" ||
+            e.target.closest(".letter-box") ||
+            e.target.closest(".login-card")
+        ) {
+            return;
+        }
 
-    if(
-        e.target.tagName === "BUTTON" ||
-        e.target.closest(".letter-box")
-    ){
-        return;
+        if (
+            !mainApp.classList.contains("hidden")
+        ) {
+            createExplosion(
+                e.clientX,
+                e.clientY
+            );
+        }
+
     }
+);
 
-    createExplosion(e.clientX,e.clientY);
-
-});
-
-
-/* =========================================
+/* =========================================================
    ESCAPE TO CLOSE
-========================================= */
+========================================================= */
 
-document.addEventListener("keydown",function(e){
+document.addEventListener(
+    "keydown",
+    function(e) {
 
-    if(e.key === "Escape"){
-        closeLetter();
-    }
-
-});
-
-
-/* =========================================
-   EXTRA HEART BURST
-========================================= */
-
-function heartBurst(){
-
-    for(let i=0;i<15;i++){
-
-        setTimeout(()=>{
-            createHeart();
-        },i*100);
+        if (e.key === "Escape") {
+            closeLetter();
+        }
 
     }
-
-}
-
-setTimeout(heartBurst,2500);
-setInterval(heartBurst,15000);
+);
 
 </script>
+
+<style>
+
+/* =========================================================
+   GLOBAL
+========================================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    min-height: 100%;
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+}
+
+body {
+    overflow-x: hidden;
+    background:
+        radial-gradient(
+            circle at 20% 20%,
+            rgba(255,100,170,.25),
+            transparent 30%
+        ),
+        radial-gradient(
+            circle at 80% 80%,
+            rgba(150,80,255,.25),
+            transparent 30%
+        ),
+        linear-gradient(
+            135deg,
+            #090016,
+            #20001f,
+            #090016
+        );
+
+    color: white;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* =========================================================
+   LOGIN SCREEN
+========================================================= */
+
+.login-screen {
+
+    position: fixed;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    z-index: 1000;
+
+    background:
+        radial-gradient(
+            circle at 20% 20%,
+            rgba(255,60,160,.22),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 80% 80%,
+            rgba(130,60,255,.22),
+            transparent 35%
+        ),
+        linear-gradient(
+            135deg,
+            #08000f,
+            #21001f,
+            #090014
+        );
+}
+
+.login-card {
+
+    width: min(430px, 100%);
+
+    padding: 40px 32px;
+
+    border-radius: 30px;
+
+    background:
+        rgba(255,255,255,.08);
+
+    border:
+        1px solid rgba(255,255,255,.15);
+
+    backdrop-filter:
+        blur(25px);
+
+    box-shadow:
+        0 0 80px
+        rgba(255,30,150,.18);
+
+    text-align: center;
+
+    animation:
+        loginAppear .8s
+        cubic-bezier(.2,.8,.2,1);
+}
+
+@keyframes loginAppear {
+
+    from {
+        opacity: 0;
+        transform:
+            translateY(30px)
+            scale(.92);
+    }
+
+    to {
+        opacity: 1;
+        transform:
+            translateY(0)
+            scale(1);
+    }
+}
+
+.login-heart {
+
+    font-size: 65px;
+
+    margin-bottom: 10px;
+
+    filter:
+        drop-shadow(
+            0 0 25px
+            #ff2b91
+        );
+
+    animation:
+        heartbeat 1.3s infinite;
+}
+
+.login-card h1 {
+
+    font-size: 34px;
+
+    margin-bottom: 8px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #ff5ebc,
+            white,
+            #ff72c5
+        );
+
+    -webkit-background-clip: text;
+
+    color: transparent;
+}
+
+.login-card .login-subtitle {
+
+    color: #ffd9ee;
+
+    opacity: .8;
+
+    margin-bottom: 28px;
+
+    line-height: 1.5;
+}
+
+/* INPUTS */
+
+.input-group {
+
+    text-align: left;
+
+    margin-bottom: 15px;
+}
+
+.input-group label {
+
+    display: block;
+
+    margin-bottom: 7px;
+
+    font-size: 13px;
+
+    color: #ffd8ec;
+}
+
+.input-group input {
+
+    width: 100%;
+
+    padding: 14px 16px;
+
+    border-radius: 14px;
+
+    border:
+        1px solid
+        rgba(255,255,255,.15);
+
+    outline: none;
+
+    background:
+        rgba(0,0,0,.25);
+
+    color: white;
+
+    font-size: 15px;
+
+    transition: .25s;
+}
+
+.input-group input::placeholder {
+
+    color:
+        rgba(255,255,255,.45);
+}
+
+.input-group input:focus {
+
+    border-color:
+        rgba(255,80,180,.8);
+
+    box-shadow:
+        0 0 20px
+        rgba(255,40,160,.15);
+}
+
+/* BUTTONS */
+
+.auth-btn {
+
+    width: 100%;
+
+    padding: 14px;
+
+    margin-top: 8px;
+
+    border: none;
+
+    border-radius: 14px;
+
+    cursor: pointer;
+
+    color: white;
+
+    font-weight: bold;
+
+    font-size: 15px;
+
+    transition: .25s;
+}
+
+.auth-btn:hover {
+
+    transform:
+        translateY(-2px);
+}
+
+.auth-btn:disabled {
+
+    opacity: .6;
+
+    cursor: not-allowed;
+
+    transform: none;
+}
+
+.login-primary {
+
+    background:
+        linear-gradient(
+            135deg,
+            #ff2d91,
+            #9c27ff
+        );
+
+    box-shadow:
+        0 10px 30px
+        rgba(255,30,150,.25);
+}
+
+.signup-btn {
+
+    background:
+        rgba(255,255,255,.08);
+
+    border:
+        1px solid
+        rgba(255,255,255,.15);
+}
+
+.google-btn {
+
+    background: white;
+
+    color: #222;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 10px;
+}
+
+.google-icon {
+
+    font-weight: 900;
+
+    font-size: 19px;
+
+    color: #4285f4;
+}
+
+.divider {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    margin: 20px 0;
+
+    color:
+        rgba(255,255,255,.5);
+
+    font-size: 12px;
+}
+
+.divider::before,
+.divider::after {
+
+    content: "";
+
+    flex: 1;
+
+    height: 1px;
+
+    background:
+        rgba(255,255,255,.15);
+}
+
+.auth-message {
+
+    min-height: 22px;
+
+    margin-top: 17px;
+
+    font-size: 13px;
+
+    line-height: 1.4;
+}
+
+.auth-message.error {
+
+    color: #ff9fc9;
+}
+
+.auth-message.success {
+
+    color: #9dffcf;
+}
+
+.login-footer {
+
+    margin-top: 25px;
+
+    font-size: 11px;
+
+    color:
+        rgba(255,255,255,.4);
+}
+
+/* =========================================================
+   USER INFO
+========================================================= */
+
+.user-bar {
+
+    position: fixed;
+
+    top: 15px;
+    right: 15px;
+
+    z-index: 100;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 8px 10px 8px 14px;
+
+    border-radius: 30px;
+
+    background:
+        rgba(0,0,0,.35);
+
+    border:
+        1px solid
+        rgba(255,255,255,.12);
+
+    backdrop-filter:
+        blur(15px);
+
+    font-size: 12px;
+}
+
+.user-bar span {
+
+    max-width: 190px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+    opacity: .75;
+}
+
+.logout-btn {
+
+    border: none;
+
+    padding: 7px 12px;
+
+    border-radius: 20px;
+
+    background:
+        rgba(255,50,140,.8);
+
+    color: white;
+
+    cursor: pointer;
+
+    font-size: 11px;
+}
+
+/* =========================================================
+   STARS
+========================================================= */
+
+.stars {
+
+    position: fixed;
+
+    inset: 0;
+
+    overflow: hidden;
+
+    z-index: 0;
+}
+
+.star {
+
+    position: absolute;
+
+    width: 3px;
+    height: 3px;
+
+    background: white;
+
+    border-radius: 50%;
+
+    box-shadow:
+        0 0 10px white;
+
+    animation:
+        twinkle 2s infinite alternate;
+}
+
+@keyframes twinkle {
+
+    from {
+        opacity: .2;
+        transform: scale(.5);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1.5);
+    }
+}
+
+/* =========================================================
+   MAIN SCREEN
+========================================================= */
+
+.container {
+
+    position: relative;
+
+    z-index: 2;
+
+    min-height: 100vh;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 80px 20px 20px;
+}
+
+.card {
+
+    width:
+        min(900px, 95%);
+
+    min-height: 600px;
+
+    position: relative;
+
+    padding: 55px 30px;
+
+    text-align: center;
+
+    border:
+        1px solid
+        rgba(255,255,255,.15);
+
+    border-radius: 35px;
+
+    background:
+        rgba(255,255,255,.07);
+
+    backdrop-filter:
+        blur(20px);
+
+    box-shadow:
+        0 0 60px
+        rgba(255,0,150,.15),
+
+        inset 0 0 40px
+        rgba(255,255,255,.03);
+
+    overflow: hidden;
+}
+
+/* =========================================================
+   GLOW
+========================================================= */
+
+.glow {
+
+    position: absolute;
+
+    width: 250px;
+    height: 250px;
+
+    border-radius: 50%;
+
+    background: #ff238f;
+
+    filter: blur(100px);
+
+    opacity: .18;
+
+    top: -100px;
+    left: -100px;
+
+    animation:
+        moveGlow 8s infinite alternate;
+}
+
+@keyframes moveGlow {
+
+    to {
+        transform:
+            translate(
+                700px,
+                500px
+            );
+    }
+}
+
+/* =========================================================
+   HEART
+========================================================= */
+
+.big-heart {
+
+    font-size: 95px;
+
+    display: inline-block;
+
+    filter:
+        drop-shadow(
+            0 0 25px
+            #ff2b91
+        );
+
+    animation:
+        heartbeat 1.3s infinite;
+}
+
+@keyframes heartbeat {
+
+    0%,100% {
+        transform: scale(1);
+    }
+
+    15% {
+        transform: scale(1.18);
+    }
+
+    30% {
+        transform: scale(1);
+    }
+
+    45% {
+        transform: scale(1.12);
+    }
+
+    60% {
+        transform: scale(1);
+    }
+}
+
+/* =========================================================
+   HEADING
+========================================================= */
+
+.for {
+
+    font-size: 18px;
+
+    letter-spacing: 5px;
+
+    text-transform: uppercase;
+
+    opacity: .7;
+
+    margin-top: 10px;
+}
+
+.name {
+
+    font-size:
+        clamp(55px, 10vw, 110px);
+
+    font-weight: 900;
+
+    margin: 5px 0 15px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #ff5ebc,
+            #fff,
+            #ff72c5,
+            #fff
+        );
+
+    background-size: 300%;
+
+    -webkit-background-clip: text;
+
+    color: transparent;
+
+    animation:
+        shine 4s linear infinite;
+
+    text-shadow:
+        0 0 30px
+        rgba(255,70,170,.3);
+}
+
+@keyframes shine {
+
+    0% {
+        background-position: 0%;
+    }
+
+    100% {
+        background-position: 300%;
+    }
+}
+
+.subtitle {
+
+    font-size: 20px;
+
+    opacity: .8;
+
+    margin-bottom: 25px;
+}
+
+/* =========================================================
+   TYPING
+========================================================= */
+
+.message {
+
+    min-height: 70px;
+
+    max-width: 700px;
+
+    margin: auto;
+
+    font-size: 19px;
+
+    line-height: 1.7;
+
+    color: #ffd9ee;
+}
+
+.cursor {
+
+    display: inline-block;
+
+    width: 2px;
+
+    height: 22px;
+
+    background: #ff68b7;
+
+    animation:
+        blink .7s infinite;
+}
+
+@keyframes blink {
+
+    50% {
+        opacity: 0;
+    }
+}
+
+/* =========================================================
+   BUTTON
+========================================================= */
+
+button {
+
+    outline: none;
+}
+
+.love-btn {
+
+    margin-top: 30px;
+
+    padding: 15px 30px;
+
+    border: none;
+
+    border-radius: 50px;
+
+    color: white;
+
+    font-size: 16px;
+
+    font-weight: bold;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ff2d91,
+            #9c27ff
+        );
+
+    box-shadow:
+        0 10px 30px
+        rgba(255,30,150,.3);
+
+    cursor: pointer;
+
+    transition: .3s;
+}
+
+.love-btn:hover {
+
+    transform:
+        translateY(-4px)
+        scale(1.04);
+
+    box-shadow:
+        0 15px 40px
+        rgba(255,30,150,.5);
+}
+
+.love-btn:active {
+
+    transform: scale(.95);
+}
+
+/* =========================================================
+   LETTER
+========================================================= */
+
+.letter {
+
+    position: fixed;
+
+    z-index: 200;
+
+    inset: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background:
+        rgba(0,0,0,.75);
+
+    backdrop-filter:
+        blur(10px);
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    transition: .5s;
+
+    padding: 20px;
+}
+
+.letter.show {
+
+    opacity: 1;
+
+    pointer-events: auto;
+}
+
+.letter-box {
+
+    width:
+        min(650px, 95%);
+
+    max-height: 90vh;
+
+    overflow: auto;
+
+    padding: 40px;
+
+    border-radius: 30px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #35102c,
+            #18091e
+        );
+
+    border:
+        1px solid
+        rgba(255,255,255,.15);
+
+    box-shadow:
+        0 0 80px
+        rgba(255,20,150,.25);
+
+    transform:
+        scale(.7)
+        rotate(-3deg);
+
+    transition:
+        .6s
+        cubic-bezier(.2,.8,.2,1);
+
+    text-align: left;
+}
+
+.letter.show .letter-box {
+
+    transform:
+        scale(1)
+        rotate(0);
+}
+
+.letter-box h2 {
+
+    text-align: center;
+
+    font-size: 35px;
+
+    color: #ff72bd;
+
+    margin-bottom: 25px;
+}
+
+.letter-box p {
+
+    color: #ffe4f1;
+
+    line-height: 1.9;
+
+    font-size: 17px;
+
+    margin-bottom: 18px;
+}
+
+.close {
+
+    display: block;
+
+    margin: 25px auto 0;
+
+    padding: 12px 25px;
+
+    border: none;
+
+    border-radius: 30px;
+
+    background: #ff3b9d;
+
+    color: white;
+
+    cursor: pointer;
+}
+
+/* =========================================================
+   FLOATING HEARTS
+========================================================= */
+
+.heart {
+
+    position: fixed;
+
+    bottom: -50px;
+
+    z-index: 1;
+
+    pointer-events: none;
+
+    animation:
+        floatHeart linear forwards;
+
+    filter:
+        drop-shadow(
+            0 0 10px
+            rgba(255,70,170,.8)
+        );
+}
+
+@keyframes floatHeart {
+
+    0% {
+
+        transform:
+            translateY(0)
+            scale(.5)
+            rotate(0);
+
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    100% {
+
+        transform:
+            translateY(-110vh)
+            translateX(var(--drift))
+            scale(1.3)
+            rotate(360deg);
+
+        opacity: 0;
+    }
+}
+
+/* =========================================================
+   SPARKLES
+========================================================= */
+
+.spark {
+
+    position: fixed;
+
+    width: 8px;
+    height: 8px;
+
+    border-radius: 50%;
+
+    background: #fff;
+
+    pointer-events: none;
+
+    z-index: 500;
+
+    animation:
+        spark .9s forwards;
+}
+
+@keyframes spark {
+
+    to {
+
+        transform:
+            translate(
+                var(--x),
+                var(--y)
+            )
+            scale(0);
+
+        opacity: 0;
+    }
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.footer {
+
+    position: absolute;
+
+    bottom: 18px;
+
+    width: 100%;
+
+    left: 0;
+
+    text-align: center;
+
+    opacity: .45;
+
+    font-size: 12px;
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+    .login-card {
+
+        padding:
+            32px 22px;
+    }
+
+    .login-card h1 {
+
+        font-size: 28px;
+    }
+
+    .card {
+
+        min-height: 550px;
+
+        padding:
+            40px 20px;
+    }
+
+    .big-heart {
+
+        font-size: 70px;
+    }
+
+    .subtitle {
+
+        font-size: 16px;
+    }
+
+    .message {
+
+        font-size: 16px;
+    }
+
+    .letter-box {
+
+        padding:
+            28px 22px;
+    }
+
+    .user-bar span {
+
+        max-width: 100px;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- =====================================================
+     LOGIN SCREEN
+===================================================== -->
+
+<div
+    id="loginScreen"
+    class="login-screen"
+>
+
+    <div class="login-card">
+
+        <div class="login-heart">
+            ❤️
+        </div>
+
+        <h1>
+            Welcome
+        </h1>
+
+        <p class="login-subtitle">
+            Sign in to enter this special place 💕
+        </p>
+
+        <div class="input-group">
+
+            <label for="email">
+                Email
+            </label>
+
+            <input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                autocomplete="email"
+            >
+
+        </div>
+
+        <div class="input-group">
+
+            <label for="password">
+                Password
+            </label>
+
+            <input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+            >
+
+        </div>
+
+        <button
+            id="loginBtn"
+            class="auth-btn login-primary"
+        >
+            Sign In
+        </button>
+
+        <button
+            id="signupBtn"
+            class="auth-btn signup-btn"
+        >
+            Create Account
+        </button>
+
+        <div class="divider">
+            OR
+        </div>
+
+        <button
+            id="googleBtn"
+            class="auth-btn google-btn"
+        >
+            <span class="google-icon">
+                G
+            </span>
+
+            Continue with Google
+        </button>
+
+        <div
+            id="authMessage"
+            class="auth-message"
+        ></div>
+
+        <div class="login-footer">
+            Made with ❤️
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     MAIN LOVE PAGE
+===================================================== -->
+
+<div
+    id="mainApp"
+    class="hidden"
+>
+
+    <!-- USER BAR -->
+
+    <div class="user-bar">
+
+        <span id="userInfo">
+            Signed in
+        </span>
+
+        <button
+            id="logoutBtn"
+            class="logout-btn"
+        >
+            Logout
+        </button>
+
+    </div>
+
+
+    <!-- STARS -->
+
+    <div
+        class="stars"
+        id="stars"
+    ></div>
+
+
+    <!-- MAIN -->
+
+    <div class="container">
+
+        <div class="card">
+
+            <div class="glow"></div>
+
+            <div class="big-heart">
+                ❤️
+            </div>
+
+            <div class="for">
+                This little page is for
+            </div>
+
+            <div class="name">
+                Jayka
+            </div>
+
+            <div class="subtitle">
+                Someone very special to my heart ✨
+            </div>
+
+            <div class="message">
+
+                <span id="typing"></span>
+
+                <span class="cursor"></span>
+
+            </div>
+
+            <button
+                class="love-btn"
+                onclick="openLetter()"
+            >
+                💌 Open My Heart
+            </button>
+
+            <div class="footer">
+                Made with ❤️ especially for Jayka
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =================================================
+         LOVE LETTER
+    ================================================= -->
+
+    <div
+        class="letter"
+        id="letter"
+    >
+
+        <div class="letter-box">
+
+            <h2>
+                💗 Dear Jayka
+            </h2>
+
+            <p>
+                If I could give you one thing in this world,
+                I would give you the ability to see yourself
+                through my eyes.
+            </p>
+
+            <p>
+                Then you would finally understand just how
+                special you are to me.
+            </p>
+
+            <p>
+                You are more than just a name on my screen.
+                You are one of those people who can make an
+                ordinary day feel a little brighter just by
+                being there.
+            </p>
+
+            <p>
+                I don't need a perfect world. I don't need
+                everything to always go my way. Sometimes,
+                having someone who makes my heart smile is
+                already more than enough.
+            </p>
+
+            <p>
+                And somehow, Jayka, you became that person.
+            </p>
+
+            <p>
+                Thank you for being you. ❤️
+            </p>
+
+            <p
+                style="
+                    text-align:center;
+                    font-size:22px;
+                "
+            >
+                You are precious to me. 💕
+            </p>
+
+            <button
+                class="close"
+                onclick="closeLetter()"
+            >
+                Close ❤️
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 
 </body>
 </html>
