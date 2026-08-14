@@ -6,11 +6,7 @@
 <title>For Jayka ❤️</title>
 
 <style>
-*{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
-}
+*{box-sizing:border-box;margin:0;padding:0}
 
 html,body{
     width:100%;
@@ -24,15 +20,12 @@ body{
         radial-gradient(circle at 20% 20%,rgba(255,40,150,.18),transparent 30%),
         radial-gradient(circle at 80% 80%,rgba(130,50,255,.18),transparent 30%),
         linear-gradient(135deg,#08000f,#21001f,#08000f);
-    color:white;
+    color:#fff;
 }
 
-.hidden{
-    display:none!important;
-}
+.hidden{display:none!important}
 
-/* ================= LOGIN ================= */
-
+/* LOGIN */
 #loginScreen{
     position:fixed;
     inset:0;
@@ -60,14 +53,8 @@ body{
 }
 
 @keyframes loginIn{
-    from{
-        opacity:0;
-        transform:translateY(30px) scale(.94);
-    }
-    to{
-        opacity:1;
-        transform:translateY(0) scale(1);
-    }
+    from{opacity:0;transform:translateY(30px) scale(.94)}
+    to{opacity:1;transform:translateY(0) scale(1)}
 }
 
 .login-heart{
@@ -82,6 +69,7 @@ body{
     margin-bottom:8px;
     background:linear-gradient(90deg,#ff5ebc,#fff,#ff72c5);
     -webkit-background-clip:text;
+    background-clip:text;
     color:transparent;
 }
 
@@ -132,9 +120,7 @@ body{
     transition:.25s;
 }
 
-.auth-btn:hover{
-    transform:translateY(-2px);
-}
+.auth-btn:hover{transform:translateY(-2px)}
 
 .auth-btn:disabled{
     opacity:.6;
@@ -185,16 +171,12 @@ body{
     min-height:25px;
     margin-top:15px;
     font-size:13px;
-    line-height:1.4;
+    line-height:1.5;
+    word-break:break-word;
 }
 
-.error{
-    color:#ff9fc9;
-}
-
-.success{
-    color:#9dffcf;
-}
+.error{color:#ff9fc9}
+.success{color:#9dffcf}
 
 .login-footer{
     margin-top:22px;
@@ -202,8 +184,7 @@ body{
     font-size:11px;
 }
 
-/* ================= USER BAR ================= */
-
+/* USER BAR */
 .user-bar{
     position:fixed;
     top:15px;
@@ -237,8 +218,7 @@ body{
     cursor:pointer;
 }
 
-/* ================= STARS ================= */
-
+/* STARS */
 #stars{
     position:fixed;
     inset:0;
@@ -255,18 +235,11 @@ body{
 }
 
 @keyframes twinkle{
-    from{
-        opacity:.15;
-        transform:scale(.5);
-    }
-    to{
-        opacity:1;
-        transform:scale(1.4);
-    }
+    from{opacity:.15;transform:scale(.5)}
+    to{opacity:1;transform:scale(1.4)}
 }
 
-/* ================= MAIN ================= */
-
+/* MAIN */
 .container{
     position:relative;
     z-index:2;
@@ -307,9 +280,7 @@ body{
 }
 
 @keyframes moveGlow{
-    to{
-        transform:translate(700px,500px);
-    }
+    to{transform:translate(700px,500px)}
 }
 
 .big-heart{
@@ -339,15 +310,10 @@ body{
     font-size:clamp(55px,10vw,110px);
     font-weight:900;
     margin:5px 0 15px;
-    background:linear-gradient(
-        90deg,
-        #ff5ebc,
-        #fff,
-        #ff72c5,
-        #fff
-    );
+    background:linear-gradient(90deg,#ff5ebc,#fff,#ff72c5,#fff);
     background-size:300%;
     -webkit-background-clip:text;
+    background-clip:text;
     color:transparent;
     animation:shine 4s linear infinite;
 }
@@ -380,9 +346,7 @@ body{
     animation:blink .7s infinite;
 }
 
-@keyframes blink{
-    50%{opacity:0}
-}
+@keyframes blink{50%{opacity:0}}
 
 .love-btn{
     margin-top:30px;
@@ -411,8 +375,7 @@ body{
     font-size:12px;
 }
 
-/* ================= LETTER ================= */
-
+/* LETTER */
 .letter{
     position:fixed;
     inset:0;
@@ -475,8 +438,7 @@ body{
     cursor:pointer;
 }
 
-/* ================= FLOATING HEARTS ================= */
-
+/* FLOATING HEARTS */
 .heart{
     position:fixed;
     bottom:-50px;
@@ -491,9 +453,7 @@ body{
         transform:translateY(0) scale(.5) rotate(0);
         opacity:0;
     }
-    10%{
-        opacity:1;
-    }
+    10%{opacity:1}
     100%{
         transform:
             translateY(-110vh)
@@ -504,8 +464,7 @@ body{
     }
 }
 
-/* ================= SPARK ================= */
-
+/* SPARK */
 .spark{
     position:fixed;
     width:8px;
@@ -519,59 +478,27 @@ body{
 
 @keyframes spark{
     to{
-        transform:
-            translate(var(--x),var(--y))
-            scale(0);
+        transform:translate(var(--x),var(--y)) scale(0);
         opacity:0;
     }
 }
 
-/* ================= MOBILE ================= */
-
 @media(max-width:600px){
-
-    .login-card{
-        padding:30px 20px;
-    }
-
-    .login-card h1{
-        font-size:28px;
-    }
-
-    .card{
-        min-height:550px;
-        padding:40px 20px;
-    }
-
-    .big-heart{
-        font-size:70px;
-    }
-
-    .subtitle{
-        font-size:16px;
-    }
-
-    .message{
-        font-size:16px;
-    }
-
-    .letter-box{
-        padding:28px 22px;
-    }
-
-    .user-bar span{
-        max-width:100px;
-    }
+    .login-card{padding:30px 20px}
+    .login-card h1{font-size:28px}
+    .card{min-height:550px;padding:40px 20px}
+    .big-heart{font-size:70px}
+    .subtitle{font-size:16px}
+    .message{font-size:16px}
+    .letter-box{padding:28px 22px}
+    .user-bar span{max-width:100px}
 }
 </style>
 </head>
 
 <body>
 
-<!-- =====================================================
-     LOGIN
-===================================================== -->
-
+<!-- LOGIN -->
 <div id="loginScreen">
 
     <div class="login-card">
@@ -585,7 +512,7 @@ body{
         </p>
 
         <div class="input-group">
-            <label>Email</label>
+            <label for="email">Email</label>
             <input
                 id="email"
                 type="email"
@@ -595,7 +522,7 @@ body{
         </div>
 
         <div class="input-group">
-            <label>Password</label>
+            <label for="password">Password</label>
             <input
                 id="password"
                 type="password"
@@ -604,28 +531,17 @@ body{
             >
         </div>
 
-        <button
-            id="loginBtn"
-            class="auth-btn signin"
-        >
+        <button id="loginBtn" class="auth-btn signin">
             Sign In
         </button>
 
-        <button
-            id="signupBtn"
-            class="auth-btn signup"
-        >
+        <button id="signupBtn" class="auth-btn signup">
             Create Account
         </button>
 
-        <div class="divider">
-            OR
-        </div>
+        <div class="divider">OR</div>
 
-        <button
-            id="googleBtn"
-            class="auth-btn google"
-        >
+        <button id="googleBtn" class="auth-btn google">
             <span class="google-icon">G</span>
             Continue with Google
         </button>
@@ -640,19 +556,12 @@ body{
 </div>
 
 
-<!-- =====================================================
-     MAIN APP
-===================================================== -->
-
+<!-- MAIN -->
 <div id="mainApp" class="hidden">
 
     <div class="user-bar">
         <span id="userInfo"></span>
-
-        <button
-            id="logoutBtn"
-            class="logout"
-        >
+        <button id="logoutBtn" class="logout">
             Logout
         </button>
     </div>
@@ -665,9 +574,7 @@ body{
 
             <div class="glow"></div>
 
-            <div class="big-heart">
-                ❤️
-            </div>
+            <div class="big-heart">❤️</div>
 
             <div class="for">
                 This little page is for
@@ -686,10 +593,7 @@ body{
                 <span class="cursor"></span>
             </div>
 
-            <button
-                class="love-btn"
-                onclick="openLetter()"
-            >
+            <button class="love-btn" id="openLetterBtn">
                 💌 Open My Heart
             </button>
 
@@ -700,13 +604,8 @@ body{
         </div>
     </div>
 
-
     <!-- LETTER -->
-
-    <div
-        id="letter"
-        class="letter"
-    >
+    <div id="letter" class="letter">
 
         <div class="letter-box">
 
@@ -749,10 +648,7 @@ body{
                 You are precious to me. 💕
             </p>
 
-            <button
-                class="close"
-                onclick="closeLetter()"
-            >
+            <button id="closeLetterBtn" class="close">
                 Close ❤️
             </button>
 
@@ -762,15 +658,11 @@ body{
 </div>
 
 
-<!-- =====================================================
-     FIREBASE
-===================================================== -->
-
+<!-- FIREBASE -->
 <script type="module">
 
-import {
-    initializeApp
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 
 import {
     getAuth,
@@ -780,53 +672,49 @@ import {
     createUserWithEmailAndPassword,
     onAuthStateChanged,
     signOut
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+}
+from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 
-/* =====================================================
-   YOUR FIREBASE CONFIG
-===================================================== */
+/* ================= FIREBASE CONFIG ================= */
 
 const firebaseConfig = {
-
-    apiKey:
-        "AIzaSyCB9sWO3rQCaEVc4B86nkGx6U5iWa7ha9o",
-
-    authDomain:
-        "waps-c870d.firebaseapp.com",
-
-    projectId:
-        "waps-c870d",
-
-    storageBucket:
-        "waps-c870d.firebasestorage.app",
-
-    messagingSenderId:
-        "412405951662",
-
-    appId:
-        "1:412405951662:web:2b18a7b9c4dad02c71513f",
-
-    measurementId:
-        "G-MXE1VWC16P"
+    apiKey: "AIzaSyCB9sWO3rQCaEVc4B86nkGx6U5iWa7ha9o",
+    authDomain: "waps-c870d.firebaseapp.com",
+    projectId: "waps-c870d",
+    storageBucket: "waps-c870d.firebasestorage.app",
+    messagingSenderId: "412405951662",
+    appId: "1:412405951662:web:2b18a7b9c4dad02c71513f",
+    measurementId: "G-MXE1VWC16P"
 };
 
 
-/* =====================================================
-   INITIALIZE
-===================================================== */
+/* ================= INITIALIZE ================= */
 
-const app = initializeApp(firebaseConfig);
+let app;
+let auth;
+let provider;
 
-const auth = getAuth(app);
+try {
 
-const provider =
-    new GoogleAuthProvider();
+    app = initializeApp(firebaseConfig);
+
+    auth = getAuth(app);
+
+    provider = new GoogleAuthProvider();
+
+    provider.setCustomParameters({
+        prompt: "select_account"
+    });
+
+} catch(error) {
+
+    console.error("Firebase initialization error:",error);
+
+}
 
 
-/* =====================================================
-   ELEMENTS
-===================================================== */
+/* ================= ELEMENTS ================= */
 
 const loginScreen =
     document.getElementById("loginScreen");
@@ -858,322 +746,399 @@ const userInfo =
 const logoutBtn =
     document.getElementById("logoutBtn");
 
+const openLetterBtn =
+    document.getElementById("openLetterBtn");
 
-/* =====================================================
-   SHOW ERROR
-===================================================== */
+const closeLetterBtn =
+    document.getElementById("closeLetterBtn");
 
-function showMessage(message, success=false){
 
-    authMessage.textContent = message;
+/* ================= MESSAGE ================= */
+
+function showMessage(message,success=false){
+
+    authMessage.innerHTML = message;
 
     authMessage.className =
         success ? "success" : "error";
 }
 
 
-/* =====================================================
-   FIREBASE ERROR
-===================================================== */
+/* ================= ERROR HANDLER ================= */
 
 function firebaseError(error){
 
-    console.error(
-        "FULL FIREBASE ERROR:",
-        error
-    );
+    console.error("========== FIREBASE ERROR ==========");
+    console.error("Code:",error?.code);
+    console.error("Message:",error?.message);
+    console.error("Full error:",error);
+    console.error("====================================");
 
-    switch(error.code){
+    const code =
+        error?.code || "unknown-error";
+
+    const message =
+        error?.message || "Unknown Firebase error.";
+
+    switch(code){
 
         case "auth/invalid-email":
-            return "Invalid email address.";
+            return "❌ Invalid email address.";
 
         case "auth/user-not-found":
-            return "No account exists with this email.";
+            return "❌ No account exists with this email.";
 
         case "auth/wrong-password":
-            return "Incorrect password.";
+            return "❌ Incorrect password.";
 
         case "auth/invalid-credential":
-            return "Incorrect email or password.";
+            return "❌ Incorrect email or password.";
 
         case "auth/email-already-in-use":
-            return "This email already has an account.";
+            return "❌ This email is already registered.";
 
         case "auth/weak-password":
-            return "Password must contain at least 6 characters.";
+            return "❌ Password must contain at least 6 characters.";
 
         case "auth/operation-not-allowed":
-            return "This login method is not enabled in Firebase.";
+            return "❌ Email/password authentication is not enabled in Firebase.";
 
         case "auth/popup-blocked":
-            return "Your browser blocked the Google login popup.";
+            return "❌ Your browser blocked the Google login popup.";
 
         case "auth/popup-closed-by-user":
-            return "Google sign-in was cancelled.";
+            return "❌ Google sign-in was cancelled.";
+
+        case "auth/unauthorized-domain":
+            return "❌ This website domain is not authorized in Firebase.";
 
         case "auth/network-request-failed":
-            return "Network error. Check your internet connection.";
+            return "❌ Network error. Check your internet connection.";
 
         case "auth/too-many-requests":
-            return "Too many attempts. Try again later.";
+            return "❌ Too many attempts. Try again later.";
 
         case "auth/account-exists-with-different-credential":
-            return "This email is already registered using another login method.";
+            return "❌ This email already uses another sign-in method.";
+
+        case "auth/user-disabled":
+            return "❌ This account has been disabled.";
 
         default:
-
-            return "Firebase error: " +
-                   (error.code || error.message);
+            return `
+                ❌ Firebase error:<br>
+                <strong>${code}</strong><br>
+                <small>${message}</small>
+            `;
     }
 }
 
 
-/* =====================================================
-   EMAIL LOGIN
-===================================================== */
+/* ================= CHECK FIREBASE ================= */
 
-loginBtn.addEventListener(
-    "click",
-    async () => {
+function checkFirebase(){
 
-        const email =
-            emailInput.value.trim();
+    if(!auth){
 
-        const password =
-            passwordInput.value;
+        showMessage(`
+            ❌ Firebase failed to initialize.<br>
+            <small>Check your Firebase configuration.</small>
+        `);
 
-        if(!email || !password){
+        return false;
+    }
 
-            showMessage(
-                "Please enter your email and password."
-            );
+    return true;
+}
 
-            return;
-        }
 
-        loginBtn.disabled = true;
+/* ================= EMAIL LOGIN ================= */
+
+loginBtn.addEventListener("click",async()=>{
+
+    if(!checkFirebase()) return;
+
+    const email =
+        emailInput.value.trim();
+
+    const password =
+        passwordInput.value;
+
+    if(!email){
+
+        showMessage(
+            "❌ Please enter your email."
+        );
+
+        emailInput.focus();
+
+        return;
+    }
+
+    if(!password){
+
+        showMessage(
+            "❌ Please enter your password."
+        );
+
+        passwordInput.focus();
+
+        return;
+    }
+
+    loginBtn.disabled = true;
+
+    signupBtn.disabled = true;
+
+    googleBtn.disabled = true;
+
+    loginBtn.textContent =
+        "Signing in...";
+
+    try{
+
+        await signInWithEmailAndPassword(
+            auth,
+            email,
+            password
+        );
+
+    }catch(error){
+
+        showMessage(
+            firebaseError(error)
+        );
+
+    }finally{
+
+        loginBtn.disabled = false;
+
+        signupBtn.disabled = false;
+
+        googleBtn.disabled = false;
+
         loginBtn.textContent =
-            "Signing in...";
-
-        try{
-
-            await signInWithEmailAndPassword(
-                auth,
-                email,
-                password
-            );
-
-            showMessage(
-                "Login successful ❤️",
-                true
-            );
-
-        }catch(error){
-
-            showMessage(
-                firebaseError(error)
-            );
-
-        }finally{
-
-            loginBtn.disabled = false;
-            loginBtn.textContent =
-                "Sign In";
-        }
+            "Sign In";
     }
-);
+
+});
 
 
-/* =====================================================
-   CREATE ACCOUNT
-===================================================== */
+/* ================= CREATE ACCOUNT ================= */
 
-signupBtn.addEventListener(
-    "click",
-    async () => {
+signupBtn.addEventListener("click",async()=>{
 
-        const email =
-            emailInput.value.trim();
+    if(!checkFirebase()) return;
 
-        const password =
-            passwordInput.value;
+    const email =
+        emailInput.value.trim();
 
-        if(!email || !password){
+    const password =
+        passwordInput.value;
 
-            showMessage(
-                "Enter an email and password first."
-            );
+    if(!email){
 
-            return;
-        }
+        showMessage(
+            "❌ Please enter an email."
+        );
 
-        if(password.length < 6){
+        emailInput.focus();
 
-            showMessage(
-                "Password must be at least 6 characters."
-            );
+        return;
+    }
 
-            return;
-        }
+    if(!password){
 
-        signupBtn.disabled = true;
+        showMessage(
+            "❌ Please enter a password."
+        );
+
+        passwordInput.focus();
+
+        return;
+    }
+
+    if(password.length < 6){
+
+        showMessage(
+            "❌ Password must contain at least 6 characters."
+        );
+
+        return;
+    }
+
+    loginBtn.disabled = true;
+
+    signupBtn.disabled = true;
+
+    googleBtn.disabled = true;
+
+    signupBtn.textContent =
+        "Creating account...";
+
+    try{
+
+        await createUserWithEmailAndPassword(
+            auth,
+            email,
+            password
+        );
+
+        showMessage(
+            "✅ Account created successfully! ❤️",
+            true
+        );
+
+    }catch(error){
+
+        showMessage(
+            firebaseError(error)
+        );
+
+    }finally{
+
+        loginBtn.disabled = false;
+
+        signupBtn.disabled = false;
+
+        googleBtn.disabled = false;
+
         signupBtn.textContent =
-            "Creating...";
-
-        try{
-
-            await createUserWithEmailAndPassword(
-                auth,
-                email,
-                password
-            );
-
-            showMessage(
-                "Account created successfully ❤️",
-                true
-            );
-
-        }catch(error){
-
-            showMessage(
-                firebaseError(error)
-            );
-
-        }finally{
-
-            signupBtn.disabled = false;
-            signupBtn.textContent =
-                "Create Account";
-        }
+            "Create Account";
     }
-);
+
+});
 
 
-/* =====================================================
-   GOOGLE LOGIN
-===================================================== */
+/* ================= GOOGLE LOGIN ================= */
 
-googleBtn.addEventListener(
-    "click",
-    async () => {
+googleBtn.addEventListener("click",async()=>{
 
-        googleBtn.disabled = true;
+    if(!checkFirebase()) return;
+
+    loginBtn.disabled = true;
+
+    signupBtn.disabled = true;
+
+    googleBtn.disabled = true;
+
+    googleBtn.innerHTML =
+        '<span class="google-icon">G</span> Opening Google...';
+
+    try{
+
+        await signInWithPopup(
+            auth,
+            provider
+        );
+
+    }catch(error){
+
+        showMessage(
+            firebaseError(error)
+        );
+
+    }finally{
+
+        loginBtn.disabled = false;
+
+        signupBtn.disabled = false;
+
+        googleBtn.disabled = false;
 
         googleBtn.innerHTML =
-            '<span class="google-icon">G</span> Connecting...';
-
-        try{
-
-            await signInWithPopup(
-                auth,
-                provider
-            );
-
-            showMessage(
-                "Google login successful ❤️",
-                true
-            );
-
-        }catch(error){
-
-            showMessage(
-                firebaseError(error)
-            );
-
-        }finally{
-
-            googleBtn.disabled = false;
-
-            googleBtn.innerHTML =
-                '<span class="google-icon">G</span> Continue with Google';
-        }
+            '<span class="google-icon">G</span> Continue with Google';
     }
-);
+
+});
 
 
-/* =====================================================
-   LOGOUT
-===================================================== */
+/* ================= LOGOUT ================= */
 
-logoutBtn.addEventListener(
-    "click",
-    async () => {
+logoutBtn.addEventListener("click",async()=>{
 
-        try{
+    if(!auth) return;
 
-            await signOut(auth);
+    try{
 
-        }catch(error){
+        await signOut(auth);
 
-            console.error(error);
+        showMessage(
+            "You have been logged out."
+        );
 
-        }
+    }catch(error){
+
+        console.error(
+            "Logout error:",
+            error
+        );
     }
-);
+
+});
 
 
-/* =====================================================
-   AUTH STATE
-===================================================== */
+/* ================= AUTH STATE ================= */
 
-onAuthStateChanged(
-    auth,
-    user => {
+if(auth){
 
-        if(user){
+    onAuthStateChanged(
+        auth,
+        user=>{
 
-            loginScreen.classList.add(
-                "hidden"
-            );
+            if(user){
 
-            mainApp.classList.remove(
-                "hidden"
-            );
+                loginScreen.classList.add(
+                    "hidden"
+                );
 
-            userInfo.textContent =
-                user.displayName ||
-                user.email ||
-                "Signed in";
+                mainApp.classList.remove(
+                    "hidden"
+                );
 
-            startLoveAnimation();
+                userInfo.textContent =
+                    user.displayName ||
+                    user.email ||
+                    "Signed in";
 
-        }else{
+                startLoveAnimation();
 
-            loginScreen.classList.remove(
-                "hidden"
-            );
+            }else{
 
-            mainApp.classList.add(
-                "hidden"
-            );
+                loginScreen.classList.remove(
+                    "hidden"
+                );
 
-            userInfo.textContent = "";
+                mainApp.classList.add(
+                    "hidden"
+                );
+
+                userInfo.textContent = "";
+
+            }
         }
-    }
-);
+    );
+
+}
 
 
-/* =====================================================
-   ENTER KEY
-===================================================== */
+/* ================= ENTER KEY ================= */
 
 passwordInput.addEventListener(
     "keydown",
-    event => {
+    event=>{
 
         if(event.key === "Enter"){
 
             loginBtn.click();
 
         }
+
     }
 );
 
 
-/* =====================================================
-   LOVE ANIMATION
-===================================================== */
+/* ================= LOVE ANIMATION ================= */
 
 let animationStarted = false;
 
@@ -1182,9 +1147,6 @@ function startLoveAnimation(){
     if(animationStarted) return;
 
     animationStarted = true;
-
-
-    /* STARS */
 
     const stars =
         document.getElementById("stars");
@@ -1221,8 +1183,6 @@ function startLoveAnimation(){
     }
 
 
-    /* TYPING */
-
     const text =
         "Jayka, in a world full of billions of people, somehow my heart found you. And honestly... I'm really glad it did. ❤️";
 
@@ -1244,7 +1204,9 @@ function startLoveAnimation(){
                 typeText,
                 45
             );
+
         }
+
     }
 
     setTimeout(
@@ -1253,59 +1215,50 @@ function startLoveAnimation(){
     );
 
 
-    /* HEARTS */
-
     const symbols = [
-        "❤️",
-        "💕",
-        "💗",
-        "💖",
-        "💘",
-        "💓",
-        "💞",
-        "✨"
+        "❤️","💕","💗","💖",
+        "💘","💓","💞","✨"
     ];
 
-    window.createHeart =
-        function(){
+    window.createHeart = function(){
 
-            const heart =
-                document.createElement("div");
+        const heart =
+            document.createElement("div");
 
-            heart.className =
-                "heart";
+        heart.className =
+            "heart";
 
-            heart.textContent =
-                symbols[
-                    Math.floor(
-                        Math.random() *
-                        symbols.length
-                    )
-                ];
+        heart.textContent =
+            symbols[
+                Math.floor(
+                    Math.random()*symbols.length
+                )
+            ];
 
-            heart.style.left =
-                Math.random()*100 + "vw";
+        heart.style.left =
+            Math.random()*100 + "vw";
 
-            heart.style.fontSize =
-                Math.random()*25+15 + "px";
+        heart.style.fontSize =
+            Math.random()*25+15 + "px";
 
-            heart.style.animationDuration =
-                Math.random()*5+6 + "s";
+        heart.style.animationDuration =
+            Math.random()*5+6 + "s";
 
-            heart.style.setProperty(
-                "--drift",
-                Math.random()*200-100 + "px"
-            );
+        heart.style.setProperty(
+            "--drift",
+            Math.random()*200-100 + "px"
+        );
 
-            document.body.appendChild(
-                heart
-            );
+        document.body.appendChild(
+            heart
+        );
 
-            setTimeout(
-                () => heart.remove(),
-                12000
-            );
-        };
+        setTimeout(
+            ()=>heart.remove(),
+            12000
+        );
+    };
+
 
     setInterval(
         window.createHeart,
@@ -1313,28 +1266,23 @@ function startLoveAnimation(){
     );
 
 
-    /* FIRST HEART BURST */
+    setTimeout(()=>{
 
-    setTimeout(
-        () => {
+        for(let i=0;i<15;i++){
 
-            for(let i=0;i<15;i++){
+            setTimeout(
+                window.createHeart,
+                i*100
+            );
 
-                setTimeout(
-                    window.createHeart,
-                    i*100
-                );
-            }
+        }
 
-        },
-        2500
-    );
+    },2500);
+
 }
 
 
-/* =====================================================
-   EXPLOSION
-===================================================== */
+/* ================= EXPLOSION ================= */
 
 function createExplosion(x,y){
 
@@ -1353,21 +1301,19 @@ function createExplosion(x,y){
             y + "px";
 
         const angle =
-            Math.random() *
-            Math.PI *
-            2;
+            Math.random()*Math.PI*2;
 
         const distance =
             Math.random()*250+50;
 
         spark.style.setProperty(
             "--x",
-            Math.cos(angle)*distance + "px"
+            Math.cos(angle)*distance+"px"
         );
 
         spark.style.setProperty(
             "--y",
-            Math.sin(angle)*distance + "px"
+            Math.sin(angle)*distance+"px"
         );
 
         document.body.appendChild(
@@ -1375,19 +1321,20 @@ function createExplosion(x,y){
         );
 
         setTimeout(
-            () => spark.remove(),
+            ()=>spark.remove(),
             1000
         );
+
     }
+
 }
 
 
-/* =====================================================
-   LETTER
-===================================================== */
+/* ================= LETTER ================= */
 
-window.openLetter =
-    function(){
+openLetterBtn.addEventListener(
+    "click",
+    ()=>{
 
         document
             .getElementById("letter")
@@ -1397,25 +1344,28 @@ window.openLetter =
             window.innerWidth/2,
             window.innerHeight/2
         );
-    };
+
+    }
+);
 
 
-window.closeLetter =
-    function(){
+closeLetterBtn.addEventListener(
+    "click",
+    ()=>{
 
         document
             .getElementById("letter")
             .classList.remove("show");
-    };
+
+    }
+);
 
 
-/* =====================================================
-   CLICK SPARKLES
-===================================================== */
+/* ================= CLICK EFFECT ================= */
 
 document.addEventListener(
     "click",
-    event => {
+    event=>{
 
         if(
             event.target.closest(".login-card") ||
@@ -1426,33 +1376,34 @@ document.addEventListener(
         }
 
         if(
-            !mainApp.classList.contains(
-                "hidden"
-            )
+            !mainApp.classList.contains("hidden")
         ){
 
             createExplosion(
                 event.clientX,
                 event.clientY
             );
+
         }
+
     }
 );
 
 
-/* =====================================================
-   ESCAPE
-===================================================== */
+/* ================= ESCAPE ================= */
 
 document.addEventListener(
     "keydown",
-    event => {
+    event=>{
 
         if(event.key === "Escape"){
 
-            window.closeLetter();
+            document
+                .getElementById("letter")
+                .classList.remove("show");
 
         }
+
     }
 );
 
